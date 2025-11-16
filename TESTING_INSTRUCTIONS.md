@@ -1,5 +1,7 @@
 # ✅ Testing Instructions - CCS Lead Agent v2
 
+> **Note:** Use `.env.example` as a template for your environment variables. Never commit real secrets to version control.
+
 ## 🎉 All Fixes Applied and Pushed to GitHub!
 
 Your React hydration error has been **completely fixed** and all code has been pushed to your GitHub repository!
