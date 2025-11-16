@@ -3,6 +3,12 @@
 
 A full-stack B2B Lead Generation and Business Development platform for CCS Apparel, targeting leads in South Africa and Botswana.
 
+## ⚠️ Environment Variables
+
+Copy `.env.example` to `.env` and `.env.local` and fill in your real secrets. **Never commit `.env` or `.env.local` to version control.**
+
+All secrets and credentials must be kept out of source control. Only use `.env.example` for sharing variable structure.
+
 ## 🚀 Quick Start
 
 ```bash

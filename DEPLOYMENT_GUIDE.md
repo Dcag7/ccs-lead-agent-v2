@@ -3,6 +3,8 @@
 
 ## Quick Start (Local Development)
 
+> **Note:** Copy `.env.example` to `.env` and `.env.local` and fill in your real secrets. Never commit `.env` or `.env.local` to version control.
+
 ### 1. Install Dependencies
 ```bash
 npm install
