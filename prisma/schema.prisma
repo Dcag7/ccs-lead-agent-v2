@@ -21,14 +21,16 @@ model User {
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  name      String
-  website   String?
-  industry  String?
-  country   String?
-  size      String?  // e.g., "1-10", "11-50", "51-200", etc.
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  website      String?
+  industry     String?
+  country      String?
+  size         String?  // e.g., "1-10", "11-50", "51-200", etc.
+  score        Int      @default(0)
+  scoreFactors Json?    // stores scoring reasons/metadata
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   
   contacts  Contact[]
   leads     Lead[]
@@ -55,20 +57,21 @@ model Contact {
 }
 
 model Lead {
-  id          String   @id @default(cuid())
-  email       String
-  firstName   String?
-  lastName    String?
-  company     String?  // Keep for backward compatibility
-  phone       String?
-  country     String?
-  status      String   @default("new")
-  score       Int      @default(0)
-  source      String?
-  companyId   String?
-  contactId   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String
+  firstName    String?
+  lastName     String?
+  company      String?  // Keep for backward compatibility
+  phone        String?
+  country      String?
+  status       String   @default("new")
+  score        Int      @default(0)
+  scoreFactors Json?    // stores scoring reasons/metadata
+  source       String?
+  companyId    String?
+  contactId    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   
   companyRel  Company? @relation(fields: [companyId], references: [id])
   contactRel  Contact? @relation(fields: [contactId], references: [id])

@@ -120,12 +120,36 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
               <p className="mt-1 text-gray-900">{company.size || "-"}</p>
             </div>
             <div>
+              <h3 className="text-sm font-medium text-gray-500">Score</h3>
+              <p className="mt-1 text-2xl font-bold text-blue-600">{company.score}</p>
+            </div>
+            <div>
               <h3 className="text-sm font-medium text-gray-500">Created</h3>
               <p className="mt-1 text-gray-900">
                 {new Date(company.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
+
+          {/* Scoring Factors */}
+          {company.scoreFactors && typeof company.scoreFactors === 'object' && 'reasons' in company.scoreFactors && Array.isArray((company.scoreFactors as any).reasons) && (company.scoreFactors as any).reasons.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Scoring Breakdown</h3>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <ul className="space-y-2">
+                  {((company.scoreFactors as any).reasons as string[]).map((reason: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-600 mr-2">✓</span>
+                      <span className="text-sm text-gray-700">{reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Note: Scores are calculated based on rules-based factors. Future versions will include AI-enhanced scoring.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
