@@ -1,0 +1,6 @@
+firstName,lastName,email,phone,role,companyName
+"John","Doe","john.doe@acme.com","+27123456789","CEO","Acme Corporation"
+"Jane","Smith","jane.smith@globaltraders.co.za","+267987654321","Sales Director","Global Traders Ltd"
+"Alice","Johnson","alice.johnson@innovationhub.co.za","+27111223344","CTO","Innovation Hub"
+"Bob","Williams","bob.williams@retailsolutions.co.za","+27222334455","Operations Manager","Retail Solutions SA"
+"Carol","Brown","carol.brown@miningservices.co.bw","+267111222333","Project Manager","Mining Services Pty"

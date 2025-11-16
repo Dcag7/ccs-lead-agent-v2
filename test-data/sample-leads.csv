@@ -1,0 +1,6 @@
+email,firstName,lastName,phone,country,status,score,source,companyName,contactEmail
+"michael.jones@example.com","Michael","Jones","+27333444555","South Africa","new","75","referral","Acme Corporation","john.doe@acme.com"
+"sarah.wilson@testcompany.com","Sarah","Wilson","+267444555666","Botswana","qualified","85","website","Global Traders Ltd","jane.smith@globaltraders.co.za"
+"peter.davis@demo.co.za","Peter","Davis","+27444555666","South Africa","contacted","60","linkedin","Innovation Hub","alice.johnson@innovationhub.co.za"
+"lisa.taylor@example.co.za","Lisa","Taylor","+27555666777","South Africa","new","50","cold-call","Retail Solutions SA","bob.williams@retailsolutions.co.za"
+"david.martinez@testlead.com","David","Martinez","+267555666777","Botswana","proposal","90","referral","Mining Services Pty","carol.brown@miningservices.co.bw"
