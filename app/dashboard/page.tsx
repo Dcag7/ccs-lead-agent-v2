@@ -57,6 +57,9 @@ export default async function DashboardPage() {
                 <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
                   Leads
                 </Link>
+                <Link href="/dashboard/imports" className="text-sm text-gray-600 hover:text-gray-900">
+                  Imports
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
