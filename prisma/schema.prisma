@@ -21,17 +21,23 @@ model User {
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  name      String
-  website   String?
-  industry  String?
-  country   String?
-  size      String?  // e.g., "1-10", "11-50", "51-200", etc.
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  name                String
+  website             String?
+  industry            String?
+  country             String?
+  size                String?  // e.g., "1-10", "11-50", "51-200", etc.
   
-  contacts  Contact[]
-  leads     Lead[]
+  // External enrichment fields (Phase 6)
+  enrichmentStatus    String?  // "never", "pending", "success", "failed"
+  enrichmentLastRun   DateTime?
+  enrichmentData      Json?    // Stores structured enrichment results from Google CSE
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  contacts            Contact[]
+  leads               Lead[]
 
   @@map("companies")
 }
