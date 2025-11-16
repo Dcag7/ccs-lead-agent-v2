@@ -77,3 +77,20 @@ model Lead {
   @@index([status])
   @@map("leads")
 }
+
+model ImportJob {
+  id           String    @id @default(cuid())
+  type         String    // "company", "contact", "lead"
+  filename     String
+  rowsIn       Int       @default(0)
+  rowsSuccess  Int       @default(0)
+  rowsError    Int       @default(0)
+  status       String    @default("pending") // "pending", "running", "completed", "failed"
+  createdAt    DateTime  @default(now())
+  finishedAt   DateTime?
+  errorMessage String?
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("import_jobs")
+}
