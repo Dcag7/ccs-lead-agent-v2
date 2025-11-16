@@ -51,6 +51,9 @@ export default async function ContactDetailPage({ params }: { params: { id: stri
                 <Link href="/dashboard/contacts" className="text-sm font-medium text-blue-600">
                   Contacts
                 </Link>
+                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
+                  Leads
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">

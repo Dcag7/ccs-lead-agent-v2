@@ -1,14 +1,29 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import CompanyForm from "../components/CompanyForm";
+import LeadForm from "../../components/LeadForm";
 
-export default async function NewCompanyPage() {
+interface EditLeadPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function EditLeadPage({ params }: EditLeadPageProps) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/login");
+  }
+
+  const lead = await prisma.lead.findUnique({
+    where: { id: params.id },
+  });
+
+  if (!lead) {
+    notFound();
   }
 
   return (
@@ -24,13 +39,13 @@ export default async function NewCompanyPage() {
                 <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
                   Dashboard
                 </Link>
-                <Link href="/dashboard/companies" className="text-sm font-medium text-blue-600">
+                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
                   Companies
                 </Link>
                 <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
                   Contacts
                 </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
+                <Link href="/dashboard/leads" className="text-sm font-medium text-blue-600">
                   Leads
                 </Link>
               </div>
@@ -51,16 +66,16 @@ export default async function NewCompanyPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link
-            href="/dashboard/companies"
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            href={`/dashboard/leads/${params.id}`}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            ← Back to Companies
+            ← Back to Lead Details
           </Link>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Add New Company</h1>
-          <CompanyForm mode="create" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Lead</h1>
+          <LeadForm lead={lead} mode="edit" />
         </div>
       </main>
     </div>

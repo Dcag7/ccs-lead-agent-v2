@@ -13,8 +13,24 @@ export default async function DashboardPage() {
   }
 
   // Fetch statistics
-  const [totalLeads, totalCompanies, totalContacts] = await Promise.all([
-    prisma.lead.count(),
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const [totalLeads, newLeads, qualifiedLeads, totalCompanies, totalContacts] = await Promise.all([
+    prisma.lead.count({
+      where: { status: { not: "archived" } },
+    }),
+    prisma.lead.count({
+      where: {
+        status: "new",
+        createdAt: { gte: sevenDaysAgo },
+      },
+    }),
+    prisma.lead.count({
+      where: {
+        status: { notIn: ["new", "archived"] },
+      },
+    }),
     prisma.company.count(),
     prisma.contact.count(),
   ]);
@@ -37,6 +53,9 @@ export default async function DashboardPage() {
                 </Link>
                 <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
                   Contacts
+                </Link>
+                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
+                  Leads
                 </Link>
               </div>
             </div>
@@ -63,35 +82,49 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Companies</h3>
-            <p className="text-3xl font-bold text-blue-600">{totalCompanies}</p>
-            <Link href="/dashboard/companies" className="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-block">
-              View all companies →
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Contacts</h3>
-            <p className="text-3xl font-bold text-green-600">{totalContacts}</p>
-            <Link href="/dashboard/contacts" className="text-sm text-green-600 hover:text-green-800 mt-2 inline-block">
-              View all contacts →
-            </Link>
-          </div>
-
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Leads</h3>
             <p className="text-3xl font-bold text-purple-600">{totalLeads}</p>
+            <Link href="/dashboard/leads" className="text-sm text-purple-600 hover:text-purple-800 mt-2 inline-block">
+              View all leads →
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">New Leads</h3>
+            <p className="text-3xl font-bold text-blue-600">{newLeads}</p>
             <p className="text-sm text-gray-500 mt-1">
-              {totalLeads === 0 ? "No leads yet" : "Active leads in pipeline"}
+              Last 7 days
             </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Qualified Leads</h3>
+            <p className="text-3xl font-bold text-green-600">{qualifiedLeads}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              In progress
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Companies</h3>
+            <p className="text-3xl font-bold text-orange-600">{totalCompanies}</p>
+            <Link href="/dashboard/companies" className="text-sm text-orange-600 hover:text-orange-800 mt-2 inline-block">
+              View companies →
+            </Link>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              href="/dashboard/leads/new"
+              className="flex items-center justify-center bg-purple-600 text-white px-6 py-4 rounded-md hover:bg-purple-700 font-medium"
+            >
+              <span className="mr-2">+</span> Add Lead
+            </Link>
             <Link
               href="/dashboard/companies/new"
               className="flex items-center justify-center bg-blue-600 text-white px-6 py-4 rounded-md hover:bg-blue-700 font-medium"
@@ -105,10 +138,10 @@ export default async function DashboardPage() {
               <span className="mr-2">+</span> Add Contact
             </Link>
             <Link
-              href="/dashboard/companies"
+              href="/dashboard/leads"
               className="flex items-center justify-center bg-gray-600 text-white px-6 py-4 rounded-md hover:bg-gray-700 font-medium"
             >
-              View All Companies
+              View All Leads
             </Link>
           </div>
         </div>

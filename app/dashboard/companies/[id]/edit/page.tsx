@@ -40,6 +40,9 @@ export default async function EditCompanyPage({ params }: { params: { id: string
                 <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
                   Contacts
                 </Link>
+                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
+                  Leads
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
