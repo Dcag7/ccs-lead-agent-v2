@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CompanyEnrichment from "../components/CompanyEnrichment";
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -150,6 +151,11 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
               </p>
             </div>
           )}
+        </div>
+
+        {/* Enrichment Panel */}
+        <div className="mb-6">
+          <CompanyEnrichment company={company} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

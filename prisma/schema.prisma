@@ -21,19 +21,27 @@ model User {
 }
 
 model Company {
-  id           String   @id @default(cuid())
-  name         String
-  website      String?
-  industry     String?
-  country      String?
-  size         String?  // e.g., "1-10", "11-50", "51-200", etc.
-  score        Int      @default(0)
-  scoreFactors Json?    // stores scoring reasons/metadata
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  name                String
+  website             String?
+  industry            String?
+  country             String?
+  size                String?  // e.g., "1-10", "11-50", "51-200", etc.
   
-  contacts  Contact[]
-  leads     Lead[]
+  // Lead scoring fields (Phase 5)
+  score               Int      @default(0)
+  scoreFactors        Json?    // stores scoring reasons/metadata
+  
+  // External enrichment fields (Phase 6)
+  enrichmentStatus    String?  // "never", "pending", "success", "failed"
+  enrichmentLastRun   DateTime?
+  enrichmentData      Json?    // Stores structured enrichment results from Google CSE
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  contacts            Contact[]
+  leads               Lead[]
 
   @@map("companies")
 }
