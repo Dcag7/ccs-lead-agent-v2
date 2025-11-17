@@ -42,7 +42,7 @@ interface Company {
   country?: string | null;
   enrichmentStatus?: string | null;
   enrichmentLastRun?: Date | null;
-  enrichmentData?: EnrichmentData | null;
+  enrichmentData?: any; // JsonValue from Prisma - will be cast to EnrichmentData
 }
 
 interface Props {

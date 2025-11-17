@@ -16,7 +16,7 @@ const companyUpdateSchema = z.object({
 // GET /api/companies/[id] - Get single company by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,8 +28,9 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
     const company = await prisma.company.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         contacts: {
           orderBy: { createdAt: "desc" },
@@ -66,7 +67,7 @@ export async function GET(
 // PUT /api/companies/[id] - Update company
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -78,6 +79,7 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     
     // Validate request body
@@ -85,14 +87,14 @@ export async function PUT(
     
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
+        { error: "Validation failed", details: validationResult.error.issues },
         { status: 400 }
       );
     }
 
     // Check if company exists
     const existingCompany = await prisma.company.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingCompany) {
@@ -104,7 +106,7 @@ export async function PUT(
 
     // Update company
     const company = await prisma.company.update({
-      where: { id: params.id },
+      where: { id },
       data: validationResult.data,
     });
 
@@ -121,7 +123,7 @@ export async function PUT(
 // DELETE /api/companies/[id] - Delete company
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -133,9 +135,10 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     // Check if company exists
     const existingCompany = await prisma.company.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -169,7 +172,7 @@ export async function DELETE(
 
     // Delete company
     await prisma.company.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(

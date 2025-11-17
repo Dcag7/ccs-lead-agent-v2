@@ -21,7 +21,7 @@ const leadUpdateSchema = z.object({
 // GET /api/leads/[id] - Get single lead by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -33,8 +33,9 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
     const lead = await prisma.lead.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         companyRel: true,
         contactRel: true,
@@ -61,7 +62,7 @@ export async function GET(
 // PUT /api/leads/[id] - Update lead
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -73,9 +74,10 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     // Check if lead exists
     const existingLead = await prisma.lead.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingLead) {
@@ -92,7 +94,7 @@ export async function PUT(
     
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
+        { error: "Validation failed", details: validationResult.error.issues },
         { status: 400 }
       );
     }
@@ -129,7 +131,7 @@ export async function PUT(
 
     // Update lead
     const lead = await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         companyRel: true,
@@ -150,7 +152,7 @@ export async function PUT(
 // DELETE /api/leads/[id] - Archive lead (soft delete)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -162,9 +164,10 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     // Check if lead exists
     const existingLead = await prisma.lead.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingLead) {
@@ -176,7 +179,7 @@ export async function DELETE(
 
     // Soft delete by setting status to "archived"
     await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: "archived" },
     });
 

@@ -17,7 +17,7 @@ const contactUpdateSchema = z.object({
 // GET /api/contacts/[id] - Get single contact by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -29,8 +29,9 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
     const contact = await prisma.contact.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         company: true,
         leads: {
@@ -64,7 +65,7 @@ export async function GET(
 // PUT /api/contacts/[id] - Update contact
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -76,6 +77,7 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     
     // Validate request body
@@ -83,14 +85,14 @@ export async function PUT(
     
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
+        { error: "Validation failed", details: validationResult.error.issues },
         { status: 400 }
       );
     }
 
     // Check if contact exists
     const existingContact = await prisma.contact.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingContact) {
@@ -116,7 +118,7 @@ export async function PUT(
 
     // Update contact
     const contact = await prisma.contact.update({
-      where: { id: params.id },
+      where: { id },
       data: validationResult.data,
       include: {
         company: true,
@@ -136,7 +138,7 @@ export async function PUT(
 // DELETE /api/contacts/[id] - Delete contact
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -148,9 +150,10 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     // Check if contact exists
     const existingContact = await prisma.contact.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -182,7 +185,7 @@ export async function DELETE(
 
     // Delete contact
     await prisma.contact.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(
