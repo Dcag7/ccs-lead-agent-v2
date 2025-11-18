@@ -6,15 +6,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import CompanyForm from "../../components/CompanyForm";
 
-export default async function EditCompanyPage({ params }: { params: { id: string } }) {
+export default async function EditCompanyPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/login");
   }
 
+  // Await params to get the id
+  const { id } = await props.params;
+
   const company = await prisma.company.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!company) {

@@ -4,10 +4,14 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CompaniesClient from "./components/CompaniesClient";
 
-export default async function CompaniesPage({
-  searchParams,
-}: {
-  searchParams: { sortBy?: string; sortOrder?: string; minScore?: string };
+type CompaniesSearchParams = {
+  sortBy?: string;
+  sortOrder?: string;
+  minScore?: string;
+};
+
+export default async function CompaniesPage(props: { 
+  searchParams: Promise<CompaniesSearchParams> 
 }) {
   const session = await getServerSession(authOptions);
 
@@ -15,17 +19,19 @@ export default async function CompaniesPage({
     redirect("/login");
   }
 
-  // Parse search params
-  const sortBy = searchParams.sortBy || "createdAt";
-  const sortOrder = searchParams.sortOrder || "desc";
-  const minScore = searchParams.minScore ? parseInt(searchParams.minScore) : 0;
+  // Await and parse search params
+  const { sortBy, sortOrder, minScore } = await props.searchParams;
+  
+  const effectiveSortBy = sortBy || "createdAt";
+  const effectiveSortOrder = sortOrder === "asc" ? "asc" : "desc";
+  const effectiveMinScore = minScore ? parseInt(minScore, 10) : 0;
 
   // Build orderBy clause
   const orderBy: any = {};
-  if (sortBy === "score") {
-    orderBy.score = sortOrder;
-  } else if (sortBy === "createdAt") {
-    orderBy.createdAt = sortOrder;
+  if (effectiveSortBy === "score") {
+    orderBy.score = effectiveSortOrder;
+  } else if (effectiveSortBy === "createdAt") {
+    orderBy.createdAt = effectiveSortOrder;
   } else {
     orderBy.createdAt = "desc";
   }
@@ -33,7 +39,7 @@ export default async function CompaniesPage({
   // Fetch all companies with counts
   const companies = await prisma.company.findMany({
     where: {
-      score: { gte: minScore },
+      score: { gte: effectiveMinScore },
     },
     include: {
       _count: {
@@ -50,8 +56,8 @@ export default async function CompaniesPage({
     <CompaniesClient
       companies={companies}
       userEmail={session.user?.email || ''}
-      currentSort={{ sortBy, sortOrder }}
-      currentMinScore={minScore}
+      currentSort={{ sortBy: effectiveSortBy, sortOrder: effectiveSortOrder }}
+      currentMinScore={effectiveMinScore}
     />
   );
 }

@@ -4,21 +4,18 @@ import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
-interface LeadDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
+export default async function LeadDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/login");
   }
 
+  // Await params to get the id
+  const { id } = await props.params;
+
   const lead = await prisma.lead.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       companyRel: true,
       contactRel: true,
