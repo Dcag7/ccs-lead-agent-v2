@@ -3,6 +3,18 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
+
+type ContactWithCompany = Prisma.ContactGetPayload<{
+  include: {
+    company: true;
+    _count: {
+      select: {
+        leads: true;
+      };
+    };
+  };
+}>;
 
 export default async function ContactsPage() {
   try {
@@ -13,7 +25,7 @@ export default async function ContactsPage() {
     }
 
     // Fetch all contacts with company and lead counts
-    let contacts = [];
+    let contacts: ContactWithCompany[] = [];
     try {
       contacts = await prisma.contact.findMany({
         include: {

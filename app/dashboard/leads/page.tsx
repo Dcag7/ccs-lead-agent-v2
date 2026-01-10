@@ -3,12 +3,20 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import LeadsClient from "./components/LeadsClient";
+import { Prisma } from "@prisma/client";
 
 type LeadsSearchParams = {
   sortBy?: string;
   sortOrder?: string;
   minScore?: string;
 };
+
+type LeadWithRelations = Prisma.LeadGetPayload<{
+  include: {
+    companyRel: true;
+    contactRel: true;
+  };
+}>;
 
 export default async function LeadsPage(props: { 
   searchParams: Promise<LeadsSearchParams> 
@@ -38,7 +46,7 @@ export default async function LeadsPage(props: {
     }
 
     // Fetch all non-archived leads with related data
-    let leads = [];
+    let leads: LeadWithRelations[] = [];
     try {
       leads = await prisma.lead.findMany({
         where: {

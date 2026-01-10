@@ -3,12 +3,24 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CompaniesClient from "./components/CompaniesClient";
+import { Prisma } from "@prisma/client";
 
 type CompaniesSearchParams = {
   sortBy?: string;
   sortOrder?: string;
   minScore?: string;
 };
+
+type CompanyWithCounts = Prisma.CompanyGetPayload<{
+  include: {
+    _count: {
+      select: {
+        contacts: true;
+        leads: true;
+      };
+    };
+  };
+}>;
 
 export default async function CompaniesPage(props: { 
   searchParams: Promise<CompaniesSearchParams> 
@@ -38,7 +50,7 @@ export default async function CompaniesPage(props: {
     }
 
     // Fetch all companies with counts
-    let companies = [];
+    let companies: CompanyWithCounts[] = [];
     try {
       companies = await prisma.company.findMany({
         where: {
