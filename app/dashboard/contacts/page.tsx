@@ -5,26 +5,33 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function ContactsPage() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session) {
-    redirect("/login");
-  }
+    if (!session) {
+      redirect("/login");
+    }
 
-  // Fetch all contacts with company and lead counts
-  const contacts = await prisma.contact.findMany({
-    include: {
-      company: true,
-      _count: {
-        select: {
-          leads: true,
+    // Fetch all contacts with company and lead counts
+    let contacts = [];
+    try {
+      contacts = await prisma.contact.findMany({
+        include: {
+          company: true,
+          _count: {
+            select: {
+              leads: true,
+            },
+          },
         },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      // Continue with empty array
+    }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,4 +181,18 @@ export default async function ContactsPage() {
       </main>
     </div>
   );
+  } catch (error) {
+    console.error("Contacts page error:", error);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Contacts</h1>
+          <p className="text-gray-600 mb-4">There was an error loading the contacts page. Please try again.</p>
+          <a href="/dashboard/contacts" className="text-blue-600 hover:text-blue-800">
+            Refresh Page
+          </a>
+        </div>
+      </div>
+    );
+  }
 }
