@@ -232,22 +232,47 @@ export class KeywordDiscoveryChannel implements IKeywordDiscoveryChannel {
     result: DiscoveryResult,
     keywords: string[]
   ): DiscoveryResult {
-    // Preserve upstream source info in additionalMetadata
-    const updatedMetadata: DiscoveryMetadata = {
-      discoverySource: 'keyword',
-      discoveryTimestamp: result.discoveryMetadata.discoveryTimestamp,
-      discoveryMethod: `Keywords: ${keywords.join(', ')}`,
-      additionalMetadata: {
-        ...result.discoveryMetadata.additionalMetadata,
-        upstreamSource: result.discoveryMetadata.discoverySource, // Preserve original channel
-        upstreamQuery: result.discoveryMetadata.discoveryMethod, // Preserve original query/method
-      },
-    };
+    // Handle company results
+    if (result.type === 'company') {
+      const updatedMetadata: DiscoveryMetadata = {
+        discoverySource: 'keyword',
+        discoveryTimestamp: result.discoveryMetadata.discoveryTimestamp,
+        discoveryMethod: `Keywords: ${keywords.join(', ')}`,
+        additionalMetadata: {
+          ...result.discoveryMetadata.additionalMetadata,
+          upstreamSource: result.discoveryMetadata.discoverySource, // Preserve original channel
+          upstreamQuery: result.discoveryMetadata.discoveryMethod, // Preserve original query/method
+        },
+      };
 
-    return {
-      ...result,
-      discoveryMetadata: updatedMetadata,
-    };
+      return {
+        ...result,
+        discoveryMetadata: updatedMetadata,
+      };
+    }
+
+    // Handle contact results
+    if (result.type === 'contact') {
+      const updatedMetadata: DiscoveryMetadata = {
+        discoverySource: 'keyword',
+        discoveryTimestamp: result.discoveryMetadata.discoveryTimestamp,
+        discoveryMethod: `Keywords: ${keywords.join(', ')}`,
+        additionalMetadata: {
+          ...result.discoveryMetadata.additionalMetadata,
+          upstreamSource: result.discoveryMetadata.discoverySource, // Preserve original channel
+          upstreamQuery: result.discoveryMetadata.discoveryMethod, // Preserve original query/method
+        },
+      };
+
+      return {
+        ...result,
+        discoveryMetadata: updatedMetadata,
+      };
+    }
+
+    // For lead results, pass through unchanged (they contain nested company/contact with their own metadata)
+    // Note: Lead results don't have direct discoveryMetadata, so we don't update them
+    return result;
   }
 
   /**

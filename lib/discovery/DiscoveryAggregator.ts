@@ -11,8 +11,8 @@
 import type {
   DiscoveryChannelInput,
   DiscoveryResult,
-  IDiscoveryChannel,
 } from './types';
+import type { IDiscoveryChannel } from './channels/IDiscoveryChannel';
 import { GoogleDiscoveryChannel } from './channels/google/GoogleDiscoveryChannel';
 import { KeywordDiscoveryChannel } from './channels/keyword/KeywordDiscoveryChannel';
 

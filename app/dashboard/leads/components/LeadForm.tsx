@@ -29,7 +29,7 @@ interface Contact {
   id: string;
   firstName: string | null;
   lastName: string | null;
-  email: string;
+  email: string | null;
   companyId: string | null;
 }
 
@@ -335,7 +335,7 @@ export default function LeadForm({ lead, mode }: LeadFormProps) {
               <option key={contact.id} value={contact.id}>
                 {contact.firstName || contact.lastName
                   ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim()
-                  : contact.email}
+                  : contact.email || "Unnamed Contact"}
               </option>
             ))}
           </select>

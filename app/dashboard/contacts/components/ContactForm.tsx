@@ -8,7 +8,7 @@ interface ContactFormProps {
     id: string;
     firstName: string | null;
     lastName: string | null;
-    email: string;
+    email: string | null;
     phone: string | null;
     role: string | null;
     companyId: string | null;
