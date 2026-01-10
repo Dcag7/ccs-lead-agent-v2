@@ -6,36 +6,54 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session) {
-    redirect("/login");
-  }
+    if (!session) {
+      redirect("/login");
+    }
 
-  // Fetch statistics
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // Fetch statistics with error handling
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const [totalLeads, newLeads, qualifiedLeads, totalCompanies, totalContacts] = await Promise.all([
-    prisma.lead.count({
-      where: { status: { not: "archived" } },
-    }),
-    prisma.lead.count({
-      where: {
-        status: "new",
-        createdAt: { gte: sevenDaysAgo },
-      },
-    }),
-    prisma.lead.count({
-      where: {
-        status: { notIn: ["new", "archived"] },
-      },
-    }),
-    prisma.company.count(),
-    prisma.contact.count(),
-  ]);
+    let totalLeads = 0;
+    let newLeads = 0;
+    let qualifiedLeads = 0;
+    let totalCompanies = 0;
+    let totalContacts = 0;
 
-  return (
+    try {
+      const results = await Promise.allSettled([
+        prisma.lead.count({
+          where: { status: { not: "archived" } },
+        }),
+        prisma.lead.count({
+          where: {
+            status: "new",
+            createdAt: { gte: sevenDaysAgo },
+          },
+        }),
+        prisma.lead.count({
+          where: {
+            status: { notIn: ["new", "archived"] },
+          },
+        }),
+        prisma.company.count(),
+        prisma.contact.count(),
+      ]);
+
+      totalLeads = results[0].status === "fulfilled" ? results[0].value : 0;
+      newLeads = results[1].status === "fulfilled" ? results[1].value : 0;
+      qualifiedLeads = results[2].status === "fulfilled" ? results[2].value : 0;
+      totalCompanies = results[3].status === "fulfilled" ? results[3].value : 0;
+      totalContacts = results[4].status === "fulfilled" ? results[4].value : 0;
+    } catch (error) {
+      console.error("Error fetching dashboard statistics:", error);
+      // Continue with default values of 0
+    }
+
+    return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -151,4 +169,19 @@ export default async function DashboardPage() {
       </main>
     </div>
   );
+  } catch (error) {
+    console.error("Dashboard error:", error);
+    // If there's an error, still try to show the page but log the error
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Dashboard</h1>
+          <p className="text-gray-600 mb-4">There was an error loading the dashboard. Please try again.</p>
+          <Link href="/dashboard" className="text-blue-600 hover:text-blue-800">
+            Refresh Page
+          </Link>
+        </div>
+      </div>
+    );
+  }
 }
