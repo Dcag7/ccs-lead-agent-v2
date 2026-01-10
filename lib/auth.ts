@@ -1,10 +1,8 @@
 
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,40 +13,52 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email and password are required");
+          }
+
+          // Validate email domain
+          const allowedDomains = ["ccsapparel.africa", "ccsapparel.co.za"];
+          const emailParts = credentials.email.split("@");
+          
+          if (emailParts.length !== 2 || !emailParts[1]) {
+            throw new Error("Invalid email format");
+          }
+          
+          const emailDomain = emailParts[1];
+          
+          if (!allowedDomains.includes(emailDomain)) {
+            throw new Error("Unauthorized email domain");
+          }
+
+          // Find user in database
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
+
+          if (!user) {
+            throw new Error("Invalid credentials");
+          }
+
+          // Verify password
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+          
+          if (!isValidPassword) {
+            throw new Error("Invalid credentials");
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+          };
+        } catch (error) {
+          // Log the actual error for debugging
+          console.error("Authorization error:", error);
+          throw error;
         }
-
-        // Validate email domain
-        const allowedDomains = ["ccsapparel.africa", "ccsapparel.co.za"];
-        const emailDomain = credentials.email.split("@")[1];
-        
-        if (!allowedDomains.includes(emailDomain)) {
-          throw new Error("Unauthorized email domain");
-        }
-
-        // Find user in database
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        });
-
-        if (!user) {
-          throw new Error("Invalid credentials");
-        }
-
-        // Verify password
-        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
-        
-        if (!isValidPassword) {
-          throw new Error("Invalid credentials");
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        };
       }
     })
   ],

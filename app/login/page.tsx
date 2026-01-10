@@ -25,13 +25,20 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid credentials. Please try again.");
+        // Show the actual error message for better debugging
+        const errorMessage = result.error === "CredentialsSignin" 
+          ? "Invalid credentials. Please try again." 
+          : result.error;
+        setError(errorMessage);
+        console.error("Login error:", result.error);
       } else if (result?.ok) {
         router.push("/dashboard");
         router.refresh();
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      setError(errorMessage);
+      console.error("Login exception:", err);
     } finally {
       setIsLoading(false);
     }

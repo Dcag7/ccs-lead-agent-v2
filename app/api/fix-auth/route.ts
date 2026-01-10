@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-
-// Create a new Prisma client instance
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -21,7 +18,8 @@ export async function GET() {
     });
 
     try {
-      await prisma.$connect();
+      // Test connection by running a simple query
+      await prisma.user.count();
       results.steps[0].status = 'success';
       results.steps[0].message = 'Database connected successfully';
     } catch (error: any) {
@@ -75,14 +73,14 @@ export async function GET() {
         where: { email: adminEmail },
         update: {
           password: hashedPassword,
-          name: 'Dumi Admin',
-          role: 'ADMIN',
+          name: 'Dumi',
+          role: 'admin',
         },
         create: {
           email: adminEmail,
           password: hashedPassword,
-          name: 'Dumi Admin',
-          role: 'ADMIN',
+          name: 'Dumi',
+          role: 'admin',
         },
       });
 
@@ -147,6 +145,6 @@ export async function GET() {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // Don't disconnect in serverless - Prisma manages connection pool
   }
 }

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // IMPORTANT: This endpoint should be protected or removed in production
 // For now, we'll add a simple secret key check
@@ -21,10 +19,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("🔧 Starting admin user reset...");
-
-    // Test database connection
-    await prisma.$connect();
-    console.log("✅ Database connected");
 
     // Check if admin user exists
     const adminEmail = "dumi@ccsapparel.africa";
@@ -89,16 +83,12 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // GET endpoint to check database status (without requiring secret)
 export async function GET() {
   try {
-    await prisma.$connect();
-    
     const adminEmail = "dumi@ccsapparel.africa";
     const adminUser = await prisma.user.findUnique({
       where: { email: adminEmail },
@@ -128,7 +118,5 @@ export async function GET() {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
