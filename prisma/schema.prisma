@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,68 +20,75 @@ model User {
 }
 
 model Company {
-  id                  String   @id @default(cuid())
-  name                String
-  website             String?
-  industry            String?
-  country             String?
-  size                String?  // e.g., "1-10", "11-50", "51-200", etc.
-  
+  id       String  @id @default(cuid())
+  name     String
+  website  String?
+  industry String?
+  country  String?
+  size     String? // e.g., "1-10", "11-50", "51-200", etc.
+
   // Lead scoring fields (Phase 5)
-  score               Int      @default(0)
-  scoreFactors        Json?    // stores scoring reasons/metadata
-  
+  score        Int   @default(0)
+  scoreFactors Json? // stores scoring reasons/metadata
+
   // External enrichment fields (Phase 6)
-  enrichmentStatus    String?  // "never", "pending", "success", "failed"
-  enrichmentLastRun   DateTime?
-  enrichmentData      Json?    // Stores structured enrichment results from Google CSE
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  
-  contacts            Contact[]
-  leads               Lead[]
+  enrichmentStatus  String? // "never", "pending", "success", "failed"
+  enrichmentLastRun DateTime?
+  enrichmentData    Json? // Stores structured enrichment results from Google CSE
+
+  // Discovery metadata fields (Phase 1)
+  discoveryMetadata Json? // Stores discovery metadata (source, timestamp, method, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts Contact[]
+  leads    Lead[]
 
   @@map("companies")
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  firstName String?
-  lastName  String?
-  email     String
-  phone     String?
-  role      String?  // job title/role
-  companyId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  company   Company? @relation(fields: [companyId], references: [id])
-  leads     Lead[]
+  id                String   @id @default(cuid())
+  firstName         String?
+  lastName          String?
+  email             String?
+  phone             String?
+  role              String? // job title/role
+  companyId         String?
+  linkedInUrl       String? // LinkedIn profile URL (from discovery)
+  discoveryMetadata Json? // Stores discovery metadata (source, timestamp, method, etc.)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  company Company? @relation(fields: [companyId], references: [id])
+  leads   Lead[]
 
   @@index([email])
+  @@index([linkedInUrl])
   @@map("contacts")
 }
 
 model Lead {
-  id           String   @id @default(cuid())
-  email        String
-  firstName    String?
-  lastName     String?
-  company      String?  // Keep for backward compatibility
-  phone        String?
-  country      String?
-  status       String   @default("new")
-  score        Int      @default(0)
-  scoreFactors Json?    // stores scoring reasons/metadata
-  source       String?
-  companyId    String?
-  contactId    String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  companyRel  Company? @relation(fields: [companyId], references: [id])
-  contactRel  Contact? @relation(fields: [contactId], references: [id])
+  id                String   @id @default(cuid())
+  email             String
+  firstName         String?
+  lastName          String?
+  company           String? // Keep for backward compatibility
+  phone             String?
+  country           String?
+  status            String   @default("new")
+  score             Int      @default(0)
+  scoreFactors      Json? // stores scoring reasons/metadata
+  source            String? // Lead source (can be discovery channel type: "google", "keyword", "linkedin", "social")
+  companyId         String?
+  contactId         String?
+  discoveryMetadata Json? // Stores discovery metadata (source, timestamp, method, etc.)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  companyRel Company? @relation(fields: [companyId], references: [id])
+  contactRel Contact? @relation(fields: [contactId], references: [id])
 
   @@index([email])
   @@index([status])
@@ -91,7 +97,7 @@ model Lead {
 
 model ImportJob {
   id           String    @id @default(cuid())
-  type         String    // "company", "contact", "lead"
+  type         String // "company", "contact", "lead"
   filename     String
   rowsIn       Int       @default(0)
   rowsSuccess  Int       @default(0)
