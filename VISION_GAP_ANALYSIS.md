@@ -1,4 +1,7 @@
-# 🔍 Vision vs. Current Implementation - Gap Analysis
+> This document is descriptive, not prescriptive.
+> It defines gaps and priorities, not implementation decisions.
+
+# 🔍 Vision vs. Current Implementation - Gap Analysis. 
 
 **Date:** January 10, 2026  
 **Comparison:** Your Vision Document vs. Current Codebase
