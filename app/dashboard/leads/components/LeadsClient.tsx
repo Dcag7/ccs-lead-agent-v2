@@ -14,7 +14,9 @@ interface Lead {
   country: string | null;
   status: string;
   score: number;
+  classification: string | null;
   source: string | null;
+  businessSource: string | null;
   createdAt: Date;
   companyRel: {
     id: string;
@@ -32,6 +34,7 @@ interface LeadsClientProps {
   userEmail: string;
   currentSort: { sortBy: string; sortOrder: string };
   currentMinScore: number;
+  currentBusinessSource?: string;
 }
 
 export default function LeadsClient({
@@ -39,10 +42,12 @@ export default function LeadsClient({
   userEmail,
   currentSort,
   currentMinScore,
+  currentBusinessSource,
 }: LeadsClientProps) {
   const router = useRouter();
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [minScore, setMinScore] = useState(currentMinScore);
+  const [businessSource, setBusinessSource] = useState(currentBusinessSource || '');
 
   const formatName = (firstName: string | null, lastName: string | null) => {
     if (firstName || lastName) {
@@ -73,9 +78,41 @@ export default function LeadsClient({
 
   const handleMinScoreChange = (value: number) => {
     setMinScore(value);
-    router.push(
-      `/dashboard/leads?sortBy=${currentSort.sortBy}&sortOrder=${currentSort.sortOrder}&minScore=${value}`
-    );
+    const params = new URLSearchParams({
+      sortBy: currentSort.sortBy,
+      sortOrder: currentSort.sortOrder,
+      minScore: value.toString(),
+    });
+    if (businessSource) {
+      params.append('businessSource', businessSource);
+    }
+    router.push(`/dashboard/leads?${params.toString()}`);
+  };
+
+  const handleBusinessSourceChange = (value: string) => {
+    setBusinessSource(value);
+    const params = new URLSearchParams({
+      sortBy: currentSort.sortBy,
+      sortOrder: currentSort.sortOrder,
+      minScore: minScore.toString(),
+    });
+    if (value) {
+      params.append('businessSource', value);
+    }
+    router.push(`/dashboard/leads?${params.toString()}`);
+  };
+
+  const getClassificationColor = (classification: string | null) => {
+    switch (classification) {
+      case 'hot':
+        return 'bg-red-100 text-red-800';
+      case 'warm':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cold':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   const handleRecalculate = async () => {
@@ -178,20 +215,45 @@ export default function LeadsClient({
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-700">Minimum Score:</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={minScore}
-              onChange={(e) => handleMinScoreChange(parseInt(e.target.value))}
-              className="flex-grow h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-            />
-            <span className="text-sm font-medium text-gray-900 min-w-[50px]">
-              {minScore}+
-            </span>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Minimum Score:</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={minScore}
+                onChange={(e) => handleMinScoreChange(parseInt(e.target.value))}
+                className="flex-grow h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <span className="text-sm font-medium text-gray-900 min-w-[50px]">
+                {minScore}+
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="businessSource" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Business Source:
+              </label>
+              <select
+                id="businessSource"
+                value={businessSource}
+                onChange={(e) => handleBusinessSourceChange(e.target.value)}
+                className="block rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              >
+                <option value="">All Sources</option>
+                <option value="referral">Referral</option>
+                <option value="existing_customer">Existing Customer</option>
+                <option value="partner">Partner</option>
+                <option value="inbound">Inbound</option>
+                <option value="organic_social">Organic Social</option>
+                <option value="paid_social">Paid Social</option>
+                <option value="event">Event</option>
+                <option value="email_campaign">Email Campaign</option>
+                <option value="outbound">Outbound</option>
+                <option value="unknown">Unknown</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -285,6 +347,22 @@ export default function LeadsClient({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-900">{lead.score}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {lead.classification ? (
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getClassificationColor(
+                              lead.classification
+                            )}`}
+                          >
+                            {lead.classification}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {lead.businessSource || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {lead.source || '-'}

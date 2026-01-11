@@ -80,7 +80,10 @@ model Lead {
   status            String   @default("new")
   score             Int      @default(0)
   scoreFactors      Json? // stores scoring reasons/metadata
+  classification    String? // Lead classification: "hot", "warm", "cold"
+  scoredAt          DateTime? // Timestamp when score was last calculated
   source            String? // Lead source (can be discovery channel type: "google", "keyword", "linkedin", "social")
+  businessSource    String? // Business/acquisition source: "referral", "existing_customer", "partner", "inbound", "outbound", etc.
   companyId         String?
   contactId         String?
   discoveryMetadata Json? // Stores discovery metadata (source, timestamp, method, etc.)
@@ -92,6 +95,7 @@ model Lead {
 
   @@index([email])
   @@index([status])
+  @@index([businessSource])
   @@map("leads")
 }
 

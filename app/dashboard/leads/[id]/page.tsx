@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import LeadScoring from "../components/LeadScoring";
 
 export default async function LeadDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -210,25 +211,47 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
               </div>
             </div>
 
-            {/* Scoring Factors */}
-            {lead.scoreFactors && typeof lead.scoreFactors === 'object' && 'reasons' in lead.scoreFactors && Array.isArray((lead.scoreFactors as any).reasons) && (lead.scoreFactors as any).reasons.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Scoring Breakdown</h3>
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <ul className="space-y-2">
-                    {((lead.scoreFactors as any).reasons as string[]).map((reason: string, index: number) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-blue-600 mr-2">✓</span>
-                        <span className="text-sm text-gray-700">{reason}</span>
-                      </li>
-                    ))}
-                  </ul>
+            {/* Lead Scoring Controls */}
+            <LeadScoring
+              leadId={lead.id}
+              currentBusinessSource={lead.businessSource}
+              currentScore={lead.score}
+              currentClassification={lead.classification}
+              currentScoredAt={lead.scoredAt}
+            />
+
+            {/* Scoring Factors - Top 5 */}
+            {lead.scoreFactors &&
+              typeof lead.scoreFactors === 'object' &&
+              'all' in lead.scoreFactors &&
+              Array.isArray((lead.scoreFactors as { all?: Array<{ name: string; points: number; explanation: string }> }).all) &&
+              (lead.scoreFactors as { all: Array<{ name: string; points: number; explanation: string }> }).all.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Top Scoring Factors</h3>
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <ul className="space-y-2">
+                      {(lead.scoreFactors as { all: Array<{ name: string; points: number; explanation: string }> }).all
+                        .sort((a, b) => Math.abs(b.points) - Math.abs(a.points))
+                        .slice(0, 5)
+                        .map((factor, index) => (
+                          <li key={index} className="flex items-start justify-between">
+                            <div className="flex items-start">
+                              <span className="text-blue-600 mr-2">✓</span>
+                              <span className="text-sm text-gray-700">{factor.explanation}</span>
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900 ml-4">
+                              {factor.points > 0 ? '+' : ''}
+                              {factor.points}
+                            </span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    Note: Scores are calculated based on rules-based factors. Showing top 5 factors by points.
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500 mt-3">
-                  Note: Scores are calculated based on rules-based factors. Future versions will include AI-enhanced scoring.
-                </p>
-              </div>
-            )}
+              )}
           </div>
         </div>
       </main>

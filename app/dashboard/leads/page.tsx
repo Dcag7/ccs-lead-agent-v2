@@ -9,6 +9,7 @@ type LeadsSearchParams = {
   sortBy?: string;
   sortOrder?: string;
   minScore?: string;
+  businessSource?: string;
 };
 
 type LeadWithRelations = Prisma.LeadGetPayload<{
@@ -29,11 +30,12 @@ export default async function LeadsPage(props: {
     }
 
     // Await and parse search params
-    const { sortBy, sortOrder, minScore } = await props.searchParams;
+    const { sortBy, sortOrder, minScore, businessSource } = await props.searchParams;
     
     const effectiveSortBy = sortBy || "createdAt";
     const effectiveSortOrder = sortOrder === "asc" ? "asc" : "desc";
     const effectiveMinScore = minScore ? parseInt(minScore, 10) : 0;
+    const effectiveBusinessSource = businessSource || undefined;
 
     // Build orderBy clause
     const orderBy: any = {};
@@ -45,14 +47,20 @@ export default async function LeadsPage(props: {
       orderBy.createdAt = "desc";
     }
 
+    // Build where clause
+    const where: any = {
+      status: { not: "archived" },
+      score: { gte: effectiveMinScore },
+    };
+    if (effectiveBusinessSource) {
+      where.businessSource = effectiveBusinessSource;
+    }
+
     // Fetch all non-archived leads with related data
     let leads: LeadWithRelations[] = [];
     try {
       leads = await prisma.lead.findMany({
-        where: {
-          status: { not: "archived" },
-          score: { gte: effectiveMinScore },
-        },
+        where,
         include: {
           companyRel: true,
           contactRel: true,
@@ -70,6 +78,7 @@ export default async function LeadsPage(props: {
         userEmail={session.user?.email || ''} 
         currentSort={{ sortBy: effectiveSortBy, sortOrder: effectiveSortOrder }} 
         currentMinScore={effectiveMinScore}
+        currentBusinessSource={effectiveBusinessSource}
       />
     );
   } catch (error) {
