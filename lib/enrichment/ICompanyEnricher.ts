@@ -5,7 +5,7 @@
  * Each enricher is responsible for enriching company data from a specific source.
  */
 
-import type { CompanyEnrichmentInput, EnrichmentOptions, EnrichmentResult } from './types';
+import type { CompanyEnrichmentInput, EnrichmentResult } from './types';
 
 /**
  * Company Enricher Interface
