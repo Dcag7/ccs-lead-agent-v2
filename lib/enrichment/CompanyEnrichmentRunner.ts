@@ -10,7 +10,6 @@ import type { ICompanyEnricher } from './ICompanyEnricher';
 import type {
   CompanyEnrichmentInput,
   EnrichmentData,
-  EnrichmentOptions,
   EnrichmentResult,
   EnrichmentSummary,
   GoogleCseEnrichmentResult,
@@ -82,7 +81,7 @@ export class CompanyEnrichmentRunner {
 
       // Run enrichers in parallel
       const results = await Promise.allSettled(
-        enrichersToRun.map((enricher) => enricher.enrich(companyInput, options))
+        enrichersToRun.map((enricher) => enricher.enrich(companyInput))
       );
 
       // Process results (handle both fulfilled and rejected promises)

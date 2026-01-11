@@ -64,8 +64,8 @@ export class WebsiteSignalExtractor implements IWebsiteSignalExtractor {
 
       // Extract all signals from HTML
       const signals: WebsiteSignals = {
-        services: this.extractServicesFromHTML(html, input.companyName),
-        industries: this.extractIndustriesFromHTML(html, input.companyName),
+        services: this.extractServicesFromHTML(html),
+        industries: this.extractIndustriesFromHTML(html),
         locations: this.extractLocationsFromHTML(html),
         contactChannels: this.extractContactChannelsFromHTML(html),
       };
@@ -140,8 +140,7 @@ export class WebsiteSignalExtractor implements IWebsiteSignalExtractor {
    * Extract services offered from HTML content
    */
   private extractServicesFromHTML(
-    html: string,
-    companyName?: string
+    html: string
   ): WebsiteSignalServices | undefined {
     const services: string[] = [];
     const htmlLower = html.toLowerCase();
@@ -169,7 +168,6 @@ export class WebsiteSignalExtractor implements IWebsiteSignalExtractor {
 
     // If no service section found, search entire HTML
     const searchText = serviceSection || html;
-    const searchLower = searchText.toLowerCase();
 
     // Look for list items that might be services
     const listItemPattern = /<li[^>]*>(.*?)<\/li>/gi;
@@ -218,8 +216,7 @@ export class WebsiteSignalExtractor implements IWebsiteSignalExtractor {
    * Extract industries served from HTML content
    */
   private extractIndustriesFromHTML(
-    html: string,
-    companyName?: string
+    html: string
   ): WebsiteSignalIndustries | undefined {
     const industries: string[] = [];
     const htmlLower = html.toLowerCase();

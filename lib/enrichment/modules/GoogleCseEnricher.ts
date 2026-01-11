@@ -32,8 +32,7 @@ export class GoogleCseEnricher implements ICompanyEnricher {
   }
 
   async enrich(
-    company: CompanyEnrichmentInput,
-    _options?: EnrichmentOptions
+    company: CompanyEnrichmentInput
   ): Promise<EnrichmentResult> {
     const timestamp = new Date().toISOString();
 

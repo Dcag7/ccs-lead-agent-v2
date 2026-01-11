@@ -21,7 +21,6 @@ export default async function DashboardPage() {
     let newLeads = 0;
     let qualifiedLeads = 0;
     let totalCompanies = 0;
-    let totalContacts = 0;
 
     try {
       const results = await Promise.allSettled([
@@ -47,7 +46,8 @@ export default async function DashboardPage() {
       newLeads = results[1].status === "fulfilled" ? results[1].value : 0;
       qualifiedLeads = results[2].status === "fulfilled" ? results[2].value : 0;
       totalCompanies = results[3].status === "fulfilled" ? results[3].value : 0;
-      totalContacts = results[4].status === "fulfilled" ? results[4].value : 0;
+      // totalContacts is fetched but not currently displayed in the UI
+      void (results[4].status === "fulfilled" ? results[4].value : 0); // Suppress unused variable warning (may be used in future)
     } catch (error) {
       console.error("Error fetching dashboard statistics:", error);
       // Continue with default values of 0

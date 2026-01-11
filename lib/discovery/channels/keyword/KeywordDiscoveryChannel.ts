@@ -15,7 +15,6 @@ import type {
   DiscoveryChannelInput,
   DiscoveryChannelOutput,
   DiscoveryResult,
-  DiscoveryCompanyResult,
   DiscoveryMetadata,
 } from '../../types';
 import { GoogleDiscoveryChannel } from '../google/GoogleDiscoveryChannel';
@@ -61,7 +60,7 @@ export class KeywordDiscoveryChannel implements IKeywordDiscoveryChannel {
    * Keyword discovery is always enabled (Day 1 channel)
    * Requires Google discovery to be available for delegation
    */
-  isEnabled(config: DiscoveryChannelInput['config']): boolean {
+  isEnabled(_config: DiscoveryChannelInput['config']): boolean {
     // Check if Google discovery is available (required for delegation)
     const apiKey = process.env.GOOGLE_CSE_API_KEY;
     const searchEngineId = process.env.GOOGLE_CSE_ID;

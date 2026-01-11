@@ -32,7 +32,6 @@ export interface ICompanyEnricher {
    * @returns Enrichment result for this source
    */
   enrich(
-    company: CompanyEnrichmentInput,
-    options?: EnrichmentOptions
+    company: CompanyEnrichmentInput
   ): Promise<EnrichmentResult>;
 }

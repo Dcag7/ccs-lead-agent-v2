@@ -9,7 +9,6 @@
 import type { ICompanyEnricher } from '../ICompanyEnricher';
 import type {
   CompanyEnrichmentInput,
-  EnrichmentOptions,
   EnrichmentResult,
 } from '../types';
 
@@ -29,8 +28,7 @@ export class WebsiteEnricher implements ICompanyEnricher {
   }
 
   async enrich(
-    company: CompanyEnrichmentInput,
-    _options?: EnrichmentOptions
+    company: CompanyEnrichmentInput
   ): Promise<EnrichmentResult> {
     const timestamp = new Date().toISOString();
 

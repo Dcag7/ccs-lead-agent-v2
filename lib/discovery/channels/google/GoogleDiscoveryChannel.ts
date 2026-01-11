@@ -17,7 +17,6 @@ import type {
   DiscoveryResult,
   DiscoveryCompanyResult,
   DiscoveryMetadata,
-  ChannelActivationStatus,
 } from '../../types';
 
 /**
@@ -75,7 +74,7 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
    * Check if channel is enabled
    * Google discovery is always enabled (Day 1 channel)
    */
-  isEnabled(config: DiscoveryChannelInput['config']): boolean {
+  isEnabled(_config: DiscoveryChannelInput['config']): boolean {
     // Google is a Day 1 enabled channel - always active
     // Only check if Google CSE is configured
     const apiKey = process.env.GOOGLE_CSE_API_KEY;

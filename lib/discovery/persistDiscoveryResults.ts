@@ -15,7 +15,6 @@ import type {
   DiscoveryCompanyResult,
   DiscoveryContactResult,
   DiscoveryLeadResult,
-  DiscoveryChannelType,
 } from './types';
 
 /**

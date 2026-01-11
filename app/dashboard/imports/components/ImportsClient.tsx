@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Session } from "next-auth";
 
@@ -23,7 +22,6 @@ interface Props {
 }
 
 export default function ImportsClient({ session }: Props) {
-  const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importType, setImportType] = useState<"company" | "contact" | "lead">("company");
   const [uploading, setUploading] = useState(false);
@@ -102,7 +100,7 @@ export default function ImportsClient({ session }: Props) {
       } else {
         setMessage({ type: "error", text: data.error || "Import failed" });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "An error occurred during upload" });
     } finally {
       setUploading(false);

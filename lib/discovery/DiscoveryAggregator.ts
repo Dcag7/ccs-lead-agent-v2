@@ -108,7 +108,7 @@ export class DiscoveryAggregator {
           } else {
             channelResults[channelType] = 0;
           }
-        } catch (error: unknown) {
+        } catch {
           // Graceful degradation - continue with other channels
           channelResults[channelType] = 0;
           // Note: We don't throw - we continue with other channels

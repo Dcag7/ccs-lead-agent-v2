@@ -11,7 +11,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
  * GET /api/imports
  * Fetch all import jobs ordered by creation date (newest first)
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
