@@ -112,7 +112,7 @@ export default function CompanyEnrichment({ company }: Props) {
             className={`px-4 py-2 rounded-md font-medium text-white ${
               loading
                 ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-[#1B7A7A] hover:bg-[#155555]'
             }`}
           >
             {loading ? 'Enriching...' : 'Run Enrichment'}

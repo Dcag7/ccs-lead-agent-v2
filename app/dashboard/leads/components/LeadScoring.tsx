@@ -44,7 +44,7 @@ export default function LeadScoring({
       case 'warm':
         return 'bg-yellow-100 text-yellow-800';
       case 'cold':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[#E6F5F5] text-[#1B7A7A]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -113,7 +113,7 @@ export default function LeadScoring({
           <button
             onClick={handleScore}
             disabled={isScoring}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#1B7A7A] text-white px-4 py-2 rounded-md hover:bg-[#155555] font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isScoring ? 'Scoring...' : 'Score Now'}
           </button>

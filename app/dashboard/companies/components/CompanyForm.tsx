@@ -165,7 +165,7 @@ export default function CompanyForm({ company, mode }: CompanyFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+          className="flex-1 bg-[#1B7A7A] text-white px-4 py-2 rounded-md hover:bg-[#155555] disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
         >
           {loading ? "Saving..." : mode === "create" ? "Create Company" : "Update Company"}
         </button>

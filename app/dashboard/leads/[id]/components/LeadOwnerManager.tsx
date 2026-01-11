@@ -89,7 +89,7 @@ export default function LeadOwnerManager({
           <button
             onClick={handleAssignToMe}
             disabled={isLoading}
-            className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm bg-[#1B7A7A] text-white rounded-md hover:bg-[#155555] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Assign to Me
           </button>
