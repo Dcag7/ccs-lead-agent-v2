@@ -142,8 +142,9 @@ export default function LeadForm({ lead, mode }: LeadFormProps) {
 
       router.push("/dashboard/leads");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

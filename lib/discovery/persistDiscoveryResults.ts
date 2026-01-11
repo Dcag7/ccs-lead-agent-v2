@@ -9,6 +9,7 @@
  */
 
 import { prisma } from '../prisma';
+import { Prisma } from '@prisma/client';
 import type {
   DiscoveryResult,
   DiscoveryCompanyResult,
@@ -91,18 +92,20 @@ export async function persistDiscoveryResults(
         } else if (result.type === 'lead') {
           await processLeadResult(result, persistenceResult, companyIdMap, contactIdMap);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         persistenceResult.errors.push({
           resultType: result.type,
-          error: error.message || 'Unknown error',
+          error: errorMessage,
         });
         persistenceResult.success = false;
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error during persistence';
     persistenceResult.errors.push({
       resultType: 'general',
-      error: error.message || 'Unknown error during persistence',
+      error: errorMessage,
     });
     persistenceResult.success = false;
   }
@@ -158,7 +161,7 @@ async function processCompanyResult(
   };
 
   // Create new company record
-  const companyData: any = {
+  const companyData: Prisma.CompanyCreateInput = {
     name: result.name,
     website: result.website || null,
     industry: result.industry || null,
@@ -307,13 +310,13 @@ async function processContactResult(
 
   // Create new contact record
   // Note: Contact email is now optional (schema updated)
-  const contactData: any = {
+  const contactData: Prisma.ContactCreateInput = {
     email: result.email || null,
     firstName: firstName || null,
     lastName: lastName || null,
     phone: result.phone || null,
     role: result.role || null,
-    companyId: companyId,
+    companyId: companyId || null,
     linkedInUrl: result.linkedInUrl || null,
     // Store discovery metadata in dedicated discoveryMetadata field
     discoveryMetadata: discoveryData,
@@ -456,7 +459,7 @@ async function processLeadResult(
   }
 
   // Create new lead record
-  const leadData: any = {
+  const leadData: Prisma.LeadCreateInput = {
     email: email,
     firstName: firstName || null,
     lastName: lastName || null,
@@ -468,8 +471,8 @@ async function processLeadResult(
     // Note: We cannot check existing source here since we're creating new record
     // Source will only be set if it's a valid discovery channel type
     source: leadSource || null,
-    companyId: companyId,
-    contactId: contactId,
+    companyId: companyId || null,
+    contactId: contactId || null,
     // Store discovery metadata in dedicated discoveryMetadata field
     discoveryMetadata: discoveryData,
   };

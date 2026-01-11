@@ -140,12 +140,12 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
           </div>
 
           {/* Scoring Factors */}
-          {company.scoreFactors && typeof company.scoreFactors === 'object' && 'reasons' in company.scoreFactors && Array.isArray((company.scoreFactors as any).reasons) && (company.scoreFactors as any).reasons.length > 0 && (
+          {company.scoreFactors && typeof company.scoreFactors === 'object' && 'reasons' in company.scoreFactors && Array.isArray((company.scoreFactors as { reasons?: unknown }).reasons) && ((company.scoreFactors as { reasons?: unknown[] }).reasons?.length ?? 0) > 0 && (
             <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Scoring Breakdown</h3>
               <div className="bg-blue-50 rounded-lg p-4">
                 <ul className="space-y-2">
-                  {((company.scoreFactors as any).reasons as string[]).map((reason: string, index: number) => (
+                  {((company.scoreFactors as { reasons?: string[] }).reasons ?? []).map((reason: string, index: number) => (
                     <li key={index} className="flex items-start">
                       <span className="text-blue-600 mr-2">✓</span>
                       <span className="text-sm text-gray-700">{reason}</span>

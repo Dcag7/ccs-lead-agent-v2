@@ -150,13 +150,14 @@ export class KeywordDiscoveryChannel implements IKeywordDiscoveryChannel {
           resultsFound: uniqueResults.length,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Return error but don't throw (graceful degradation)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during keyword discovery';
       return {
         channelType: 'keyword',
         results: [],
         success: false,
-        error: error.message || 'Unknown error occurred during keyword discovery',
+        error: errorMessage,
       };
     }
   }

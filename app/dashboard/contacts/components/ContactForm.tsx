@@ -73,8 +73,9 @@ export default function ContactForm({ contact, mode }: ContactFormProps) {
 
       router.push("/dashboard/contacts");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

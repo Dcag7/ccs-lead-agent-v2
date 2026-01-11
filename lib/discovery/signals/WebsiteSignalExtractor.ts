@@ -95,12 +95,13 @@ export class WebsiteSignalExtractor implements IWebsiteSignalExtractor {
         signals: cleanedSignals,
         success: true,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during signal extraction';
       return {
         sourceUrl: input.url,
         signals: {},
         success: false,
-        error: error.message || 'Unknown error occurred during signal extraction',
+        error: errorMessage,
       };
     }
   }

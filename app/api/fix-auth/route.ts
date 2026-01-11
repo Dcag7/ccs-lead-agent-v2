@@ -2,9 +2,25 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
+interface FixAuthStep {
+  step: number;
+  action: string;
+  status: string;
+  message?: string;
+  error?: string;
+  count?: number;
+  users?: Array<{ id: string; email: string; name: string | null; role: string; createdAt: Date }>;
+}
+
+interface FixAuthResults {
+  timestamp: string;
+  steps: FixAuthStep[];
+  success: boolean;
+}
+
 export async function GET() {
   try {
-    const results: any = {
+    const results: FixAuthResults = {
       timestamp: new Date().toISOString(),
       steps: [],
       success: false,
@@ -22,9 +38,10 @@ export async function GET() {
       await prisma.user.count();
       results.steps[0].status = 'success';
       results.steps[0].message = 'Database connected successfully';
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       results.steps[0].status = 'failed';
-      results.steps[0].error = error.message;
+      results.steps[0].error = errorMessage;
       return NextResponse.json(results, { status: 500 });
     }
 
@@ -48,9 +65,10 @@ export async function GET() {
       results.steps[1].status = 'success';
       results.steps[1].count = existingUsers.length;
       results.steps[1].users = existingUsers;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       results.steps[1].status = 'failed';
-      results.steps[1].error = error.message;
+      results.steps[1].error = errorMessage;
       return NextResponse.json(results, { status: 500 });
     }
 
@@ -88,9 +106,10 @@ export async function GET() {
       results.steps[2].message = 'Admin user created/updated successfully';
       results.steps[2].userId = adminUser.id;
       results.steps[2].email = adminUser.email;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       results.steps[2].status = 'failed';
-      results.steps[2].error = error.message;
+      results.steps[2].error = errorMessage;
       return NextResponse.json(results, { status: 500 });
     }
 
@@ -117,9 +136,10 @@ export async function GET() {
         results.steps[3].status = 'failed';
         results.steps[3].message = 'User not found after creation';
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       results.steps[3].status = 'failed';
-      results.steps[3].error = error.message;
+      results.steps[3].error = errorMessage;
       return NextResponse.json(results, { status: 500 });
     }
 
@@ -134,13 +154,15 @@ export async function GET() {
     ];
 
     return NextResponse.json(results, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unexpected error occurred';
+    const errorStack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(
       {
         success: false,
         error: 'Unexpected error occurred',
-        message: error.message,
-        stack: error.stack,
+        message: errorMessage,
+        stack: errorStack,
       },
       { status: 500 }
     );

@@ -15,7 +15,12 @@ interface GoogleSearchResult {
   configured: boolean;
   primaryUrl?: string;
   snippet?: string;
-  rawItems?: any[];
+  rawItems?: Array<{
+    title: string;
+    link: string;
+    snippet: string;
+    displayLink?: string;
+  }>;
   error?: string;
   metadata?: {
     totalResults?: string;
@@ -126,12 +131,13 @@ export async function searchCompany(
           }
         : undefined,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Google search error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during Google search';
     return {
       success: false,
       configured: true,
-      error: error.message || 'Unknown error occurred during Google search',
+      error: errorMessage,
     };
   }
 }

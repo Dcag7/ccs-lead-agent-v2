@@ -130,8 +130,8 @@ export function scoreCompany(company: {
     leads?: number;
     contacts?: number;
   };
-  leads?: any[];
-  contacts?: any[];
+  leads?: Array<{ status?: string | null; source?: string | null }>;
+  contacts?: Array<{ email?: string | null; phone?: string | null }>;
 }): ScoringResult {
   let score = 0;
   const reasons: string[] = [];

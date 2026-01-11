@@ -108,7 +108,7 @@ export class DiscoveryAggregator {
           } else {
             channelResults[channelType] = 0;
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Graceful degradation - continue with other channels
           channelResults[channelType] = 0;
           // Note: We don't throw - we continue with other channels
@@ -125,7 +125,7 @@ export class DiscoveryAggregator {
         totalAfterDedupe: uniqueResults.length,
         success: true,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         results: [],
         channelResults: {},

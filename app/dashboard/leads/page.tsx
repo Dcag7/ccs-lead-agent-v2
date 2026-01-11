@@ -39,7 +39,7 @@ export default async function LeadsPage(props: {
     const effectiveBusinessSource = businessSource || undefined;
 
     // Build orderBy clause
-    const orderBy: any = {};
+    const orderBy: Prisma.LeadOrderByWithRelationInput = {};
     if (effectiveSortBy === "score") {
       orderBy.score = effectiveSortOrder;
     } else if (effectiveSortBy === "createdAt") {
@@ -49,7 +49,7 @@ export default async function LeadsPage(props: {
     }
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.LeadWhereInput = {
       status: { not: "archived" },
       score: { gte: effectiveMinScore },
     };

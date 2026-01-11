@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 // Validation schema for company
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     const country = searchParams.get("country") || "";
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.CompanyWhereInput = {};
     
     if (search) {
       where.OR = [

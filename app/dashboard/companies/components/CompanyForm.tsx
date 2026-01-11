@@ -54,8 +54,9 @@ export default function CompanyForm({ company, mode }: CompanyFormProps) {
 
       router.push("/dashboard/companies");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

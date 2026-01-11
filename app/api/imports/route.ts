@@ -82,7 +82,10 @@ export async function POST(request: NextRequest) {
       });
 
       // Parse CSV
-      const parseResult = await new Promise<Papa.ParseResult<any>>((resolve, reject) => {
+      const parseResult = await new Promise<Papa.ParseResult<Record<string, string>>>((
+        resolve,
+        reject
+      ) => {
         Papa.parse(fileContent, {
           header: true,
           skipEmptyLines: true,
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
         });
       });
 
-      const rows = parseResult.data;
+      const rows = parseResult.data as Array<Record<string, string>>;
       const rowsIn = rows.length;
       let rowsSuccess = 0;
       let rowsError = 0;
@@ -139,9 +142,10 @@ export async function POST(request: NextRequest) {
             }
 
             rowsSuccess++;
-          } catch (error: any) {
+          } catch (error: unknown) {
             rowsError++;
-            errors.push(`Row ${i + 2}: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push(`Row ${i + 2}: ${errorMessage}`);
           }
         }
       } else if (type === "contact") {
@@ -220,9 +224,10 @@ export async function POST(request: NextRequest) {
             }
 
             rowsSuccess++;
-          } catch (error: any) {
+          } catch (error: unknown) {
             rowsError++;
-            errors.push(`Row ${i + 2}: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push(`Row ${i + 2}: ${errorMessage}`);
           }
         }
       } else if (type === "lead") {
@@ -344,9 +349,10 @@ export async function POST(request: NextRequest) {
             }
 
             rowsSuccess++;
-          } catch (error: any) {
+          } catch (error: unknown) {
             rowsError++;
-            errors.push(`Row ${i + 2}: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push(`Row ${i + 2}: ${errorMessage}`);
           }
         }
       }
@@ -373,20 +379,21 @@ export async function POST(request: NextRequest) {
         rowsError,
         errors: errors.slice(0, 10), // Return first 10 errors
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Update import job as failed
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       await prisma.importJob.update({
         where: { id: importJob.id },
         data: {
           status: "failed",
           finishedAt: new Date(),
-          errorMessage: error.message,
+          errorMessage: errorMessage,
         },
       });
 
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error processing import:", error);
     return NextResponse.json({ error: "Failed to process import" }, { status: 500 });
   }

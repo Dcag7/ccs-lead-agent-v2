@@ -41,7 +41,7 @@ export default async function CompaniesPage(props: {
     const effectiveMinScore = minScore ? parseInt(minScore, 10) : 0;
 
     // Build orderBy clause
-    const orderBy: any = {};
+    const orderBy: Prisma.CompanyOrderByWithRelationInput = {};
     if (effectiveSortBy === "score") {
       orderBy.score = effectiveSortOrder;
     } else if (effectiveSortBy === "createdAt") {
