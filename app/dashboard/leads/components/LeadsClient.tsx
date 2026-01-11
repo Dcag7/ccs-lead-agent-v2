@@ -182,12 +182,12 @@ export default function LeadsClient({
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{userEmail}</span>
-              <a
+              <Link
                 href="/api/auth/signout"
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
               >
                 Sign Out
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -74,12 +74,12 @@ export default async function ContactsPage() {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <a
+              <Link
                 href="/api/auth/signout"
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
               >
                 Sign Out
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -200,9 +200,9 @@ export default async function ContactsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Contacts</h1>
           <p className="text-gray-600 mb-4">There was an error loading the contacts page. Please try again.</p>
-          <a href="/dashboard/contacts" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard/contacts" className="text-blue-600 hover:text-blue-800">
             Refresh Page
-          </a>
+          </Link>
         </div>
       </div>
     );

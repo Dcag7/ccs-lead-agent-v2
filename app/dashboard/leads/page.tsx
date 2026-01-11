@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import LeadsClient from "./components/LeadsClient";
 import { Prisma } from "@prisma/client";
+import Link from "next/link";
 
 type LeadsSearchParams = {
   sortBy?: string;
@@ -88,9 +89,9 @@ export default async function LeadsPage(props: {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Leads</h1>
           <p className="text-gray-600 mb-4">There was an error loading the leads page. Please try again.</p>
-          <a href="/dashboard/leads" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard/leads" className="text-blue-600 hover:text-blue-800">
             Refresh Page
-          </a>
+          </Link>
         </div>
       </div>
     );

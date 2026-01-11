@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CompaniesClient from "./components/CompaniesClient";
 import { Prisma } from "@prisma/client";
+import Link from "next/link";
 
 type CompaniesSearchParams = {
   sortBy?: string;
@@ -86,9 +87,9 @@ export default async function CompaniesPage(props: {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Companies</h1>
           <p className="text-gray-600 mb-4">There was an error loading the companies page. Please try again.</p>
-          <a href="/dashboard/companies" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard/companies" className="text-blue-600 hover:text-blue-800">
             Refresh Page
-          </a>
+          </Link>
         </div>
       </div>
     );
