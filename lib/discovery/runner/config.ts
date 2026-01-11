@@ -39,9 +39,17 @@ export function loadConfig(): DiscoveryRunnerConfig {
       process.env.DISCOVERY_MAX_COMPANIES_PER_RUN || '50',
       10
     ),
+    maxLeadsPerRun: parseInt(
+      process.env.DISCOVERY_MAX_LEADS_PER_RUN || '100',
+      10
+    ),
     maxQueries: parseInt(process.env.DISCOVERY_MAX_QUERIES || '10', 10),
+    maxPagesPerQuery: parseInt(
+      process.env.DISCOVERY_MAX_PAGES_PER_QUERY || '3',
+      10
+    ),
     maxRuntimeSeconds: parseInt(
-      process.env.DISCOVERY_MAX_RUNTIME_SECONDS || '300',
+      process.env.DISCOVERY_MAX_RUNTIME_SECONDS || '60',
       10
     ),
     enabledChannels:

@@ -172,7 +172,17 @@ export async function POST(
       queries: resolvedConfig.queries,
       channels: resolvedConfig.channels,
       maxCompanies: resolvedConfig.limits.maxCompanies,
+      maxLeads: resolvedConfig.limits.maxLeads,
       timeBudgetMs: resolvedConfig.limits.timeBudgetMs,
+      // Snapshot intent config for run record
+      intentConfig: {
+        intentId: resolvedConfig.intentId,
+        intentName: resolvedConfig.intentName,
+        targetCountries: resolvedConfig.targetCountries,
+        queriesCount: resolvedConfig.queries.length,
+        includeKeywordsCount: resolvedConfig.includeKeywords.length,
+        excludeKeywordsCount: resolvedConfig.excludeKeywords.length,
+      },
     });
 
     console.log(

@@ -12,11 +12,11 @@
 
 ## 📊 Executive Summary
 
-**Current Implementation Status:** ~40% of original vision, ~25% of revised vision
+**Current Implementation Status:** ~45% of original vision, ~35% of revised vision
 
-The system has a solid foundation (CRM, basic scoring, enrichment) but is missing the **core differentiating features** that make it a true "Lead Agent":
+The system has a solid foundation (CRM, basic scoring, enrichment) and now includes **autonomous discovery**:
 
-1. **Autonomous Discovery** - System doesn't find leads automatically (architecture exists, execution missing)
+1. **✅ Autonomous Discovery** - Phase 5A complete: daily + manual discovery with intents
 2. **Omnichannel Messaging** - No conversation management, no messaging across channels
 3. **Policy/Knowledge Brain** - No ICP rules, no action planning
 4. **Learning Capabilities** - Cannot improve over time
@@ -66,7 +66,7 @@ The original vision focused on "email outreach" as the communication method. The
 - ❌ **Missing:** Integration with order history
 - ❌ **Missing:** LinkedIn company enrichment
 
-### Phase 1: Discovery (Partial - ~30%)
+### Phase 1 + 5A: Discovery (Complete - ~90%)
 - ✅ Discovery architecture implemented (interfaces, channels, aggregator)
 - ✅ Google search channel implementation
 - ✅ Website signal extraction
@@ -74,28 +74,30 @@ The original vision focused on "email outreach" as the communication method. The
 - ✅ LinkedIn/Social channel interfaces (gated, implementation ready)
 - ✅ Prospect deduplication logic
 - ✅ Discovery metadata storage on records
-- ❌ **CRITICAL MISSING:** Discovery execution mechanism (no cron, no API trigger)
-- ❌ **CRITICAL MISSING:** Run tracking and history
+- ✅ **Phase 5A:** Daily cron scheduling (Vercel Cron, 06:00 UTC)
+- ✅ **Phase 5A:** Manual discovery with 4 intent templates
+- ✅ **Phase 5A:** DiscoveryRun tracking with full stats
+- ✅ **Phase 5A:** Safety guardrails (kill switch, time budgets, max limits)
+- ✅ **Phase 5A:** Admin-only Discovery UI
 
 ---
 
 ## ❌ What's Missing (Critical Gaps)
 
-### Gap 1: Discovery Execution (Phase 5A Scope) - 🔄 IN PROGRESS
+### Gap 1: Discovery Execution (Phase 5A Scope) - ✅ CLOSED
 
-**Current State:**
-- Architecture complete
-- **Phase 5A implementation in progress**
-- Daily scheduling via Vercel Cron being added
-- DiscoveryRun model for tracking being added
+**Status: COMPLETE (January 11, 2026)**
 
-**Required for "Lead Agent" Vision:**
-- 🔄 Daily scheduled discovery (cron) - implementing
-- 🔄 Run tracking and history - implementing
-- 🔄 Quota/budget management - implementing
+**Implemented:**
+- ✅ Daily scheduled discovery (Vercel Cron, 06:00 UTC)
+- ✅ Manual discovery via intent templates (4 built-in intents)
+- ✅ DiscoveryRun tracking with full stats, limits, errors
+- ✅ Safety guardrails (kill switch, time budgets, max limits)
+- ✅ Dry-run mode for testing
+- ✅ Admin-only Discovery UI at /dashboard/discovery
 - ❌ Failure alerting - deferred to Phase 5B
 
-**Impact:** Phase 5A will activate the discovery architecture. No outreach in this phase.
+**Note:** No outreach capability in Phase 5A. Discovery only.
 
 ---
 
@@ -267,11 +269,11 @@ The original vision focused on "email outreach" as the communication method. The
    - Human-in-the-loop safety maintained
    - Estimated: 2 weeks
 
-3. **Phase 5A: Autonomous Discovery** 🔄 **IN PROGRESS**
-   - Activates existing discovery architecture
-   - Daily scheduled runs via Vercel Cron
-   - Run tracking (no alerting in 5A)
-   - **Status: Implementation started**
+3. **Phase 5A: Autonomous Discovery** ✅ **COMPLETE**
+   - ✅ Activates existing discovery architecture
+   - ✅ Daily scheduled runs via Vercel Cron
+   - ✅ Manual discovery with intent templates
+   - ✅ Full run tracking and safety guardrails
 
 ### **Medium Priority (8-16 weeks)**
 
@@ -372,12 +374,13 @@ Phase 5A (2 weeks) → Phase 5B (2 weeks) → Phase 6A (3 weeks) → Phase 6B (2
 | 2026-01-10 | Original gap analysis |
 | 2026-01-11 | Updated for omnichannel vision, added Phase 6 messaging gaps, revised priorities |
 | 2026-01-11 | Phase 5A marked as In Progress |
+| 2026-01-11 | Phase 5A marked as Complete (Gap 1 closed) |
 
 ---
 
 **Analysis Date:** January 11, 2026  
-**Current Implementation:** ~30% of revised vision (Phase 5A in progress)  
-**Currently In Progress:** Phase 5A (Autonomous Discovery Runner)
+**Current Implementation:** ~35% of revised vision  
+**Recently Completed:** Phase 5A (Autonomous Discovery Runner)
 
 ---
 

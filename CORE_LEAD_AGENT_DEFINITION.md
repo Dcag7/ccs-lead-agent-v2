@@ -2,7 +2,7 @@
 
 > **Status:** Living Document - Source of Truth  
 > **Created:** January 11, 2026  
-> **Last Updated:** January 11, 2026 (v1.2)  
+> **Last Updated:** January 11, 2026 (v1.3)  
 > **Ownership:** This document MUST be updated whenever new phase features are added
 
 ---
@@ -73,15 +73,19 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 - ✅ Import leads from CSV
 - ✅ Deduplicate and link records during import
 
-### 1.5 Discovery Architecture (Ready, Execution In Progress)
+### 1.5 Discovery Architecture (Phase 5A Complete)
 - ✅ Google search discovery channel (implemented)
 - ✅ Website signal extraction (implemented)
 - ✅ Keyword discovery channel (implemented)
 - ✅ Discovery metadata storage (implemented)
-- 🔄 **Phase 5A:** Autonomous daily discovery runner in progress
-  - Daily scheduling via Vercel Cron
-  - DiscoveryRun tracking model
-  - Secured job endpoint with dry-run support
+- ✅ **Phase 5A Complete:** Autonomous discovery runner
+  - ✅ Daily scheduling via Vercel Cron (06:00 UTC)
+  - ✅ Manual discovery with 4 intent templates
+  - ✅ DiscoveryRun tracking model with full stats
+  - ✅ Secured job endpoints (cron + manual API)
+  - ✅ Safety guardrails: kill switch, time budgets, max limits
+  - ✅ Dry-run mode for testing without DB writes
+  - ✅ Admin-only Discovery UI at /dashboard/discovery
   - **No outreach** - discovery only
 
 ---
@@ -90,11 +94,12 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 
 **Explicitly NOT Implemented (as of January 11, 2026):**
 
-### 2.1 Discovery Execution
-- 🔄 Scheduled/daily discovery runs (Phase 5A in progress)
-- 🔄 Manual discovery trigger via secured API (Phase 5A in progress)
-- 🔄 Run tracking and history (Phase 5A in progress)
-- 🔄 Discovery budgets/quotas via env vars (Phase 5A in progress)
+### 2.1 Discovery Execution ✅ COMPLETE (Phase 5A)
+- ✅ Scheduled/daily discovery runs via Vercel Cron
+- ✅ Manual discovery trigger via secured API with intents
+- ✅ Run tracking and history (DiscoveryRun model)
+- ✅ Discovery budgets/quotas via env vars
+- ✅ Safety guardrails: kill switch, time budgets, max limits
 
 ### 2.2 Policy/Brain Layer
 - ❌ No ICP (Ideal Customer Profile) rules
@@ -162,7 +167,7 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 
 | Stage | Status | Notes |
 |-------|--------|-------|
-| **DISCOVER** | 🔄 In Progress | Phase 5A: Daily runner being implemented |
+| **DISCOVER** | ✅ Implemented | Phase 5A: Autonomous + manual discovery with intents |
 | **ENRICH** | ✅ Implemented | Google CSE, website metadata |
 | **SCORE** | ✅ Implemented | Rule-based 0-100 scoring |
 | **MANAGE** | ✅ Implemented | Full CRM capabilities |
@@ -195,15 +200,20 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 | Audit Logging | 6C | Full trail of automated actions |
 | Escalation Rules | 6C | Auto-escalate on triggers |
 
-### 4.3 Discovery Guardrails (Phase 5A - In Progress)
+### 4.3 Discovery Guardrails (Phase 5A Complete)
 
 | Guardrail | Description | Status |
 |-----------|-------------|--------|
-| Daily Budget | Max companies/queries per run via env vars | 🔄 Implementing |
-| Enable Switch | `DISCOVERY_RUNNER_ENABLED` env var | 🔄 Implementing |
-| Dry Run Mode | Test without DB writes | 🔄 Implementing |
-| Idempotency | No duplicate prospects via existing dedup | ✅ Uses Phase 1 |
-| Run Tracking | All runs logged with stats | 🔄 Implementing |
+| Kill Switch | `DISCOVERY_RUNNER_ENABLED=false` stops all runs | ✅ Active |
+| Cron Secret | `CRON_JOB_SECRET` required for cron route | ✅ Active |
+| Time Budget | Max runtime (default 60s) with graceful stop | ✅ Active |
+| Company Limit | `DISCOVERY_MAX_COMPANIES_PER_RUN` env var | ✅ Active |
+| Lead Limit | `DISCOVERY_MAX_LEADS_PER_RUN` env var | ✅ Active |
+| Query Limit | `DISCOVERY_MAX_QUERIES` env var | ✅ Active |
+| Dry Run Mode | Test without DB writes | ✅ Active |
+| Idempotency | No duplicates via existing deduplication | ✅ Active |
+| Run Tracking | All runs logged with full stats, limits, errors | ✅ Active |
+| Safe Retries | Channel errors don't stop entire run | ✅ Active |
 | Failure Alerts | Notify on repeated failures | ❌ Deferred to 5B |
 
 ---

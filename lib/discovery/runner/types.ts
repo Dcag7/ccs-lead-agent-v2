@@ -12,12 +12,40 @@ export interface DiscoveryRunnerConfig {
   enabled: boolean;
   /** Maximum companies to create per run */
   maxCompaniesPerRun: number;
+  /** Maximum leads to create per run */
+  maxLeadsPerRun: number;
   /** Maximum discovery queries per run */
   maxQueries: number;
+  /** Maximum pages per query (for pagination) */
+  maxPagesPerQuery: number;
   /** Maximum runtime in seconds */
   maxRuntimeSeconds: number;
   /** Enabled discovery channels */
   enabledChannels: Array<'google' | 'keyword'>;
+}
+
+/**
+ * Limits used for a specific run (stored in DB)
+ */
+export interface RunLimitsUsed {
+  maxCompanies: number;
+  maxLeads: number;
+  maxQueries: number;
+  maxPagesPerQuery: number;
+  maxRuntimeSeconds: number;
+  channels: string[];
+}
+
+/**
+ * Intent configuration snapshot (stored in DB)
+ */
+export interface IntentConfigSnapshot {
+  intentId: string;
+  intentName: string;
+  targetCountries: string[];
+  queriesCount: number;
+  includeKeywordsCount: number;
+  excludeKeywordsCount: number;
 }
 
 /**
@@ -30,6 +58,8 @@ export interface RunOptions {
   mode?: 'daily' | 'manual' | 'test';
   /** Override max companies limit */
   maxCompanies?: number;
+  /** Override max leads limit */
+  maxLeads?: number;
   /** What triggered this run */
   triggeredBy?: string;
   /** User ID if manually triggered */
@@ -44,6 +74,8 @@ export interface RunOptions {
   channels?: Array<'google' | 'keyword'>;
   /** Max runtime in milliseconds (from intent) */
   timeBudgetMs?: number;
+  /** Intent configuration snapshot for recording */
+  intentConfig?: IntentConfigSnapshot;
 }
 
 /**
@@ -52,6 +84,8 @@ export interface RunOptions {
 export interface DiscoveryRunStats {
   /** Results per channel */
   channelResults: Record<string, number>;
+  /** Channel-specific errors (partial failures) */
+  channelErrors: Record<string, string>;
   /** Total results discovered before deduplication */
   totalDiscovered: number;
   /** Total results after deduplication */
@@ -68,17 +102,18 @@ export interface DiscoveryRunStats {
   leadsCreated: number;
   /** Leads skipped (already existed) */
   leadsSkipped: number;
-  /** Errors encountered */
+  /** Errors encountered during persistence */
   errors: Array<{ type: string; message: string }>;
   /** Total run duration in milliseconds */
   durationMs: number;
-  /** Configuration used for this run */
-  config: {
-    maxCompanies: number;
-    maxQueries: number;
-    maxRuntimeSeconds: number;
-    channels: string[];
-  };
+  /** Whether run was stopped early due to limits */
+  stoppedEarly: boolean;
+  /** Reason for stopping early */
+  stoppedReason?: 'time_budget' | 'company_limit' | 'lead_limit';
+  /** Limits used for this run */
+  limitsUsed: RunLimitsUsed;
+  /** Intent configuration (if applicable) */
+  intentConfig?: IntentConfigSnapshot;
 }
 
 /**

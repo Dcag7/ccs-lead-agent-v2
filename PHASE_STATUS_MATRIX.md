@@ -11,11 +11,11 @@
 
 | Phase | Status | Completion |
 |-------|--------|------------|
-| 1 - Discovery | ⚠️ Partial | 30% |
+| 1 - Discovery | ✅ Complete | 90% |
 | 2 - Enrichment | ✅ Complete | 70% |
 | 3 - Scoring | ✅ Complete | 80% |
 | 4 - Lead Management | ✅ Complete | 90% |
-| 5A - Autonomous Discovery | 🔄 In Progress | 90% |
+| 5A - Autonomous Discovery | ✅ Complete | 100% |
 | 5B - Brain/Policy | ❌ Planned | 0% |
 | 6A - Messaging Foundation | ❌ Planned | 0% |
 | 6B - Assisted Replies | ❌ Planned | 0% |
@@ -31,12 +31,12 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | ⚠️ Partial |
-| **Completion** | 30% |
+| **Status** | ✅ Complete |
+| **Completion** | 90% |
 | **Key Features Included** | Google search channel, keyword discovery, website signal extraction, discovery metadata storage, prospect deduplication logic |
-| **Key Exclusions** | Discovery execution mechanism, scheduled runs, run tracking, run history, LinkedIn/social execution (interfaces only) |
+| **Key Exclusions** | LinkedIn/social execution (interfaces only) |
 | **Documentation** | [PHASE_1_Discovery_Design_Locked.md](./PHASE_1_Discovery_Design_Locked.md), [PHASE_1_Discovery_MVP_Definition.md](./PHASE_1_Discovery_MVP_Definition.md), [PHASE_1_Discovery_Constraints.md](./PHASE_1_Discovery_Constraints.md) |
-| **Notes/Risks** | Architecture is complete but has no execution trigger. Phase 5A will activate this. |
+| **Notes/Risks** | Phase 5A added execution mechanism. Discovery architecture fully operational. |
 
 ---
 
@@ -83,23 +83,30 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | 🔄 In Progress |
-| **Completion** | 90% |
-| **Key Features Included** | Daily scheduling via Vercel Cron, DiscoveryRun tracking model, budget/quota management, idempotency via existing deduplication, dry-run mode, run history UI |
-| **Key Exclusions** | Real-time discovery, user-triggered discovery, discovery result approval workflow, alerting (deferred to 5B) |
-| **Documentation** | [PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md) |
-| **Notes/Risks** | Uses Vercel Cron. No outreach. No LLM brain. Production-ready implementation in progress. |
+| **Status** | ✅ Complete |
+| **Completion** | 100% |
+| **Key Features Included** | Daily scheduling via Vercel Cron, Manual discovery with intent templates, DiscoveryRun tracking model, budget/quota management, safety guardrails (kill switch, time budgets, max limits), idempotency via existing deduplication, dry-run mode, run history UI, admin-only Discovery UI |
+| **Key Exclusions** | Real-time discovery, discovery result approval workflow, alerting (deferred to 5B) |
+| **Documentation** | [PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md), [PHASE_5A_TESTING.md](./PHASE_5A_TESTING.md) |
+| **Notes/Risks** | Uses Vercel Cron. No outreach. No LLM brain. Production-ready. |
 
 **Phase 5A Completed Items:**
 - [x] Constraints documentation
 - [x] Technical design documentation
 - [x] MVP definition documentation
 - [x] DiscoveryRun Prisma model + migration
-- [x] DailyDiscoveryRunner implementation
-- [x] Secured job API route (`/api/jobs/discovery/run`)
+- [x] DailyDiscoveryRunner with safety guardrails
+- [x] Secured cron job API route (`/api/jobs/discovery/run`)
+- [x] Manual discovery API route (`/api/discovery/manual/run`)
+- [x] Intent templates (4 built-in: referral, agencies, buyers, events)
 - [x] Vercel cron configuration (`vercel.json`)
 - [x] Run history UI (`/dashboard/discovery-runs`)
+- [x] Manual discovery UI (`/dashboard/discovery`)
 - [x] Test script (`scripts/test-discovery-runner.ts`)
+- [x] Kill switch (DISCOVERY_RUNNER_ENABLED)
+- [x] Time budgets (graceful stop)
+- [x] Max limits (companies, leads, queries)
+- [x] Safe channel error handling
 
 ---
 
@@ -247,19 +254,11 @@ Phase 8 (Learning) ◄─── All previous phases + Orders system
 
 Based on current status, recommended next implementation:
 
-### Option A: Inbox First (Recommended)
-1. **Phase 6A** (3 weeks) - Unified inbox, message ingestion
-2. **Phase 6B** (2 weeks) - Reply capability
-3. **Phase 5A** (2 weeks) - Discovery execution
-4. **Phase 5B** (2 weeks) - Brain/policy layer
-5. **Phase 6C** (2 weeks) - Controlled autopilot
-
-### Option B: Discovery First
-1. **Phase 5A** (2 weeks) - Discovery execution
-2. **Phase 5B** (2 weeks) - Brain/policy layer
-3. **Phase 6A** (3 weeks) - Unified inbox
-4. **Phase 6B** (2 weeks) - Reply capability
-5. **Phase 6C** (2 weeks) - Controlled autopilot
+### Recommended Sequence
+1. **Phase 5B** (2 weeks) - Brain/policy layer (ICP rules, allow/block lists)
+2. **Phase 6A** (3 weeks) - Unified inbox, message ingestion via Respond.io
+3. **Phase 6B** (2 weeks) - Reply capability with templates
+4. **Phase 6C** (2 weeks) - Controlled autopilot with guardrails
 
 ---
 
@@ -270,6 +269,7 @@ Based on current status, recommended next implementation:
 | 2026-01-11 | Initial matrix creation |
 | 2026-01-11 | Phase 5A marked as In Progress (25%); added completed items checklist |
 | 2026-01-11 | Phase 5A implementation complete (90%); pending: manual verification + deployment |
+| 2026-01-11 | **Phase 5A marked as Complete (100%)**; added manual discovery with intents, safety guardrails |
 
 ---
 

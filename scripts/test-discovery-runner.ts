@@ -3,11 +3,14 @@
  *
  * Tests the discovery runner locally (not through the API).
  * Can run in dry-run mode (no DB writes) or real mode.
+ * Supports intent-based runs.
  *
  * Usage:
  *   npx tsx scripts/test-discovery-runner.ts --dry-run
  *   npx tsx scripts/test-discovery-runner.ts --real
  *   npx tsx scripts/test-discovery-runner.ts --api --dry-run
+ *   npx tsx scripts/test-discovery-runner.ts --intent referral_ecosystem_prospects --dry-run
+ *   npx tsx scripts/test-discovery-runner.ts --list-intents
  */
 
 import { config } from 'dotenv';
@@ -15,23 +18,51 @@ config();
 
 import { DailyDiscoveryRunner } from '../lib/discovery/runner/DailyDiscoveryRunner';
 import { loadConfig } from '../lib/discovery/runner/config';
+import {
+  getActiveIntents,
+  getIntentById,
+  applyIntentById,
+} from '../lib/discovery/intents';
 
 async function main() {
   const args = process.argv.slice(2);
   const isDryRun = args.includes('--dry-run') || !args.includes('--real');
   const useApi = args.includes('--api');
+  const listIntents = args.includes('--list-intents');
+  const intentIndex = args.indexOf('--intent');
+  const intentId = intentIndex !== -1 ? args[intentIndex + 1] : undefined;
+
+  // List intents and exit
+  if (listIntents) {
+    console.log('\n📋 Available Discovery Intents:');
+    console.log('═'.repeat(60));
+    getActiveIntents().forEach((intent) => {
+      console.log(`\n  ${intent.id}`);
+      console.log(`  Name: ${intent.name}`);
+      console.log(`  Description: ${intent.description}`);
+      console.log(`  Countries: ${intent.targetCountries.join(', ')}`);
+      console.log(`  Channels: ${intent.channels.join(', ')}`);
+    });
+    console.log('\n' + '═'.repeat(60));
+    console.log('Usage: npx tsx scripts/test-discovery-runner.ts --intent <intent_id> --dry-run\n');
+    return;
+  }
 
   console.log('\n🔍 Phase 5A Discovery Runner Test');
-  console.log('═'.repeat(50));
+  console.log('═'.repeat(60));
   console.log(`Mode: ${isDryRun ? 'DRY RUN (no DB writes)' : 'REAL (will write to DB)'}`);
   console.log(`Method: ${useApi ? 'API call' : 'Direct runner'}`);
-  console.log('═'.repeat(50) + '\n');
+  if (intentId) {
+    console.log(`Intent: ${intentId}`);
+  }
+  console.log('═'.repeat(60) + '\n');
 
   // Load and display config
   const runnerConfig = loadConfig();
   console.log('📋 Configuration:');
   console.log(`   Enabled: ${runnerConfig.enabled}`);
   console.log(`   Max Companies: ${runnerConfig.maxCompaniesPerRun}`);
+  console.log(`   Max Leads: ${runnerConfig.maxLeadsPerRun}`);
   console.log(`   Max Queries: ${runnerConfig.maxQueries}`);
   console.log(`   Max Runtime: ${runnerConfig.maxRuntimeSeconds}s`);
   console.log(`   Channels: ${runnerConfig.enabledChannels.join(', ')}`);
@@ -47,9 +78,9 @@ async function main() {
 
   try {
     if (useApi) {
-      await runViaApi(isDryRun);
+      await runViaApi(isDryRun, intentId);
     } else {
-      await runDirect(isDryRun);
+      await runDirect(isDryRun, intentId);
     }
   } catch (error) {
     console.error('❌ Test failed with error:');
@@ -58,21 +89,69 @@ async function main() {
   }
 }
 
-async function runDirect(isDryRun: boolean) {
+async function runDirect(isDryRun: boolean, intentId?: string) {
   console.log('🚀 Starting discovery run (direct)...\n');
 
   const runner = new DailyDiscoveryRunner();
-  const result = await runner.run({
-    dryRun: isDryRun,
-    mode: 'test',
-    triggeredBy: 'test-script',
-    maxCompanies: 10, // Limit for testing
-  });
 
-  displayResult(result);
+  // If intent specified, apply it
+  if (intentId) {
+    const intent = getIntentById(intentId);
+    if (!intent) {
+      console.error(`❌ Intent "${intentId}" not found`);
+      console.log('\nAvailable intents:');
+      getActiveIntents().forEach((i) => console.log(`  - ${i.id}`));
+      process.exit(1);
+    }
+
+    const resolved = applyIntentById(intentId);
+    if (!resolved) {
+      console.error(`❌ Failed to resolve intent "${intentId}"`);
+      process.exit(1);
+    }
+
+    console.log(`📌 Using intent: ${intent.name}`);
+    console.log(`   Queries: ${resolved.queries.length}`);
+    console.log(`   Countries: ${resolved.targetCountries.join(', ')}`);
+    console.log(`   Max Companies: ${resolved.limits.maxCompanies}`);
+    console.log('');
+
+    const result = await runner.run({
+      dryRun: isDryRun,
+      mode: 'test',
+      triggeredBy: 'test-script',
+      intentId: resolved.intentId,
+      intentName: resolved.intentName,
+      queries: resolved.queries.slice(0, 5), // Limit for testing
+      channels: resolved.channels,
+      maxCompanies: Math.min(resolved.limits.maxCompanies, 10), // Limit for testing
+      maxLeads: Math.min(resolved.limits.maxLeads, 20),
+      timeBudgetMs: 60000, // 60 second budget for testing
+      intentConfig: {
+        intentId: resolved.intentId,
+        intentName: resolved.intentName,
+        targetCountries: resolved.targetCountries,
+        queriesCount: resolved.queries.length,
+        includeKeywordsCount: resolved.includeKeywords.length,
+        excludeKeywordsCount: resolved.excludeKeywords.length,
+      },
+    });
+
+    displayResult(result);
+  } else {
+    // Default run without intent
+    const result = await runner.run({
+      dryRun: isDryRun,
+      mode: 'test',
+      triggeredBy: 'test-script',
+      maxCompanies: 10, // Limit for testing
+    });
+
+    displayResult(result);
+  }
 }
 
-async function runViaApi(isDryRun: boolean) {
+async function runViaApi(isDryRun: boolean, intentId?: string) {
   console.log('🚀 Starting discovery run (via API)...\n');
 
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
@@ -83,27 +162,62 @@ async function runViaApi(isDryRun: boolean) {
     process.exit(1);
   }
 
-  const response = await fetch(`${baseUrl}/api/jobs/discovery/run`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-job-secret': secret,
-    },
-    body: JSON.stringify({
-      dryRun: isDryRun,
-      mode: 'test',
-      maxCompanies: 10,
-    }),
-  });
+  // If using intent, use manual API; otherwise use cron API
+  if (intentId) {
+    console.log(`📌 Using intent: ${intentId}`);
+    console.log('   Using manual discovery API...\n');
 
-  const result = await response.json();
+    // Note: This requires session auth, not just secret
+    // For testing, we'd need to use the cron route instead
+    console.log('⚠️  Manual API requires session authentication.');
+    console.log('   Use the web UI at /dashboard/discovery for manual runs.');
+    console.log('   Or test without --api flag for direct runner test.\n');
 
-  if (!response.ok) {
-    console.error(`❌ API returned ${response.status}:`, result);
-    process.exit(1);
+    // Fall back to cron route
+    const response = await fetch(`${baseUrl}/api/jobs/discovery/run`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-job-secret': secret,
+      },
+      body: JSON.stringify({
+        dryRun: isDryRun,
+        mode: 'test',
+        maxCompanies: 10,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error(`❌ API returned ${response.status}:`, result);
+      process.exit(1);
+    }
+
+    displayResult(result);
+  } else {
+    const response = await fetch(`${baseUrl}/api/jobs/discovery/run`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-job-secret': secret,
+      },
+      body: JSON.stringify({
+        dryRun: isDryRun,
+        mode: 'test',
+        maxCompanies: 10,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error(`❌ API returned ${response.status}:`, result);
+      process.exit(1);
+    }
+
+    displayResult(result);
   }
-
-  displayResult(result);
 }
 
 function displayResult(result: {
@@ -122,12 +236,22 @@ function displayResult(result: {
     leadsCreated: number;
     leadsSkipped: number;
     durationMs: number;
+    stoppedEarly?: boolean;
+    stoppedReason?: string;
+    channelErrors?: Record<string, string>;
     errors: Array<{ type: string; message: string }>;
+    limitsUsed?: {
+      maxCompanies: number;
+      maxLeads: number;
+      maxQueries: number;
+      maxRuntimeSeconds: number;
+      channels: string[];
+    };
   };
 }) {
-  console.log('═'.repeat(50));
+  console.log('═'.repeat(60));
   console.log('📊 RESULTS');
-  console.log('═'.repeat(50));
+  console.log('═'.repeat(60));
 
   console.log(`\n✅ Run ID: ${result.runId}`);
   console.log(`   Status: ${result.status}`);
@@ -136,6 +260,10 @@ function displayResult(result: {
 
   if (result.error) {
     console.log(`   Error: ${result.error}`);
+  }
+
+  if (result.stats.stoppedEarly) {
+    console.log(`   ⚠️ Stopped Early: ${result.stats.stoppedReason}`);
   }
 
   console.log('\n📈 Statistics:');
@@ -147,8 +275,24 @@ function displayResult(result: {
   console.log(`   Contacts: ${result.stats.contactsCreated} created, ${result.stats.contactsSkipped} skipped`);
   console.log(`   Leads: ${result.stats.leadsCreated} created, ${result.stats.leadsSkipped} skipped`);
 
+  if (result.stats.limitsUsed) {
+    console.log('\n⚙️ Limits Used:');
+    console.log(`   Max Companies: ${result.stats.limitsUsed.maxCompanies}`);
+    console.log(`   Max Leads: ${result.stats.limitsUsed.maxLeads}`);
+    console.log(`   Max Runtime: ${result.stats.limitsUsed.maxRuntimeSeconds}s`);
+    console.log(`   Channels: ${result.stats.limitsUsed.channels.join(', ')}`);
+  }
+
+  // Channel errors (partial failures)
+  if (result.stats.channelErrors && Object.keys(result.stats.channelErrors).length > 0) {
+    console.log(`\n⚠️ Channel Errors (partial failures):`);
+    Object.entries(result.stats.channelErrors).forEach(([channel, error]) => {
+      console.log(`   [${channel}] ${error}`);
+    });
+  }
+
   if (result.stats.errors.length > 0) {
-    console.log(`\n⚠️  Errors (${result.stats.errors.length}):`);
+    console.log(`\n⚠️ Errors (${result.stats.errors.length}):`);
     result.stats.errors.slice(0, 5).forEach((err, i) => {
       console.log(`   ${i + 1}. [${err.type}] ${err.message}`);
     });
@@ -157,9 +301,9 @@ function displayResult(result: {
     }
   }
 
-  console.log('\n' + '═'.repeat(50));
+  console.log('\n' + '═'.repeat(60));
   console.log(result.success ? '✅ Test completed successfully!' : '❌ Test completed with errors');
-  console.log('═'.repeat(50) + '\n');
+  console.log('═'.repeat(60) + '\n');
 }
 
 main().catch(console.error);

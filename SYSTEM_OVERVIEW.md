@@ -2,9 +2,9 @@
 
 **Purpose:** A B2B Lead Generation and Business Development system designed specifically for CCS Apparel. More than a CRM—the CCS Lead Agent is evolving into an autonomous digital employee that finds, qualifies, and nurtures leads across multiple communication channels.
 
-**Version:** 3.1  
+**Version:** 3.2  
 **Last Updated:** January 11, 2026  
-**Status:** Production Ready (Phases 1–4), Phase 5A In Progress
+**Status:** Production Ready (Phases 1–4 + 5A Discovery)
 
 ---
 
@@ -121,7 +121,7 @@ The CCS Lead Agent operates through a cyclical process:
 
 | Stage | Status | What It Does Today |
 |-------|--------|-------------------|
-| **DISCOVER** | 🔄 In Progress | Phase 5A: Daily autonomous discovery runner being implemented |
+| **DISCOVER** | ✅ Active | Phase 5A: Autonomous discovery with intent templates, manual + daily runs |
 | **ENRICH** | ✅ Active | Google CSE enrichment, website metadata |
 | **SCORE** | ✅ Active | Rule-based 0-100 scoring with classification |
 | **MANAGE** | ✅ Active | Full CRM: status, ownership, notes, bulk ops |
@@ -465,12 +465,15 @@ Fully Human-Controlled      Human-in-the-Loop             Controlled Autopilot
 
 ## 🚀 **Future Capabilities (Planned)**
 
-### **Phase 5A: Autonomous Daily Discovery** 🔄 *In Progress*
-- Scheduled daily discovery runs via Vercel Cron
-- Run tracking with DiscoveryRun model
-- Budget and quota management via env vars
-- Dry-run mode for safe testing
-- Run history UI for observability
+### **Phase 5A: Autonomous Daily Discovery** ✅ *Complete*
+- ✅ Scheduled daily discovery runs via Vercel Cron (06:00 UTC)
+- ✅ Manual discovery with intent templates (4 built-in intents)
+- ✅ Run tracking with DiscoveryRun model (full stats, errors, limits)
+- ✅ Budget and quota management via env vars
+- ✅ Safety guardrails: kill switch, time budgets, max limits
+- ✅ Dry-run mode for safe testing
+- ✅ Admin-only Discovery UI at /dashboard/discovery
+- ✅ Run history UI at /dashboard/discovery-runs
 - **Note:** No outreach, no LLM brain in this phase
 
 ### **Phase 5B: Brain/Policy Layer**
@@ -569,9 +572,10 @@ Controlled automatic message replies with strict guardrails: opt-in only, templa
 | 2026-01-10 | 2.0 | Original system overview |
 | 2026-01-11 | 3.0 | Reframed as Lead Agent; added brain/autonomy concepts; aligned with Roadmap v2 |
 | 2026-01-11 | 3.1 | Updated DISCOVER status to In Progress (Phase 5A implementation started) |
+| 2026-01-11 | 3.2 | Phase 5A complete: autonomous + manual discovery with intents, safety guardrails |
 
 ---
 
 **Last Updated:** January 11, 2026  
-**Version:** 3.1  
-**Status:** Production Ready (Phases 1–4) ✅ | Phase 5A 🔄
+**Version:** 3.2  
+**Status:** Production Ready (Phases 1–4 + 5A) ✅
