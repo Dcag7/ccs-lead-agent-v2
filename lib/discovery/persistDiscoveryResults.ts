@@ -316,7 +316,7 @@ async function processContactResult(
     lastName: lastName || null,
     phone: result.phone || null,
     role: result.role || null,
-    companyId: companyId || null,
+    company: companyId ? { connect: { id: companyId } } : undefined,
     linkedInUrl: result.linkedInUrl || null,
     // Store discovery metadata in dedicated discoveryMetadata field
     discoveryMetadata: discoveryData,

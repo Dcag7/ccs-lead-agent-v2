@@ -67,11 +67,13 @@ export async function GET(request: NextRequest) {
     }
     
     if (minScore !== null && minScore !== undefined) {
-      where.score = { ...where.score, gte: parseInt(minScore) };
+      const currentScore = where.score && typeof where.score === 'object' && !('mode' in where.score) ? where.score : {};
+      where.score = { ...currentScore, gte: parseInt(minScore) };
     }
     
     if (maxScore !== null && maxScore !== undefined) {
-      where.score = { ...where.score, lte: parseInt(maxScore) };
+      const currentScore = where.score && typeof where.score === 'object' && !('mode' in where.score) ? where.score : {};
+      where.score = { ...currentScore, lte: parseInt(maxScore) };
     }
     
     if (companyId) {

@@ -126,13 +126,14 @@ export class DiscoveryAggregator {
         success: true,
       };
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during discovery aggregation';
       return {
         results: [],
         channelResults: {},
         totalBeforeDedupe: 0,
         totalAfterDedupe: 0,
         success: false,
-        error: error.message || 'Unknown error occurred during discovery aggregation',
+        error: errorMessage,
       };
     }
   }

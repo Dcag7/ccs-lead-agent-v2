@@ -16,6 +16,8 @@ interface FixAuthResults {
   timestamp: string;
   steps: FixAuthStep[];
   success: boolean;
+  message?: string;
+  nextSteps?: string[];
 }
 
 export async function GET() {
@@ -104,8 +106,8 @@ export async function GET() {
 
       results.steps[2].status = 'success';
       results.steps[2].message = 'Admin user created/updated successfully';
-      results.steps[2].userId = adminUser.id;
-      results.steps[2].email = adminUser.email;
+      (results.steps[2] as FixAuthStep & { userId?: string; email?: string }).userId = adminUser.id;
+      (results.steps[2] as FixAuthStep & { userId?: string; email?: string }).email = adminUser.email;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       results.steps[2].status = 'failed';
@@ -128,7 +130,7 @@ export async function GET() {
       if (user) {
         const passwordMatch = await bcrypt.compare(adminPassword, user.password);
         results.steps[3].status = 'success';
-        results.steps[3].passwordMatch = passwordMatch;
+        (results.steps[3] as FixAuthStep & { passwordMatch?: boolean }).passwordMatch = passwordMatch;
         results.steps[3].message = passwordMatch
           ? 'Password verification successful! You can now login.'
           : 'WARNING: Password verification failed!';

@@ -51,7 +51,7 @@ async function checkTables() {
 
     if (migrationCheck.rows.length > 0) {
       console.log('Migration status in _prisma_migrations:');
-      migrationCheck.rows.forEach(row => {
+      migrationCheck.rows.forEach((row: { migration_name: string; finished_at: Date | null; rolled_back_at: Date | null }) => {
         const status = row.rolled_back_at ? 'ROLLED BACK' : 
                       row.finished_at ? 'APPLIED' : 'PENDING';
         console.log(`  ${row.migration_name}: ${status}`);
