@@ -471,8 +471,8 @@ async function processLeadResult(
     // Note: We cannot check existing source here since we're creating new record
     // Source will only be set if it's a valid discovery channel type
     source: leadSource || null,
-    companyId: companyId || null,
-    contactId: contactId || null,
+    companyRel: companyId ? { connect: { id: companyId } } : undefined,
+    contactRel: contactId ? { connect: { id: contactId } } : undefined,
     // Store discovery metadata in dedicated discoveryMetadata field
     discoveryMetadata: discoveryData,
   };
