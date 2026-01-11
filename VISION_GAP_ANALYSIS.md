@@ -1,165 +1,205 @@
 > This document is descriptive, not prescriptive.
 > It defines gaps and priorities, not implementation decisions.
+> **Updated:** January 11, 2026 - Revised to reflect omnichannel messaging and autonomous discovery vision
 
-# 🔍 Vision vs. Current Implementation - Gap Analysis. 
+# 🔍 Vision vs. Current Implementation - Gap Analysis
 
-**Date:** January 10, 2026  
-**Comparison:** Your Vision Document vs. Current Codebase
+**Date:** January 11, 2026 (Updated)  
+**Original Date:** January 10, 2026  
+**Comparison:** Revised Vision (Omnichannel + Autonomous) vs. Current Codebase
 
 ---
 
 ## 📊 Executive Summary
 
-**Current Implementation Status:** ~40% of your vision is implemented
+**Current Implementation Status:** ~40% of original vision, ~25% of revised vision
 
-The system has a solid foundation (CRM, basic scoring, enrichment) but is missing the **core differentiating features** that make it a true "Lead Agent" - specifically **automatic discovery**, **outreach automation**, and **learning capabilities**.
+The system has a solid foundation (CRM, basic scoring, enrichment) but is missing the **core differentiating features** that make it a true "Lead Agent":
+
+1. **Autonomous Discovery** - System doesn't find leads automatically (architecture exists, execution missing)
+2. **Omnichannel Messaging** - No conversation management, no messaging across channels
+3. **Policy/Knowledge Brain** - No ICP rules, no action planning
+4. **Learning Capabilities** - Cannot improve over time
+
+### Vision Shift (January 2026)
+
+The original vision focused on "email outreach" as the communication method. The **revised vision** expands this to:
+
+- **Omnichannel Conversation System** - Email + WhatsApp + Instagram + Facebook via Respond.io (and future direct integrations)
+- **Unified Inbox** - All conversations in one place
+- **Human-in-the-Loop Safety** - Read-only first, assisted replies, then controlled autopilot
+- **Daily Autonomous Discovery** - Scheduled discovery runs with budgets and guardrails
+- **Brain/Policy Layer** - ICP constraints, allow/block lists, deterministic action planning
 
 ---
 
 ## ✅ What's Currently Implemented
 
-### Phase 4: Lead Management and CRM (Partial - ~60%)
+### Phase 4: Lead Management and CRM (Complete - ~90%)
 - ✅ Leads, Companies, Contacts management
 - ✅ Lead lists and status tracking
+- ✅ Lead ownership assignment
+- ✅ Internal notes on leads
+- ✅ Bulk operations (status, ownership)
+- ✅ Enhanced filtering (status, owner, score, source, classification)
 - ✅ Manual updates
 - ✅ Basic dashboard with metrics
 - ✅ Export capabilities (via CSV import/export)
 - ❌ **Missing:** Orders tracking
-- ❌ **Missing:** Activity logs
-- ❌ **Missing:** Sync history
-- ❌ **Missing:** Doesn't replace HubSpot yet (no outreach capabilities)
+- ❌ **Missing:** Activity logs / audit trails
 
-### Phase 3: Scoring and Classification (Basic - ~40%)
+### Phase 3: Scoring and Classification (Complete - ~80%)
 - ✅ Rule-based scoring (0-100 scale)
 - ✅ Scoring factors: status, source, country, company size, industry
-- ✅ Classification by score ranges
+- ✅ Classification by score ranges (hot/warm/cold)
+- ✅ Scoring UI and recalculation API
 - ❌ **Missing:** Scoring based on similarity to existing CCS clients
 - ❌ **Missing:** Order potential estimation
 - ❌ **Missing:** Industry-specific classification (Event Agency, Corporate Client, Brand Owner, Reseller)
-- ❌ **Missing:** Learning from past orders/outcomes
-- ❌ **Missing:** Match to CCS ideal client profile (no client profile defined)
 
-### Phase 2: Enrichment (Partial - ~30%)
-- ✅ Google CSE enrichment (company website, industry)
+### Phase 2: Enrichment (Complete - ~70%)
+- ✅ Google CSE enrichment (company website, industry inference)
+- ✅ Website metadata extraction (title, description)
 - ✅ Basic company data enrichment
+- ✅ Enrichment status tracking
 - ❌ **Missing:** Comparison against existing CCS clients
 - ❌ **Missing:** Integration with order history
-- ❌ **Missing:** Known high-value customer profile matching
-- ❌ **Missing:** Historical relevance scoring
+- ❌ **Missing:** LinkedIn company enrichment
+
+### Phase 1: Discovery (Partial - ~30%)
+- ✅ Discovery architecture implemented (interfaces, channels, aggregator)
+- ✅ Google search channel implementation
+- ✅ Website signal extraction
+- ✅ Keyword discovery channel
+- ✅ LinkedIn/Social channel interfaces (gated, implementation ready)
+- ✅ Prospect deduplication logic
+- ✅ Discovery metadata storage on records
+- ❌ **CRITICAL MISSING:** Discovery execution mechanism (no cron, no API trigger)
+- ❌ **CRITICAL MISSING:** Run tracking and history
 
 ---
 
 ## ❌ What's Missing (Critical Gaps)
 
-### Phase 1: Discovery and Prospecting (0% - NOT IMPLEMENTED)
-
-**This is a MAJOR gap.** Your vision includes automatic lead discovery, but currently:
+### Gap 1: Discovery Execution (Phase 5A Scope)
 
 **Current State:**
-- Leads must be manually added
-- Leads can be imported via CSV
-- No automatic prospecting
+- Architecture complete, but NO way to trigger discovery
+- No scheduled runs, no manual trigger API
+- No run history or tracking
 
-**Missing Capabilities:**
-- ❌ Automatic Google search for prospects
-- ❌ Company website scraping/crawling
-- ❌ Social platform monitoring
-- ❌ LinkedIn profile discovery
-- ❌ Industry keyword-based prospecting
-- ❌ Continuous inbound stream of prospects
-- ❌ Active discovery engine
+**Required for "Lead Agent" Vision:**
+- ✅ Daily scheduled discovery (cron)
+- ✅ Run tracking and history
+- ✅ Quota/budget management
+- ✅ Failure handling and alerting
 
-**Impact:** Without this, the system is just a CRM, not an active "Lead Agent" that finds opportunities.
+**Impact:** Without execution, discovery architecture is unused. System remains passive.
 
 ---
 
-### Phase 5: Outreach and Nurturing (0% - NOT IMPLEMENTED)
-
-**Another CRITICAL gap.** This is what would replace HubSpot/Sales Navigator workflows:
-
-**Missing Capabilities:**
-- ❌ Email-based outreach
-- ❌ Campaign-style nurturing sequences
-- ❌ Internal task prompts/reminders
-- ❌ WhatsApp notifications
-- ❌ Outreach recommendations ("contact this lead first")
-- ❌ Message type recommendations based on lead profile
-- ❌ Follow-up scheduling and reminders
-- ❌ Email templates
-- ❌ Campaign tracking
-
-**Impact:** System cannot support outreach workflows, so team still needs external tools.
-
----
-
-### Phase 6: Operations Console (Partial - ~30%)
+### Gap 2: Policy/Knowledge Brain (Phase 5B Scope)
 
 **Current State:**
-- ✅ Basic dashboard with company/contact/lead counts
-- ✅ Recent activity display
-- ❌ **Missing:** Operations-focused console
-- ❌ **Missing:** Orders data
-- ❌ **Missing:** Sync and scoring activity logs
-- ❌ **Missing:** System health monitoring
-- ❌ **Missing:** Manual sync triggers
-- ❌ **Missing:** Finance/ops export tools
+- No ICP definition beyond scoring rules
+- No allow/block lists
+- No action recommendations
+
+**Required for "Lead Agent" Vision:**
+- ✅ ICP constraint definitions
+- ✅ Allow/block lists for domains, companies, contacts
+- ✅ Deterministic rules engine
+- ✅ Action planner (recommendations, not execution)
+
+**Impact:** Without brain, system cannot prioritize or recommend actions intelligently.
 
 ---
 
-### Phase 7: Learning and Optimization (0% - NOT IMPLEMENTED)
+### Gap 3: Omnichannel Messaging (Phase 6 Scope) - NEW
 
-**This is the FUTURE VALUE differentiator:**
+**Current State:**
+- ❌ No conversation data model
+- ❌ No message storage
+- ❌ No channel accounts/integrations
+- ❌ No unified inbox
+- ❌ No messaging capability at all
 
-**Missing Capabilities:**
-- ❌ Learning from conversion outcomes
-- ❌ Monthly revenue potential prediction
-- ❌ Trend identification (high-converting industries)
-- ❌ Self-adjusting scoring logic
-- ❌ Production/sales demand forecasting
-- ❌ Machine learning/AI capabilities
-- ❌ Order history analysis
-- ❌ Client pattern recognition
+**Required for "Lead Agent" Vision:**
+- ✅ Conversation + Message data models
+- ✅ Channel account management (Respond.io first)
+- ✅ Webhook ingestion for inbound messages
+- ✅ Identity resolution (match messages to contacts/leads)
+- ✅ Unified inbox UI
+- ✅ Conversation timeline
+- ✅ Reply capability (human-initiated)
+- ✅ Controlled autopilot (opt-in, guardrails, kill switch)
+
+**Impact:** Without messaging, system cannot support outreach workflows. Team still needs external tools (HubSpot, Respond.io dashboard).
+
+**Note:** Original vision mentioned "email outreach" - revised vision expands to omnichannel (Email + WhatsApp + Instagram + Facebook) for comprehensive coverage.
 
 ---
 
-## 🔴 Critical Missing Components
+### Gap 4: Learning and Optimization (Phase 8 Scope)
 
-### 1. **Orders System** (Referenced in Phase 4, 6, 7)
+**Current State:**
+- ❌ No outcome tracking
+- ❌ No learning from conversions
+- ❌ No pattern recognition
+
+**Required (Future):**
+- ✅ Track conversion outcomes
+- ✅ Identify high-performing patterns
+- ✅ Self-adjusting recommendations
+- ✅ Forecasting capabilities
+
+**Impact:** System cannot improve over time. Future phase, requires robust data collection first.
+
+---
+
+## 🔴 Critical Missing Components (Updated)
+
+### 1. **Conversation System** (NEW - Phase 6)
+- No way to manage conversations across channels
+- No unified view of customer communications
+- Cannot replace Respond.io dashboard
+
+**Required:**
+- Conversation model
+- Message model
+- Channel account model
+- Webhook endpoints
+- Unified inbox UI
+
+### 2. **Discovery Execution** (Phase 5A)
+- Architecture exists but cannot run
+- No scheduling, no triggers
+
+**Required:**
+- Cron job or scheduler
+- Run tracking
+- Alerting
+
+### 3. **Brain/Policy Layer** (Phase 5B)
+- No ICP rules
+- No action planning
+
+**Required:**
+- Rules engine
+- Action recommendations
+- Allow/block lists
+
+### 4. **Orders System** (Referenced in Phases 2, 3, 8)
 - No orders tracking in database
 - Cannot learn from order history
 - Cannot compare prospects to existing clients
-- Cannot estimate order potential
 
-**Required:**
+**Required (Future):**
 - Orders model in database
 - Order history integration
 - Client profile analysis
 
-### 2. **Client Profile Matching**
-- No existing CCS client database
-- Cannot compare new leads to successful clients
-- Cannot identify "lookalike" prospects
-
-**Required:**
-- Existing clients dataset
-- Profile matching algorithm
-- Similarity scoring
-
-### 3. **Industry Classification System**
-Vision mentions specific types:
-- Event Agency
-- Corporate Client
-- Brand Owner
-- Reseller
-
-**Current:** Generic industry field, no classification
-
-**Required:**
-- Industry classification logic
-- CCS-specific categories
-- Classification-based scoring
-
-### 4. **Activity Logging**
+### 5. **Activity Logging** (Phase 4+)
 - No activity tracking
 - No sync history
 - No audit trail
@@ -169,165 +209,179 @@ Vision mentions specific types:
 - Sync history tracking
 - User action logging
 
-### 5. **Automated Discovery Engine**
-- This is Phase 1 - completely missing
-- System is passive (requires manual input)
+---
 
-**Required:**
-- Google search automation
-- Web scraping capabilities
-- LinkedIn API integration
-- Keyword-based discovery
-- Scheduled discovery jobs
+## 📋 Detailed Comparison Table (Updated)
+
+| Phase | Vision Feature | Current Status | Gap | Priority |
+|-------|---------------|----------------|-----|----------|
+| **Phase 1: Discovery** | Automatic Google search | ⚠️ Architecture only | **Critical** | High |
+| | Discovery execution/trigger | ❌ Missing | **Critical** | High |
+| | LinkedIn profile discovery | ⚠️ Interface only | **High** | Medium |
+| | Social platform monitoring | ⚠️ Interface only | **High** | Medium |
+| | Run tracking and history | ❌ Missing | **High** | High |
+| **Phase 2: Enrichment** | Google CSE enrichment | ✅ Implemented | None | - |
+| | Website metadata | ✅ Implemented | None | - |
+| | Compare to existing clients | ❌ Missing | **High** | Medium |
+| **Phase 3: Scoring** | Rule-based scoring | ✅ Implemented | None | - |
+| | Classification | ✅ Implemented | **Low** | Low |
+| | Similarity scoring | ❌ Missing | **High** | Medium |
+| **Phase 4: CRM** | Leads/Companies/Contacts | ✅ Implemented | None | - |
+| | Status/Ownership/Notes | ✅ Implemented | None | - |
+| | Bulk operations | ✅ Implemented | None | - |
+| | Orders tracking | ❌ Missing | **High** | Medium |
+| | Activity logs | ❌ Missing | **Medium** | Medium |
+| **Phase 5A: Auto Discovery** | Daily scheduling | ❌ Missing | **Critical** | High |
+| | Run tracking | ❌ Missing | **Critical** | High |
+| | Budget/quota management | ❌ Missing | **High** | High |
+| **Phase 5B: Brain** | ICP rules | ❌ Missing | **Critical** | High |
+| | Allow/block lists | ❌ Missing | **High** | High |
+| | Action planner | ❌ Missing | **High** | High |
+| **Phase 6A: Messaging** | Conversation model | ❌ Missing | **Critical** | High |
+| | Message ingestion | ❌ Missing | **Critical** | High |
+| | Unified inbox | ❌ Missing | **Critical** | High |
+| | Identity resolution | ❌ Missing | **High** | High |
+| **Phase 6B: Replies** | Send messages | ❌ Missing | **Critical** | High |
+| | Templates | ❌ Missing | **High** | High |
+| **Phase 6C: Autopilot** | Controlled auto-reply | ❌ Missing | **High** | Medium |
+| | Guardrails/kill switch | ❌ Missing | **High** | Medium |
+| **Phase 7: Playbooks** | Multi-step sequences | ❌ Missing | **Medium** | Low |
+| **Phase 8: Learning** | Outcome tracking | ❌ Missing | **Medium** | Low |
 
 ---
 
-## 📋 Detailed Comparison Table
+## 🎯 Priority Recommendations (Updated)
 
-| Phase | Vision Feature | Current Status | Gap |
-|-------|---------------|----------------|-----|
-| **Phase 1: Discovery** | Automatic Google search | ❌ Missing | **Critical** |
-| | LinkedIn profile discovery | ❌ Missing | **Critical** |
-| | Social platform monitoring | ❌ Missing | **Critical** |
-| | Industry keyword prospecting | ❌ Missing | **Critical** |
-| | Continuous inbound stream | ❌ Missing | **Critical** |
-| **Phase 2: Enrichment** | Google CSE enrichment | ✅ Implemented | None |
-| | Compare to existing clients | ❌ Missing | **High** |
-| | Order history integration | ❌ Missing | **High** |
-| | Client profile matching | ❌ Missing | **High** |
-| **Phase 3: Scoring** | Rule-based scoring | ✅ Basic | Low |
-| | Similarity to existing clients | ❌ Missing | **High** |
-| | Order potential estimation | ❌ Missing | **High** |
-| | Industry classification | ⚠️ Partial | **Medium** |
-| | CCS ideal client profile | ❌ Missing | **High** |
-| **Phase 4: CRM** | Leads/Companies/Contacts | ✅ Implemented | None |
-| | Status tracking | ✅ Implemented | None |
-| | Orders tracking | ❌ Missing | **High** |
-| | Activity logs | ❌ Missing | **Medium** |
-| | Sync history | ❌ Missing | **Medium** |
-| | Exportable reports | ⚠️ Basic | **Low** |
-| **Phase 5: Outreach** | Email outreach | ❌ Missing | **Critical** |
-| | Campaign nurturing | ❌ Missing | **Critical** |
-| | Task prompts | ❌ Missing | **High** |
-| | WhatsApp notifications | ❌ Missing | **Medium** |
-| | Outreach recommendations | ❌ Missing | **High** |
-| **Phase 6: Operations** | Basic dashboard | ✅ Implemented | None |
-| | Operations console | ❌ Missing | **Medium** |
-| | Orders data | ❌ Missing | **High** |
-| | Sync/scoring logs | ❌ Missing | **Medium** |
-| | System health | ❌ Missing | **Low** |
-| | Finance export tools | ❌ Missing | **Medium** |
-| **Phase 7: Learning** | All features | ❌ Missing | **Critical** |
+### **Immediate Priority (Next 4-8 weeks)**
 
----
+1. **Phase 6A: Omnichannel Inbox (Read-Only)** ⚠️ **CRITICAL**
+   - Unified inbox provides immediate operational value
+   - Team can see all conversations in one place
+   - Foundation for all messaging features
+   - Estimated: 3 weeks
 
-## 🎯 Priority Recommendations
+2. **Phase 6B: Assisted Replies** ⚠️ **CRITICAL**
+   - Enables team to respond from unified inbox
+   - Replaces context-switching to Respond.io
+   - Human-in-the-loop safety maintained
+   - Estimated: 2 weeks
 
-### **Immediate Priority (Core Functionality)**
+3. **Phase 5A: Autonomous Discovery** ⚠️ **HIGH**
+   - Activates existing discovery architecture
+   - Daily scheduled runs
+   - Run tracking and alerting
+   - Estimated: 2 weeks
 
-1. **Phase 1: Discovery Engine** ⚠️ **CRITICAL**
-   - Without this, it's not a "Lead Agent" - just a CRM
-   - Need: Automated prospecting from Google, LinkedIn, web
-   - Impact: Transforms system from passive to active
+### **Medium Priority (8-16 weeks)**
 
-2. **Orders System** ⚠️ **HIGH PRIORITY**
-   - Required for: Client profile matching, learning, order potential
-   - Need: Orders model, order history data, integration
-   - Impact: Enables Phase 2, 3, 7 features
+4. **Phase 5B: Brain/Policy Layer**
+   - ICP rules and action planning
+   - Informs Phase 6B suggestions
+   - Estimated: 2 weeks
 
-3. **Phase 5: Outreach** ⚠️ **HIGH PRIORITY**
-   - Required to replace HubSpot/Sales Navigator
-   - Need: Email system, campaigns, task management
-   - Impact: Makes system self-contained, reduces external tool dependency
+5. **Phase 6C: Controlled Autopilot**
+   - Opt-in auto-replies
+   - Guardrails, rate limits, kill switch
+   - Estimated: 2 weeks
 
-### **Medium Priority (Enhancements)**
+### **Future Priority (16+ weeks)**
 
-4. **Client Profile Matching** (Phase 2)
-   - Need existing CCS client data
-   - Compare prospects to successful clients
+6. **Phase 7: Playbooks/Sequences**
+   - Multi-step nurturing
+   - Requires stable Phase 6
 
-5. **Enhanced Scoring** (Phase 3)
-   - Similarity-based scoring
-   - Industry-specific classification
-
-6. **Activity Logging** (Phase 4)
-   - Track all system activity
-   - Audit trail
-
-### **Future Priority (Advanced Features)**
-
-7. **Phase 7: Learning Engine**
-   - Machine learning from outcomes
-   - Predictive analytics
-   - Self-improving algorithms
+7. **Phase 8: Learning**
+   - Outcome tracking
+   - Requires 6+ months of data
 
 ---
 
-## 💡 Key Insights
+## 💡 Key Insights (Updated)
 
 ### **What You Have:**
 - Solid CRM foundation
-- Basic lead management
-- Some enrichment capabilities
-- Working scoring system (but basic)
+- Working lead management with ownership/notes
+- Enrichment capabilities
+- Scoring system
+- Discovery architecture (inactive)
 
 ### **What's Missing for "Lead Agent" Vision:**
-1. **Active Discovery** - System doesn't find leads automatically
-2. **Outreach Automation** - Cannot replace HubSpot yet
-3. **Learning Capabilities** - Cannot improve over time
-4. **Client Intelligence** - Cannot compare to existing CCS clients
-5. **Orders Integration** - No connection to actual business outcomes
+1. **Omnichannel Conversations** - NEW critical gap
+2. **Discovery Execution** - Architecture ready, needs trigger
+3. **Brain/Policy Layer** - No intelligent recommendations
+4. **Learning Capabilities** - Future phase
 
 ### **Current Reality:**
-The system is currently a **"Lead Management System"** not a **"Lead Agent"**. It's missing the active, intelligent, automated components that would make it an agent.
+The system is a **"Lead Management System"** not a **"Lead Agent"**. To become a true agent:
+- It must find leads automatically (discovery execution)
+- It must communicate across channels (omnichannel messaging)
+- It must recommend actions intelligently (brain)
+- It must learn from outcomes (learning loops)
 
 ---
 
-## 🚀 Recommended Development Path
+## 🚀 Recommended Development Path (Updated)
 
-### **Phase A: Make it a True "Agent" (Discovery)**
-1. Implement automatic discovery engine (Phase 1)
-2. Add scheduled prospecting jobs
-3. Create continuous inbound lead stream
+### **Recommended: Inbox First (Option B)**
 
-### **Phase B: Enable Intelligence (Client Data)**
-1. Add orders system
-2. Import existing CCS client data
-3. Build client profile matching
-4. Enhance scoring with similarity analysis
+```
+Phase 6A (3 weeks) → Phase 6B (2 weeks) → Phase 5A (2 weeks) → Phase 5B (2 weeks) → Phase 6C (2 weeks)
+```
 
-### **Phase C: Enable Automation (Outreach)**
-1. Build email outreach system
-2. Create campaign management
-3. Add task/reminder system
-4. Enable notifications
+**Rationale:**
+1. CCS likely has existing conversations in Respond.io
+2. Unified inbox provides immediate daily value
+3. Discovery can run in background while inbox is built
+4. Brain informs messaging suggestions
 
-### **Phase D: Enable Learning (Optimization)**
-1. Track conversion outcomes
-2. Build learning algorithms
-3. Implement predictive features
-4. Create forecasting capabilities
+### **Alternative: Discovery First (Option A)**
+
+```
+Phase 5A (2 weeks) → Phase 5B (2 weeks) → Phase 6A (3 weeks) → Phase 6B (2 weeks) → Phase 6C (2 weeks)
+```
+
+**When to choose:**
+- If pipeline is very thin and more leads needed urgently
+- If Respond.io conversations are minimal
 
 ---
 
-## 📝 Action Items
+## 📝 Action Items (Updated)
 
 ### **Immediate Next Steps:**
-1. [ ] Decide: Do we need Phase 1 (Discovery) first, or Phase 5 (Outreach)?
-2. [ ] Import existing CCS client data into system
-3. [ ] Design Orders model and integration
-4. [ ] Plan discovery engine architecture
-5. [ ] Design outreach/campaign system
+1. [x] Review and approve Roadmap v2 (Phases 5-8)
+2. [x] Review omnichannel architecture design
+3. [ ] Set up Respond.io API access and webhook endpoint
+4. [ ] Decide: Inbox First or Discovery First?
+5. [ ] Plan Phase 6A implementation sprint
 
 ### **Questions to Answer:**
-1. Do you have existing CCS client data/order history to import?
-2. What email service should we use for outreach? (SendGrid, AWS SES, etc.)
-3. What's the priority: Discovery or Outreach first?
-4. Do you have LinkedIn API access for prospecting?
-5. What Google Search API quota/budget for discovery?
+1. Do you have Respond.io API access? What tier?
+2. How many existing conversations are in Respond.io?
+3. What's the priority: more leads or better conversation management?
+4. What are the current quiet hours for messaging?
+5. Who should be the admin(s) for autopilot configuration?
 
 ---
 
-**Analysis Date:** January 10, 2026  
-**Current Implementation:** ~40% of vision  
-**Next Critical Phase:** Phase 1 (Discovery) or Phase 5 (Outreach)
+## Revision History
+
+| Date | Changes |
+|------|---------|
+| 2026-01-10 | Original gap analysis |
+| 2026-01-11 | Updated for omnichannel vision, added Phase 6 messaging gaps, revised priorities |
+
+---
+
+**Analysis Date:** January 11, 2026  
+**Current Implementation:** ~25% of revised vision  
+**Next Critical Phase:** Phase 6A (Omnichannel Inbox) or Phase 5A (Discovery Execution)
+
+---
+
+## Related Documents
+
+- [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) - Detailed phase definitions
+- [PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md](./PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md) - Messaging architecture
+- [CORE_LEAD_AGENT_DEFINITION.md](./CORE_LEAD_AGENT_DEFINITION.md) - Living system definition
+- [PHASE_STATUS_MATRIX.md](./PHASE_STATUS_MATRIX.md) - Current phase status
