@@ -112,7 +112,7 @@ export default function ImportsClient({ session }: Props) {
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "running":
-        return "bg-blue-100 text-blue-800";
+        return "bg-[#E6F5F5] text-[#1B7A7A]";
       case "completed":
         return "bg-green-100 text-green-800";
       case "failed":
@@ -132,49 +132,11 @@ export default function ImportsClient({ session }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
-                  Leads
-                </Link>
-                <Link href="/dashboard/imports" className="text-sm font-medium text-blue-600">
-                  Imports
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">CSV Imports</h1>
-          <p className="text-gray-600 mt-2">
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">CSV Imports</h1>
+          <p className="text-gray-600">
             Import companies, contacts, and leads from CSV files.{" "}
             <a
               href="/docs/CSV_IMPORT_FORMATS.md"
@@ -227,7 +189,7 @@ export default function ImportsClient({ session }: Props) {
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#E6F5F5] file:text-[#1B7A7A] hover:file:bg-[#1B7A7A]/20"
                 disabled={uploading}
               />
               {selectedFile && (
@@ -240,7 +202,7 @@ export default function ImportsClient({ session }: Props) {
             <button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+              className="w-full bg-[#1B7A7A] text-white px-6 py-3 rounded-md hover:bg-[#155555] disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
             >
               {uploading ? "Uploading..." : "Upload and Import"}
             </button>
@@ -330,7 +292,7 @@ export default function ImportsClient({ session }: Props) {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

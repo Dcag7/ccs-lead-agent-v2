@@ -46,54 +46,21 @@ export default async function ContactsPage() {
     }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm font-medium text-blue-600">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
-                  Leads
-                </Link>
-                <Link href="/dashboard/imports" className="text-sm text-gray-600 hover:text-gray-900">
-                  Imports
-                </Link>
-              </div>
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Contacts</h1>
+              <p className="text-gray-600 mt-1">Manage and track your contacts</p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
+            <Link
+              href="/dashboard/contacts/new"
+              className="bg-[#1B7A7A] text-white px-4 py-2 rounded-lg hover:bg-[#155555] font-medium shadow-sm hover:shadow-md transition-all"
+            >
+              Add Contact
+            </Link>
           </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Contacts</h1>
-          <Link
-            href="/dashboard/contacts/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
-          >
-            Add Contact
-          </Link>
         </div>
 
         {contacts.length === 0 ? (
@@ -141,7 +108,7 @@ export default async function ContactsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link
                         href={`/dashboard/contacts/${contact.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-[#1B7A7A] hover:text-[#155555] font-medium"
                       >
                         {contact.firstName} {contact.lastName}
                       </Link>
@@ -159,7 +126,7 @@ export default async function ContactsPage() {
                       {contact.company ? (
                         <Link
                           href={`/dashboard/companies/${contact.company.id}`}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-[#1B7A7A] hover:text-[#155555]"
                         >
                           {contact.company.name}
                         </Link>
@@ -173,7 +140,7 @@ export default async function ContactsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <Link
                         href={`/dashboard/contacts/${contact.id}/edit`}
-                        className="text-blue-600 hover:text-blue-800 mr-4"
+                        className="text-[#1B7A7A] hover:text-[#155555] mr-4"
                       >
                         Edit
                       </Link>
@@ -190,7 +157,7 @@ export default async function ContactsPage() {
             </table>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
   } catch (error) {
@@ -200,7 +167,7 @@ export default async function ContactsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Contacts</h1>
           <p className="text-gray-600 mb-4">There was an error loading the contacts page. Please try again.</p>
-          <Link href="/dashboard/contacts" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard/contacts" className="text-[#1B7A7A] hover:text-[#155555]">
             Refresh Page
           </Link>
         </div>

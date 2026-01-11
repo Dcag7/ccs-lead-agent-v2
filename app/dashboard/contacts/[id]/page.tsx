@@ -36,47 +36,12 @@ export default async function ContactDetailPage(props: { params: Promise<{ id: s
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm font-medium text-blue-600">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
-                  Leads
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <Link
             href="/dashboard/contacts"
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-[#1B7A7A] hover:text-[#155555] text-sm"
           >
             ← Back to Contacts
           </Link>
@@ -93,7 +58,7 @@ export default async function ContactDetailPage(props: { params: Promise<{ id: s
             <div className="flex gap-3">
               <Link
                 href={`/dashboard/contacts/${contact.id}/edit`}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
+                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-md hover:bg-[#155555] font-medium"
               >
                 Edit
               </Link>
@@ -114,7 +79,7 @@ export default async function ContactDetailPage(props: { params: Promise<{ id: s
               {contact.company ? (
                 <Link
                   href={`/dashboard/companies/${contact.company.id}`}
-                  className="mt-1 text-blue-600 hover:text-blue-800 inline-block"
+                  className="mt-1 text-[#1B7A7A] hover:text-[#155555] inline-block"
                 >
                   {contact.company.name}
                 </Link>
@@ -146,7 +111,7 @@ export default async function ContactDetailPage(props: { params: Promise<{ id: s
                   </p>
                   <p className="text-sm text-gray-600">{lead.email}</p>
                   <div className="flex gap-2 mt-1">
-                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-[#E6F5F5] text-[#1B7A7A]">
                       {lead.status}
                     </span>
                     {lead.score > 0 && (
@@ -160,7 +125,7 @@ export default async function ContactDetailPage(props: { params: Promise<{ id: s
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

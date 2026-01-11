@@ -137,7 +137,7 @@ export default async function LeadsPage(props: {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Leads</h1>
           <p className="text-gray-600 mb-4">There was an error loading the leads page. Please try again.</p>
-          <Link href="/dashboard/leads" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard/leads" className="text-[#1B7A7A] hover:text-[#155555]">
             Refresh Page
           </Link>
         </div>

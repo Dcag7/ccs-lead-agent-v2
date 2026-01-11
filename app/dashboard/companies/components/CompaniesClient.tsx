@@ -79,55 +79,15 @@ export default function CompaniesClient({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm font-medium text-blue-600">
-                  Companies
-                </Link>
-                <Link
-                  href="/dashboard/contacts"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
-                  Leads
-                </Link>
-                <Link
-                  href="/dashboard/imports"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Imports
-                </Link>
-              </div>
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Companies</h1>
+              <p className="text-gray-600 mt-1">Manage and explore company data</p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{userEmail}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Companies</h1>
-          <div className="flex gap-3">
+            <div className="flex gap-3">
             <button
               onClick={handleRecalculate}
               disabled={isRecalculating}
@@ -137,10 +97,11 @@ export default function CompaniesClient({
             </button>
             <Link
               href="/dashboard/companies/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
+                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-lg hover:bg-[#155555] font-medium shadow-sm hover:shadow-md transition-all"
             >
               Add Company
             </Link>
+            </div>
           </div>
         </div>
 
@@ -219,7 +180,7 @@ export default function CompaniesClient({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
                           href={`/dashboard/companies/${company.id}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-[#1B7A7A] hover:text-[#155555] font-medium"
                         >
                           {company.name}
                         </Link>
@@ -245,7 +206,7 @@ export default function CompaniesClient({
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
                           href={`/dashboard/companies/${company.id}/edit`}
-                          className="text-blue-600 hover:text-blue-800 mr-4"
+                          className="text-[#1B7A7A] hover:text-[#155555] mr-4"
                         >
                           Edit
                         </Link>
@@ -263,7 +224,7 @@ export default function CompaniesClient({
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

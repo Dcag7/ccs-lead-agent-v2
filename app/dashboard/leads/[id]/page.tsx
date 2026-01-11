@@ -66,7 +66,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      new: "bg-blue-100 text-blue-800",
+      new: "bg-[#E6F5F5] text-[#1B7A7A]",
       contacted: "bg-yellow-100 text-yellow-800",
       qualified: "bg-green-100 text-green-800",
       proposal: "bg-purple-100 text-purple-800",
@@ -79,47 +79,12 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm font-medium text-blue-600">
-                  Leads
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-8">
+      <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <Link
             href="/dashboard/leads"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            className="text-[#1B7A7A] hover:text-[#155555] text-sm font-medium"
           >
             ← Back to Leads
           </Link>
@@ -141,7 +106,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
               )}
               <Link
                 href={`/dashboard/leads/${lead.id}/edit`}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium text-sm"
+                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-md hover:bg-[#155555] font-medium text-sm"
               >
                 Edit Lead
               </Link>
@@ -188,7 +153,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
 
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Score</h3>
-                <p className="text-2xl font-bold text-blue-600">{lead.score}</p>
+                <p className="text-2xl font-bold text-[#1B7A7A]">{lead.score}</p>
               </div>
 
               <div>
@@ -201,7 +166,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
                 {lead.companyRel ? (
                   <Link
                     href={`/dashboard/companies/${lead.companyRel.id}`}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-[#1B7A7A] hover:text-[#155555] font-medium"
                   >
                     {lead.companyRel.name}
                   </Link>
@@ -215,7 +180,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
                 {lead.contactRel ? (
                   <Link
                     href={`/dashboard/contacts/${lead.contactRel.id}`}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-[#1B7A7A] hover:text-[#155555] font-medium"
                   >
                     {lead.contactRel.firstName || lead.contactRel.lastName
                       ? `${lead.contactRel.firstName || ""} ${lead.contactRel.lastName || ""}`.trim()
@@ -280,7 +245,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
               (lead.scoreFactors as { all: Array<{ name: string; points: number; explanation: string }> }).all.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Top Scoring Factors</h3>
-                  <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="bg-[#E6F5F5] rounded-lg p-4 border border-[#1B7A7A]/10">
                     <ul className="space-y-2">
                       {(lead.scoreFactors as { all: Array<{ name: string; points: number; explanation: string }> }).all
                         .sort((a, b) => Math.abs(b.points) - Math.abs(a.points))
@@ -288,7 +253,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
                         .map((factor, index) => (
                           <li key={index} className="flex items-start justify-between">
                             <div className="flex items-start">
-                              <span className="text-blue-600 mr-2">✓</span>
+                              <span className="text-[#1B7A7A] mr-2">✓</span>
                               <span className="text-sm text-gray-700">{factor.explanation}</span>
                             </div>
                             <span className="text-sm font-semibold text-gray-900 ml-4">
@@ -306,7 +271,7 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
               )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

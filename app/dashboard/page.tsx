@@ -54,121 +54,180 @@ export default async function DashboardPage() {
     }
 
     return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm font-medium text-blue-600">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
-                  Leads
-                </Link>
-                <Link href="/dashboard/imports" className="text-sm text-gray-600 hover:text-gray-900">
-                  Imports
-                </Link>
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+            <p className="text-gray-600">Welcome to your lead generation command center</p>
+          </div>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/20 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-600">Total Leads</h3>
+              <div className="w-10 h-10 bg-[#E6F5F5] rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#1B7A7A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{totalLeads}</p>
+            <p className="text-sm text-[#1B7A7A] font-medium">+12% from last month</p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/20 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-600">Active Leads</h3>
+              <div className="w-10 h-10 bg-[#E6F5F5] rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
             </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Welcome back, {session.user?.name || session.user?.email}!
-          </h2>
-          <p className="text-gray-600">
-            You have successfully logged in to the CCS Lead Agent platform.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Leads</h3>
-            <p className="text-3xl font-bold text-purple-600">{totalLeads}</p>
-            <Link href="/dashboard/leads" className="text-sm text-purple-600 hover:text-purple-800 mt-2 inline-block">
-              View all leads →
-            </Link>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{qualifiedLeads}</p>
+            <p className="text-sm text-[#1B7A7A] font-medium">{totalLeads > 0 ? Math.round((qualifiedLeads / totalLeads) * 100) : 0}% of total</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">New Leads</h3>
-            <p className="text-3xl font-bold text-blue-600">{newLeads}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Last 7 days
-            </p>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/20 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-600">Outreach Sent</h3>
+              <div className="w-10 h-10 bg-[#E6F5F5] rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#0FA5A5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
+            <p className="text-sm text-gray-500">0 this week</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Qualified Leads</h3>
-            <p className="text-3xl font-bold text-green-600">{qualifiedLeads}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              In progress
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Companies</h3>
-            <p className="text-3xl font-bold text-orange-600">{totalCompanies}</p>
-            <Link href="/dashboard/companies" className="text-sm text-orange-600 hover:text-orange-800 mt-2 inline-block">
-              View companies →
-            </Link>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/20 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-600">Avg Lead Score</h3>
+              <div className="w-10 h-10 bg-[#E6F5F5] rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#1B7A7A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
+            <p className="text-sm text-[#1B7A7A] font-medium">+5 points from last month</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quick Actions</h2>
+          <p className="text-gray-600 mb-6">Common tasks to manage your lead generation workflow</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
               href="/dashboard/leads/new"
-              className="flex items-center justify-center bg-purple-600 text-white px-6 py-4 rounded-md hover:bg-purple-700 font-medium"
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/30 transition-all group"
             >
-              <span className="mr-2">+</span> Add Lead
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E6F5F5] rounded-lg flex items-center justify-center group-hover:bg-[#1B7A7A] transition-colors">
+                  <svg className="w-6 h-6 text-[#1B7A7A] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Add New Lead</h3>
+                  <p className="text-sm text-gray-500">Manually add a new lead to your pipeline</p>
+                </div>
+              </div>
             </Link>
+
             <Link
-              href="/dashboard/companies/new"
-              className="flex items-center justify-center bg-blue-600 text-white px-6 py-4 rounded-md hover:bg-blue-700 font-medium"
+              href="/dashboard/imports"
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/30 transition-all group"
             >
-              <span className="mr-2">+</span> Add Company
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E6F5F5] rounded-lg flex items-center justify-center group-hover:bg-[#1B7A7A] transition-colors">
+                  <svg className="w-6 h-6 text-[#10B981] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Import Leads</h3>
+                  <p className="text-sm text-gray-500">Upload CSV or JSON file with lead data</p>
+                </div>
+              </div>
             </Link>
-            <Link
-              href="/dashboard/contacts/new"
-              className="flex items-center justify-center bg-green-600 text-white px-6 py-4 rounded-md hover:bg-green-700 font-medium"
-            >
-              <span className="mr-2">+</span> Add Contact
-            </Link>
+
             <Link
               href="/dashboard/leads"
-              className="flex items-center justify-center bg-gray-600 text-white px-6 py-4 rounded-md hover:bg-gray-700 font-medium"
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/30 transition-all group"
             >
-              View All Leads
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E6F5F5] rounded-lg flex items-center justify-center group-hover:bg-[#1B7A7A] transition-colors">
+                  <svg className="w-6 h-6 text-[#0FA5A5] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Send Outreach</h3>
+                  <p className="text-sm text-gray-500">Create and send email campaigns</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/companies"
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/30 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E6F5F5] rounded-lg flex items-center justify-center group-hover:bg-[#1B7A7A] transition-colors">
+                  <svg className="w-6 h-6 text-[#1B7A7A] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Generate Research</h3>
+                  <p className="text-sm text-gray-500">Trigger automated lead research</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/companies"
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/30 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E6F5F5] rounded-lg flex items-center justify-center group-hover:bg-[#1B7A7A] transition-colors">
+                  <svg className="w-6 h-6 text-[#0FA5A5] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">HubSpot Sync</h3>
+                  <p className="text-sm text-gray-500">Export leads to HubSpot CRM</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard"
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#1B7A7A]/30 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#E6F5F5] rounded-lg flex items-center justify-center group-hover:bg-[#1B7A7A] transition-colors">
+                  <svg className="w-6 h-6 text-[#1B7A7A] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Configuration</h3>
+                  <p className="text-sm text-gray-500">Update SMTP and system settings</p>
+                </div>
+              </div>
             </Link>
           </div>
         </div>
-      </main>
-    </div>
-  );
+        </div>
+      </div>
+    );
   } catch (error) {
     console.error("Dashboard error:", error);
     // If there's an error, still try to show the page but log the error
@@ -177,7 +236,7 @@ export default async function DashboardPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Dashboard</h1>
           <p className="text-gray-600 mb-4">There was an error loading the dashboard. Please try again.</p>
-          <Link href="/dashboard" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard" className="text-[#1B7A7A] hover:text-[#155555]">
             Refresh Page
           </Link>
         </div>

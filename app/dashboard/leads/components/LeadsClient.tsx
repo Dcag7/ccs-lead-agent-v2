@@ -92,7 +92,7 @@ export default function LeadsClient({
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      new: 'bg-blue-100 text-blue-800',
+      new: 'bg-[#E6F5F5] text-[#1B7A7A]',
       contacted: 'bg-yellow-100 text-yellow-800',
       qualified: 'bg-green-100 text-green-800',
       proposal: 'bg-purple-100 text-purple-800',
@@ -111,7 +111,7 @@ export default function LeadsClient({
       case 'warm':
         return 'bg-yellow-100 text-yellow-800';
       case 'cold':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[#E6F5F5] text-[#1B7A7A]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -298,71 +298,29 @@ export default function LeadsClient({
   const someSelected = selectedLeadIds.size > 0 && selectedLeadIds.size < leads.length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link
-                  href="/dashboard/companies"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Companies
-                </Link>
-                <Link
-                  href="/dashboard/contacts"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm font-medium text-blue-600">
-                  Leads
-                </Link>
-                <Link
-                  href="/dashboard/imports"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Imports
-                </Link>
-              </div>
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
+              <p className="text-gray-600 mt-1">Manage and track your lead pipeline</p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{userEmail}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+            <div className="flex gap-3">
+              <button
+                onClick={handleRecalculate}
+                disabled={isRecalculating}
+                className="bg-[#10B981] text-white px-4 py-2 rounded-lg hover:bg-[#0D9668] font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md transition-all"
               >
-                Sign Out
+                {isRecalculating ? 'Recalculating...' : 'Recalculate Scores'}
+              </button>
+              <Link
+                href="/dashboard/leads/new"
+                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-lg hover:bg-[#155555] font-medium shadow-sm hover:shadow-md transition-all"
+              >
+                Add Lead
               </Link>
             </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-          <div className="flex gap-3">
-            <button
-              onClick={handleRecalculate}
-              disabled={isRecalculating}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isRecalculating ? 'Recalculating...' : 'Recalculate Scores'}
-            </button>
-            <Link
-              href="/dashboard/leads/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
-            >
-              Add Lead
-            </Link>
           </div>
         </div>
 
@@ -372,7 +330,7 @@ export default function LeadsClient({
             <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
             <button
               onClick={clearFilters}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-[#1B7A7A] hover:text-[#155555]"
             >
               Clear All
             </button>
@@ -558,7 +516,7 @@ export default function LeadsClient({
           <div className="mt-4">
             <button
               onClick={() => setShowMoreFilters(!showMoreFilters)}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-[#1B7A7A] hover:text-[#155555]"
             >
               {showMoreFilters ? '▼' : '▶'} More Filters (Company)
             </button>
@@ -742,7 +700,7 @@ export default function LeadsClient({
                           if (input) input.indeterminate = someSelected;
                         }}
                         onChange={(e) => handleSelectAll(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-[#1B7A7A] focus:ring-[#1B7A7A]"
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -785,13 +743,13 @@ export default function LeadsClient({
                           type="checkbox"
                           checked={selectedLeadIds.has(lead.id)}
                           onChange={(e) => handleSelectLead(lead.id, e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-gray-300 text-[#1B7A7A] focus:ring-[#1B7A7A]"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
                           href={`/dashboard/leads/${lead.id}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-[#1B7A7A] hover:text-[#155555] font-medium"
                         >
                           {formatName(lead.firstName, lead.lastName)}
                         </Link>
@@ -803,7 +761,7 @@ export default function LeadsClient({
                         {lead.companyRel ? (
                           <Link
                             href={`/dashboard/companies/${lead.companyRel.id}`}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-[#1B7A7A] hover:text-[#155555]"
                           >
                             {lead.companyRel.name}
                           </Link>
@@ -848,7 +806,7 @@ export default function LeadsClient({
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
                           href={`/dashboard/leads/${lead.id}/edit`}
-                          className="text-blue-600 hover:text-blue-800 mr-4"
+                          className="text-[#1B7A7A] hover:text-[#155555] mr-4"
                         >
                           Edit
                         </Link>
@@ -866,7 +824,7 @@ export default function LeadsClient({
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

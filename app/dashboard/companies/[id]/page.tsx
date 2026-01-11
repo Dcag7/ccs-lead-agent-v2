@@ -43,47 +43,12 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
   const rollupScore = await rollupCompanyScore(id);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm font-medium text-blue-600">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm text-gray-600 hover:text-gray-900">
-                  Leads
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <Link
             href="/dashboard/companies"
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-[#1B7A7A] hover:text-[#155555] text-sm"
           >
             ← Back to Companies
           </Link>
@@ -98,7 +63,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
                   href={company.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 text-sm"
+                  className="text-[#1B7A7A] hover:text-[#155555] text-sm"
                 >
                   {company.website}
                 </a>
@@ -107,7 +72,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
             <div className="flex gap-3">
               <Link
                 href={`/dashboard/companies/${company.id}/edit`}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
+                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-lg hover:bg-[#155555] font-medium"
               >
                 Edit
               </Link>
@@ -129,7 +94,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Score</h3>
-              <p className="mt-1 text-2xl font-bold text-blue-600">{company.score}</p>
+              <p className="mt-1 text-2xl font-bold text-[#1B7A7A]">{company.score}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Created</h3>
@@ -143,11 +108,11 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
           {company.scoreFactors && typeof company.scoreFactors === 'object' && 'reasons' in company.scoreFactors && Array.isArray((company.scoreFactors as { reasons?: unknown }).reasons) && ((company.scoreFactors as { reasons?: unknown[] }).reasons?.length ?? 0) > 0 && (
             <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Scoring Breakdown</h3>
-              <div className="bg-blue-50 rounded-lg p-4">
+              <div className="bg-[#E6F5F5] rounded-lg p-4">
                 <ul className="space-y-2">
                   {((company.scoreFactors as { reasons?: string[] }).reasons ?? []).map((reason: string, index: number) => (
                     <li key={index} className="flex items-start">
-                      <span className="text-blue-600 mr-2">✓</span>
+                      <span className="text-[#1B7A7A] mr-2">✓</span>
                       <span className="text-sm text-gray-700">{reason}</span>
                     </li>
                   ))}
@@ -164,9 +129,9 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
             <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Lead Score Rollup</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 rounded-lg p-4">
+                <div className="bg-[#E6F5F5] rounded-lg p-4">
                   <h4 className="text-sm font-medium text-gray-500 mb-1">Average Score</h4>
-                  <p className="text-2xl font-bold text-blue-600">{rollupScore.avgScore.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-[#1B7A7A]">{rollupScore.avgScore.toFixed(1)}</p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
                   <h4 className="text-sm font-medium text-gray-500 mb-1">Max Score</h4>
@@ -222,7 +187,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
               </h2>
               <Link
                 href={`/dashboard/contacts/new?companyId=${company.id}`}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="text-[#1B7A7A] hover:text-[#155555] text-sm font-medium"
               >
                 Add Contact
               </Link>
@@ -235,7 +200,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
                   <div key={contact.id} className="border-b border-gray-200 pb-3 last:border-0">
                     <Link
                       href={`/dashboard/contacts/${contact.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
+                      className="text-[#1B7A7A] hover:text-[#155555] font-medium"
                     >
                       {contact.firstName} {contact.lastName}
                     </Link>
@@ -263,7 +228,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
                       {lead.firstName} {lead.lastName}
                     </p>
                     <p className="text-sm text-gray-600">{lead.email}</p>
-                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 mt-1">
+                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-[#E6F5F5] text-[#1B7A7A] mt-1">
                       {lead.status}
                     </span>
                   </div>
@@ -272,7 +237,7 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

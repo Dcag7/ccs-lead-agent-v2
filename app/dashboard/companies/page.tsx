@@ -87,7 +87,7 @@ export default async function CompaniesPage(props: {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Companies</h1>
           <p className="text-gray-600 mb-4">There was an error loading the companies page. Please try again.</p>
-          <Link href="/dashboard/companies" className="text-blue-600 hover:text-blue-800">
+          <Link href="/dashboard/companies" className="text-[#1B7A7A] hover:text-[#155555]">
             Refresh Page
           </Link>
         </div>

@@ -12,47 +12,12 @@ export default async function NewLeadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CCS Lead Agent
-              </Link>
-              <div className="flex gap-4">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-                  Dashboard
-                </Link>
-                <Link href="/dashboard/companies" className="text-sm text-gray-600 hover:text-gray-900">
-                  Companies
-                </Link>
-                <Link href="/dashboard/contacts" className="text-sm text-gray-600 hover:text-gray-900">
-                  Contacts
-                </Link>
-                <Link href="/dashboard/leads" className="text-sm font-medium text-blue-600">
-                  Leads
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user?.email}</span>
-              <Link
-                href="/api/auth/signout"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-8">
+      <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <Link
             href="/dashboard/leads"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            className="text-[#1B7A7A] hover:text-[#155555] text-sm font-medium"
           >
             ← Back to Leads
           </Link>
@@ -62,7 +27,7 @@ export default async function NewLeadPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Lead</h1>
           <LeadForm mode="create" />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
