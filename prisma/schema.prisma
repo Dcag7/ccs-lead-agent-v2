@@ -142,3 +142,41 @@ model LeadNote {
   @@index([createdAt])
   @@map("lead_notes")
 }
+
+// Phase 5A: Discovery Run Tracking
+model DiscoveryRun {
+  id        String   @id @default(cuid())
+
+  // Timing
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  // Status: pending, running, completed, failed, cancelled
+  status String @default("pending")
+
+  // Mode: daily, manual, test
+  mode   String @default("daily")
+  dryRun Boolean @default(false)
+
+  // Who/what triggered this run
+  triggeredBy String? // "cron", "manual", "test-script"
+
+  // Results (JSON for flexibility)
+  stats Json?
+  error String? @db.Text
+
+  // Denormalized counts for quick queries
+  createdCompaniesCount Int @default(0)
+  createdContactsCount  Int @default(0)
+  createdLeadsCount     Int @default(0)
+  skippedCount          Int @default(0)
+  errorCount            Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([startedAt])
+  @@index([mode])
+  @@map("discovery_runs")
+}
