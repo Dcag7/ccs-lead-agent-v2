@@ -43,7 +43,7 @@ model Company {
   updatedAt DateTime @updatedAt
 
   contacts Contact[]
-  leads    Lead[]
+  leads    Lead[]    @relation("CompanyLeads")
 
   @@map("companies")
 }
@@ -62,7 +62,7 @@ model Contact {
   updatedAt         DateTime @updatedAt
 
   company Company? @relation(fields: [companyId], references: [id])
-  leads   Lead[]
+  leads   Lead[]   @relation("ContactLeads")
 
   @@index([email])
   @@index([linkedInUrl])
@@ -87,8 +87,8 @@ model Lead {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  companyRel Company? @relation(fields: [companyId], references: [id])
-  contactRel Contact? @relation(fields: [contactId], references: [id])
+  companyRel Company? @relation("CompanyLeads", fields: [companyId], references: [id])
+  contactRel Contact? @relation("ContactLeads", fields: [contactId], references: [id])
 
   @@index([email])
   @@index([status])
