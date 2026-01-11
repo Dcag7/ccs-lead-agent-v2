@@ -4,6 +4,9 @@ import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import LeadScoring from "../components/LeadScoring";
+import LeadStatusManager from "./components/LeadStatusManager";
+import LeadOwnerManager from "./components/LeadOwnerManager";
+import LeadNotes from "./components/LeadNotes";
 
 export default async function LeadDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -20,12 +23,39 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
     include: {
       companyRel: true,
       contactRel: true,
+      assignedTo: true,
+      notes: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
     },
   });
 
   if (!lead) {
     notFound();
   }
+
+  // Fetch users for owner assignment
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+    orderBy: {
+      email: 'asc',
+    },
+  });
 
   const formatName = (firstName: string | null, lastName: string | null) => {
     if (firstName || lastName) {
@@ -209,6 +239,28 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
                   {new Date(lead.updatedAt).toLocaleString()}
                 </p>
               </div>
+            </div>
+
+            {/* Phase 4A: Lead Management */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Lead Management</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <LeadStatusManager leadId={lead.id} currentStatus={lead.status} />
+                <LeadOwnerManager 
+                  leadId={lead.id} 
+                  currentAssignedToId={lead.assignedToId}
+                  currentAssignedTo={lead.assignedTo}
+                  users={users}
+                  currentUserId={(session.user as { id?: string })?.id || null}
+                />
+              </div>
+
+              <LeadNotes 
+                leadId={lead.id} 
+                notes={lead.notes}
+                currentUserId={(session.user as { id?: string })?.id || null}
+              />
             </div>
 
             {/* Lead Scoring Controls */}
