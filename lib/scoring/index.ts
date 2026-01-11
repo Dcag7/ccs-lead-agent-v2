@@ -8,6 +8,8 @@ export { scoreLead } from './scoreLead';
 export { buildScoreInput } from './buildScoreInput';
 export { persistLeadScore } from './persistLeadScore';
 export { normalizeLeadSource } from './normalizeLeadSource';
+export { rollupCompanyScore } from './rollupCompanyScore';
+export type { CompanyRollupScore } from './rollupCompanyScore';
 export type {
   ScoreInput,
   ScoreResult,

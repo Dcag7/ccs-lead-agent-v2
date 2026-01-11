@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CompanyEnrichment from "../components/CompanyEnrichment";
+import { rollupCompanyScore } from "@/lib/scoring/rollupCompanyScore";
 
 export default async function CompanyDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -37,6 +38,9 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
   if (!company) {
     notFound();
   }
+
+  // Compute rollup score (computed on-read, not persisted)
+  const rollupScore = await rollupCompanyScore(id);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -151,6 +155,55 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
               </div>
               <p className="text-xs text-gray-500 mt-3">
                 Note: Scores are calculated based on rules-based factors. Future versions will include AI-enhanced scoring.
+              </p>
+            </div>
+          )}
+
+          {/* Lead Score Rollup */}
+          {rollupScore.totalLeads > 0 && (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Lead Score Rollup</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Average Score</h4>
+                  <p className="text-2xl font-bold text-blue-600">{rollupScore.avgScore.toFixed(1)}</p>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Max Score</h4>
+                  <p className="text-2xl font-bold text-green-600">{rollupScore.maxScore}</p>
+                </div>
+                <div className="bg-red-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Hot Leads</h4>
+                  <p className="text-2xl font-bold text-red-600">{rollupScore.countHot}</p>
+                </div>
+                <div className="bg-yellow-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Warm Leads</h4>
+                  <p className="text-2xl font-bold text-yellow-600">{rollupScore.countWarm}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Cold Leads</h4>
+                  <p className="text-xl font-semibold text-gray-700">{rollupScore.countCold}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Total Leads</h4>
+                  <p className="text-xl font-semibold text-gray-700">{rollupScore.totalLeads}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Scored Leads</h4>
+                  <p className="text-xl font-semibold text-gray-700">{rollupScore.scoredLeads}</p>
+                </div>
+              </div>
+              {rollupScore.lastScoredAt && (
+                <div className="mt-4">
+                  <p className="text-xs text-gray-500">
+                    Last scored: {new Date(rollupScore.lastScoredAt).toLocaleString()}
+                  </p>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-3">
+                Aggregate metrics computed from all non-archived leads for this company.
               </p>
             </div>
           )}
