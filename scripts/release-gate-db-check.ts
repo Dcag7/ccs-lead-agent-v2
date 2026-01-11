@@ -7,43 +7,36 @@
 
 import { prisma } from '../lib/prisma';
 
+type CheckResult = { table: string; status: 'PASS' | 'FAIL'; error?: string; count?: number };
+
+async function checkTable(
+  name: string,
+  countFn: () => Promise<number>,
+  results: CheckResult[]
+): Promise<void> {
+  try {
+    const count = await countFn();
+    results.push({ table: name, status: 'PASS', count });
+    console.log(`✅ ${name}: Accessible (${count} records)`);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    results.push({ table: name, status: 'FAIL', error: errorMsg });
+    console.error(`❌ ${name}: FAILED - ${errorMsg}`);
+  }
+}
+
 async function checkDatabase() {
   console.log('🔍 Release Gate: Database Verification\n');
 
-  const results: { table: string; status: 'PASS' | 'FAIL'; error?: string; count?: number }[] = [];
+  const results: CheckResult[] = [];
 
-  // Check key tables
-  const tables = [
-    { name: 'users', model: prisma.user },
-    { name: 'companies', model: prisma.company },
-    { name: 'contacts', model: prisma.contact },
-    { name: 'leads', model: prisma.lead },
-    { name: 'lead_notes', model: prisma.leadNote },
-    { name: 'import_jobs', model: prisma.importJob },
-  ];
-
-  for (const { name, model } of tables) {
-    try {
-      // Use count() as a safe, non-destructive check
-      const count = await model.count();
-      results.push({ table: name, status: 'PASS', count });
-      console.log(`✅ ${name}: Accessible (${count} records)`);
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      results.push({ table: name, status: 'FAIL', error: errorMsg });
-      console.error(`❌ ${name}: FAILED - ${errorMsg}`);
-    }
-  }
-
-  // Check Phase 4 specific: LeadNote model
-  try {
-    const leadNotesCount = await prisma.leadNote.count();
-    console.log(`✅ lead_notes: Accessible (${leadNotesCount} records)`);
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`❌ lead_notes: FAILED - ${errorMsg}`);
-    results.push({ table: 'lead_notes', status: 'FAIL', error: errorMsg });
-  }
+  // Check key tables - each checked explicitly for type safety
+  await checkTable('users', () => prisma.user.count(), results);
+  await checkTable('companies', () => prisma.company.count(), results);
+  await checkTable('contacts', () => prisma.contact.count(), results);
+  await checkTable('leads', () => prisma.lead.count(), results);
+  await checkTable('lead_notes', () => prisma.leadNote.count(), results);
+  await checkTable('import_jobs', () => prisma.importJob.count(), results);
 
   // Check Phase 4 specific: Lead assignedToId relationship
   try {
