@@ -57,36 +57,36 @@
 - [x] `PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md`
 - [x] `PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md`
 - [x] `PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md` (this document)
-- [ ] Update `SYSTEM_OVERVIEW.md`
-- [ ] Update `CORE_LEAD_AGENT_DEFINITION.md`
-- [ ] Update `VISION_GAP_ANALYSIS.md`
-- [ ] Update `PHASE_STATUS_MATRIX.md`
+- [x] Update `SYSTEM_OVERVIEW.md`
+- [x] Update `CORE_LEAD_AGENT_DEFINITION.md`
+- [x] Update `VISION_GAP_ANALYSIS.md`
+- [x] Update `PHASE_STATUS_MATRIX.md`
 
 ### 3.2 Database
 
-- [ ] Add `DiscoveryRun` model to Prisma schema
-- [ ] Create migration
-- [ ] Apply migration
+- [x] Add `DiscoveryRun` model to Prisma schema
+- [x] Create migration
+- [x] Apply migration
 
 ### 3.3 Code
 
-- [ ] `lib/discovery/runner/config.ts` - Configuration loading
-- [ ] `lib/discovery/runner/types.ts` - Type definitions
-- [ ] `lib/discovery/runner/DailyDiscoveryRunner.ts` - Main runner
-- [ ] `lib/discovery/runner/index.ts` - Public exports
-- [ ] `app/api/jobs/discovery/run/route.ts` - Job endpoint
-- [ ] `vercel.json` - Cron configuration
+- [x] `lib/discovery/runner/config.ts` - Configuration loading
+- [x] `lib/discovery/runner/types.ts` - Type definitions
+- [x] `lib/discovery/runner/DailyDiscoveryRunner.ts` - Main runner
+- [x] `lib/discovery/runner/index.ts` - Public exports
+- [x] `app/api/jobs/discovery/run/route.ts` - Job endpoint
+- [x] `vercel.json` - Cron configuration
 
 ### 3.4 UI
 
-- [ ] Discovery runs list component
-- [ ] Integration into admin dashboard
+- [x] Discovery runs list component
+- [x] Integration into admin dashboard (sidebar link added)
 
 ### 3.5 Scripts & Testing
 
-- [ ] `scripts/test-discovery-runner.ts`
-- [ ] Lint passes
-- [ ] Type check passes
+- [x] `scripts/test-discovery-runner.ts`
+- [x] Lint passes
+- [x] Type check passes
 - [ ] Manual verification of dry run
 - [ ] Manual verification of real run
 

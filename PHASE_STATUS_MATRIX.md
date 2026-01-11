@@ -15,7 +15,7 @@
 | 2 - Enrichment | ✅ Complete | 70% |
 | 3 - Scoring | ✅ Complete | 80% |
 | 4 - Lead Management | ✅ Complete | 90% |
-| 5A - Autonomous Discovery | 🔄 In Progress | 25% |
+| 5A - Autonomous Discovery | 🔄 In Progress | 90% |
 | 5B - Brain/Policy | ❌ Planned | 0% |
 | 6A - Messaging Foundation | ❌ Planned | 0% |
 | 6B - Assisted Replies | ❌ Planned | 0% |
@@ -84,7 +84,7 @@
 | Attribute | Value |
 |-----------|-------|
 | **Status** | 🔄 In Progress |
-| **Completion** | 25% |
+| **Completion** | 90% |
 | **Key Features Included** | Daily scheduling via Vercel Cron, DiscoveryRun tracking model, budget/quota management, idempotency via existing deduplication, dry-run mode, run history UI |
 | **Key Exclusions** | Real-time discovery, user-triggered discovery, discovery result approval workflow, alerting (deferred to 5B) |
 | **Documentation** | [PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md) |
@@ -94,12 +94,12 @@
 - [x] Constraints documentation
 - [x] Technical design documentation
 - [x] MVP definition documentation
-- [ ] DiscoveryRun Prisma model
-- [ ] DailyDiscoveryRunner implementation
-- [ ] Secured job API route
-- [ ] Vercel cron configuration
-- [ ] Run history UI
-- [ ] Test script
+- [x] DiscoveryRun Prisma model + migration
+- [x] DailyDiscoveryRunner implementation
+- [x] Secured job API route (`/api/jobs/discovery/run`)
+- [x] Vercel cron configuration (`vercel.json`)
+- [x] Run history UI (`/dashboard/discovery-runs`)
+- [x] Test script (`scripts/test-discovery-runner.ts`)
 
 ---
 
@@ -269,6 +269,7 @@ Based on current status, recommended next implementation:
 |------|---------|
 | 2026-01-11 | Initial matrix creation |
 | 2026-01-11 | Phase 5A marked as In Progress (25%); added completed items checklist |
+| 2026-01-11 | Phase 5A implementation complete (90%); pending: manual verification + deployment |
 
 ---
 
