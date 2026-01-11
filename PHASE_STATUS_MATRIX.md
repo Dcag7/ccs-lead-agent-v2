@@ -15,7 +15,7 @@
 | 2 - Enrichment | ✅ Complete | 70% |
 | 3 - Scoring | ✅ Complete | 80% |
 | 4 - Lead Management | ✅ Complete | 90% |
-| 5A - Autonomous Discovery | ❌ Planned | 0% |
+| 5A - Autonomous Discovery | 🔄 In Progress | 25% |
 | 5B - Brain/Policy | ❌ Planned | 0% |
 | 6A - Messaging Foundation | ❌ Planned | 0% |
 | 6B - Assisted Replies | ❌ Planned | 0% |
@@ -83,12 +83,23 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | ❌ Planned |
-| **Completion** | 0% |
-| **Key Features Included** | (Planned) Daily scheduling via cron, run tracking, budget/quota management, idempotency, failure handling, alerting, run history dashboard |
-| **Key Exclusions** | Real-time discovery, user-triggered discovery, discovery result approval workflow |
-| **Documentation** | [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) (Phase 5A section) |
-| **Notes/Risks** | Requires Vercel Cron or external scheduler. Builds on Phase 1 architecture. |
+| **Status** | 🔄 In Progress |
+| **Completion** | 25% |
+| **Key Features Included** | Daily scheduling via Vercel Cron, DiscoveryRun tracking model, budget/quota management, idempotency via existing deduplication, dry-run mode, run history UI |
+| **Key Exclusions** | Real-time discovery, user-triggered discovery, discovery result approval workflow, alerting (deferred to 5B) |
+| **Documentation** | [PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md) |
+| **Notes/Risks** | Uses Vercel Cron. No outreach. No LLM brain. Production-ready implementation in progress. |
+
+**Phase 5A Completed Items:**
+- [x] Constraints documentation
+- [x] Technical design documentation
+- [x] MVP definition documentation
+- [ ] DiscoveryRun Prisma model
+- [ ] DailyDiscoveryRunner implementation
+- [ ] Secured job API route
+- [ ] Vercel cron configuration
+- [ ] Run history UI
+- [ ] Test script
 
 ---
 
@@ -257,6 +268,7 @@ Based on current status, recommended next implementation:
 | Date | Changes |
 |------|---------|
 | 2026-01-11 | Initial matrix creation |
+| 2026-01-11 | Phase 5A marked as In Progress (25%); added completed items checklist |
 
 ---
 

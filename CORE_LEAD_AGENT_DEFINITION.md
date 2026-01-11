@@ -2,7 +2,7 @@
 
 > **Status:** Living Document - Source of Truth  
 > **Created:** January 11, 2026  
-> **Last Updated:** January 11, 2026 (v1.1)  
+> **Last Updated:** January 11, 2026 (v1.2)  
 > **Ownership:** This document MUST be updated whenever new phase features are added
 
 ---
@@ -73,12 +73,16 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 - ✅ Import leads from CSV
 - ✅ Deduplicate and link records during import
 
-### 1.5 Discovery Architecture (Ready but Inactive)
+### 1.5 Discovery Architecture (Ready, Execution In Progress)
 - ✅ Google search discovery channel (implemented)
 - ✅ Website signal extraction (implemented)
 - ✅ Keyword discovery channel (implemented)
 - ✅ Discovery metadata storage (implemented)
-- ⚠️ **NOT ACTIVE:** No execution mechanism (no cron, no manual trigger)
+- 🔄 **Phase 5A:** Autonomous daily discovery runner in progress
+  - Daily scheduling via Vercel Cron
+  - DiscoveryRun tracking model
+  - Secured job endpoint with dry-run support
+  - **No outreach** - discovery only
 
 ---
 
@@ -87,10 +91,10 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 **Explicitly NOT Implemented (as of January 11, 2026):**
 
 ### 2.1 Discovery Execution
-- ❌ No scheduled/daily discovery runs
-- ❌ No manual discovery trigger
-- ❌ No run tracking or history
-- ❌ No discovery budgets or quotas
+- 🔄 Scheduled/daily discovery runs (Phase 5A in progress)
+- 🔄 Manual discovery trigger via secured API (Phase 5A in progress)
+- 🔄 Run tracking and history (Phase 5A in progress)
+- 🔄 Discovery budgets/quotas via env vars (Phase 5A in progress)
 
 ### 2.2 Policy/Brain Layer
 - ❌ No ICP (Ideal Customer Profile) rules
@@ -158,7 +162,7 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 
 | Stage | Status | Notes |
 |-------|--------|-------|
-| **DISCOVER** | ⚠️ Architecture Ready | Needs execution trigger |
+| **DISCOVER** | 🔄 In Progress | Phase 5A: Daily runner being implemented |
 | **ENRICH** | ✅ Implemented | Google CSE, website metadata |
 | **SCORE** | ✅ Implemented | Rule-based 0-100 scoring |
 | **MANAGE** | ✅ Implemented | Full CRM capabilities |
@@ -191,14 +195,16 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 | Audit Logging | 6C | Full trail of automated actions |
 | Escalation Rules | 6C | Auto-escalate on triggers |
 
-### 4.3 Discovery Guardrails (Planned Phase 5A)
+### 4.3 Discovery Guardrails (Phase 5A - In Progress)
 
-| Guardrail | Description |
-|-----------|-------------|
-| Daily Budget | Max API calls/cost per day |
-| Quota Tracking | Track usage against limits |
-| Failure Alerts | Notify on repeated failures |
-| Idempotency | No duplicate prospects in same run |
+| Guardrail | Description | Status |
+|-----------|-------------|--------|
+| Daily Budget | Max companies/queries per run via env vars | 🔄 Implementing |
+| Enable Switch | `DISCOVERY_RUNNER_ENABLED` env var | 🔄 Implementing |
+| Dry Run Mode | Test without DB writes | 🔄 Implementing |
+| Idempotency | No duplicate prospects via existing dedup | ✅ Uses Phase 1 |
+| Run Tracking | All runs logged with stats | 🔄 Implementing |
+| Failure Alerts | Notify on repeated failures | ❌ Deferred to 5B |
 
 ---
 
@@ -380,6 +386,7 @@ The CCS Lead Agent may use Large Language Models (LLMs) and other AI technologie
 |------|---------|--------|---------|
 | 2026-01-11 | 1.0 | System | Initial document creation |
 | 2026-01-11 | 1.1 | System | Added agent identity principles, LLM usage policy |
+| 2026-01-11 | 1.2 | System | Updated discovery status to reflect Phase 5A in progress |
 
 ---
 

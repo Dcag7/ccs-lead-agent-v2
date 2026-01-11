@@ -81,20 +81,21 @@ The original vision focused on "email outreach" as the communication method. The
 
 ## ❌ What's Missing (Critical Gaps)
 
-### Gap 1: Discovery Execution (Phase 5A Scope)
+### Gap 1: Discovery Execution (Phase 5A Scope) - 🔄 IN PROGRESS
 
 **Current State:**
-- Architecture complete, but NO way to trigger discovery
-- No scheduled runs, no manual trigger API
-- No run history or tracking
+- Architecture complete
+- **Phase 5A implementation in progress**
+- Daily scheduling via Vercel Cron being added
+- DiscoveryRun model for tracking being added
 
 **Required for "Lead Agent" Vision:**
-- ✅ Daily scheduled discovery (cron)
-- ✅ Run tracking and history
-- ✅ Quota/budget management
-- ✅ Failure handling and alerting
+- 🔄 Daily scheduled discovery (cron) - implementing
+- 🔄 Run tracking and history - implementing
+- 🔄 Quota/budget management - implementing
+- ❌ Failure alerting - deferred to Phase 5B
 
-**Impact:** Without execution, discovery architecture is unused. System remains passive.
+**Impact:** Phase 5A will activate the discovery architecture. No outreach in this phase.
 
 ---
 
@@ -231,9 +232,9 @@ The original vision focused on "email outreach" as the communication method. The
 | | Bulk operations | ✅ Implemented | None | - |
 | | Orders tracking | ❌ Missing | **High** | Medium |
 | | Activity logs | ❌ Missing | **Medium** | Medium |
-| **Phase 5A: Auto Discovery** | Daily scheduling | ❌ Missing | **Critical** | High |
-| | Run tracking | ❌ Missing | **Critical** | High |
-| | Budget/quota management | ❌ Missing | **High** | High |
+| **Phase 5A: Auto Discovery** | Daily scheduling | 🔄 In Progress | **Critical** | High |
+| | Run tracking | 🔄 In Progress | **Critical** | High |
+| | Budget/quota management | 🔄 In Progress | **High** | High |
 | **Phase 5B: Brain** | ICP rules | ❌ Missing | **Critical** | High |
 | | Allow/block lists | ❌ Missing | **High** | High |
 | | Action planner | ❌ Missing | **High** | High |
@@ -266,11 +267,11 @@ The original vision focused on "email outreach" as the communication method. The
    - Human-in-the-loop safety maintained
    - Estimated: 2 weeks
 
-3. **Phase 5A: Autonomous Discovery** ⚠️ **HIGH**
+3. **Phase 5A: Autonomous Discovery** 🔄 **IN PROGRESS**
    - Activates existing discovery architecture
-   - Daily scheduled runs
-   - Run tracking and alerting
-   - Estimated: 2 weeks
+   - Daily scheduled runs via Vercel Cron
+   - Run tracking (no alerting in 5A)
+   - **Status: Implementation started**
 
 ### **Medium Priority (8-16 weeks)**
 
@@ -370,12 +371,13 @@ Phase 5A (2 weeks) → Phase 5B (2 weeks) → Phase 6A (3 weeks) → Phase 6B (2
 |------|---------|
 | 2026-01-10 | Original gap analysis |
 | 2026-01-11 | Updated for omnichannel vision, added Phase 6 messaging gaps, revised priorities |
+| 2026-01-11 | Phase 5A marked as In Progress |
 
 ---
 
 **Analysis Date:** January 11, 2026  
-**Current Implementation:** ~25% of revised vision  
-**Next Critical Phase:** Phase 6A (Omnichannel Inbox) or Phase 5A (Discovery Execution)
+**Current Implementation:** ~30% of revised vision (Phase 5A in progress)  
+**Currently In Progress:** Phase 5A (Autonomous Discovery Runner)
 
 ---
 

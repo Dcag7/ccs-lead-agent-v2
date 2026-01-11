@@ -2,9 +2,9 @@
 
 **Purpose:** A B2B Lead Generation and Business Development system designed specifically for CCS Apparel. More than a CRM—the CCS Lead Agent is evolving into an autonomous digital employee that finds, qualifies, and nurtures leads across multiple communication channels.
 
-**Version:** 3.0  
+**Version:** 3.1  
 **Last Updated:** January 11, 2026  
-**Status:** Production Ready (Phases 1–4), Evolution in Progress
+**Status:** Production Ready (Phases 1–4), Phase 5A In Progress
 
 ---
 
@@ -121,7 +121,7 @@ The CCS Lead Agent operates through a cyclical process:
 
 | Stage | Status | What It Does Today |
 |-------|--------|-------------------|
-| **DISCOVER** | ⚠️ Architecture Ready | Code exists; needs execution trigger (Phase 5A) |
+| **DISCOVER** | 🔄 In Progress | Phase 5A: Daily autonomous discovery runner being implemented |
 | **ENRICH** | ✅ Active | Google CSE enrichment, website metadata |
 | **SCORE** | ✅ Active | Rule-based 0-100 scoring with classification |
 | **MANAGE** | ✅ Active | Full CRM: status, ownership, notes, bulk ops |
@@ -465,11 +465,13 @@ Fully Human-Controlled      Human-in-the-Loop             Controlled Autopilot
 
 ## 🚀 **Future Capabilities (Planned)**
 
-### **Phase 5A: Autonomous Daily Discovery**
-- Scheduled daily discovery runs (cron-based)
-- Run tracking and history
-- Budget and quota management
-- Failure alerting
+### **Phase 5A: Autonomous Daily Discovery** 🔄 *In Progress*
+- Scheduled daily discovery runs via Vercel Cron
+- Run tracking with DiscoveryRun model
+- Budget and quota management via env vars
+- Dry-run mode for safe testing
+- Run history UI for observability
+- **Note:** No outreach, no LLM brain in this phase
 
 ### **Phase 5B: Brain/Policy Layer**
 - Ideal Customer Profile (ICP) rules
@@ -566,9 +568,10 @@ Controlled automatic message replies with strict guardrails: opt-in only, templa
 |------|---------|---------|
 | 2026-01-10 | 2.0 | Original system overview |
 | 2026-01-11 | 3.0 | Reframed as Lead Agent; added brain/autonomy concepts; aligned with Roadmap v2 |
+| 2026-01-11 | 3.1 | Updated DISCOVER status to In Progress (Phase 5A implementation started) |
 
 ---
 
 **Last Updated:** January 11, 2026  
-**Version:** 3.0  
-**Status:** Production Ready (Phases 1–4) ✅
+**Version:** 3.1  
+**Status:** Production Ready (Phases 1–4) ✅ | Phase 5A 🔄
