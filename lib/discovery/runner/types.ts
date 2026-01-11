@@ -32,6 +32,18 @@ export interface RunOptions {
   maxCompanies?: number;
   /** What triggered this run */
   triggeredBy?: string;
+  /** User ID if manually triggered */
+  triggeredById?: string;
+  /** Intent ID for manual runs */
+  intentId?: string;
+  /** Intent name for display */
+  intentName?: string;
+  /** Custom queries (from intent) */
+  queries?: string[];
+  /** Custom channels (from intent) */
+  channels?: Array<'google' | 'keyword'>;
+  /** Max runtime in milliseconds (from intent) */
+  timeBudgetMs?: number;
 }
 
 /**

@@ -45,26 +45,50 @@ export class DailyDiscoveryRunner {
     const dryRun = options.dryRun ?? false;
     const mode = options.mode ?? 'daily';
     const triggeredBy = options.triggeredBy ?? 'unknown';
+    const triggeredById = options.triggeredById;
     const maxCompanies = options.maxCompanies ?? this.config.maxCompaniesPerRun;
+    const intentId = options.intentId;
+    const intentName = options.intentName;
+    const customQueries = options.queries;
+    const customChannels = options.channels;
+    const customTimeBudgetMs = options.timeBudgetMs;
 
     // Create run record
-    const run = await this.createRunRecord({ dryRun, mode, triggeredBy });
+    const run = await this.createRunRecord({
+      dryRun,
+      mode,
+      triggeredBy,
+      triggeredById,
+      intentId,
+      intentName,
+    });
 
     try {
       // Update status to running
       await this.updateRunStatus(run.id, 'running');
 
-      // Create time budget
-      const timeBudget = new TimeBudget(this.config.maxRuntimeSeconds);
+      // Create time budget (use custom if provided, otherwise config)
+      const timeBudgetSeconds = customTimeBudgetMs
+        ? Math.ceil(customTimeBudgetMs / 1000)
+        : this.config.maxRuntimeSeconds;
+      const timeBudget = new TimeBudget(timeBudgetSeconds);
 
-      // Get queries to execute
-      const queries = getDiscoveryQueries(this.config.maxQueries);
+      // Get queries to execute (use custom if provided, otherwise default)
+      const queries = customQueries && customQueries.length > 0
+        ? customQueries
+        : getDiscoveryQueries(this.config.maxQueries);
+
+      // Get channels to use (use custom if provided, otherwise config)
+      const channelsToUse = customChannels && customChannels.length > 0
+        ? customChannels
+        : this.config.enabledChannels;
 
       // Execute discovery across all queries
       const discoveryResults = await this.executeDiscovery(
         queries,
         timeBudget,
-        maxCompanies
+        maxCompanies,
+        channelsToUse
       );
 
       // Persist results (unless dry run)
@@ -90,9 +114,9 @@ export class DailyDiscoveryRunner {
         durationMs: Date.now() - startTime,
         config: {
           maxCompanies,
-          maxQueries: this.config.maxQueries,
-          maxRuntimeSeconds: this.config.maxRuntimeSeconds,
-          channels: this.config.enabledChannels,
+          maxQueries: queries.length,
+          maxRuntimeSeconds: timeBudgetSeconds,
+          channels: channelsToUse,
         },
       };
 
@@ -132,9 +156,11 @@ export class DailyDiscoveryRunner {
           durationMs: Date.now() - startTime,
           config: {
             maxCompanies,
-            maxQueries: this.config.maxQueries,
-            maxRuntimeSeconds: this.config.maxRuntimeSeconds,
-            channels: this.config.enabledChannels,
+            maxQueries: customQueries?.length ?? this.config.maxQueries,
+            maxRuntimeSeconds: customTimeBudgetMs
+              ? Math.ceil(customTimeBudgetMs / 1000)
+              : this.config.maxRuntimeSeconds,
+            channels: customChannels ?? this.config.enabledChannels,
           },
         },
         error: errorMessage,
@@ -148,7 +174,8 @@ export class DailyDiscoveryRunner {
   private async executeDiscovery(
     queries: string[],
     timeBudget: TimeBudget,
-    maxCompanies: number
+    maxCompanies: number,
+    channels: Array<'google' | 'keyword'>
   ) {
     // For MVP, we run a single aggregated discovery with all queries combined
     // Future enhancement: iterate through queries with budget checks
@@ -171,7 +198,7 @@ export class DailyDiscoveryRunner {
 
     // Execute discovery
     const result = await this.aggregator.execute({
-      enabledChannels: this.config.enabledChannels,
+      enabledChannels: channels,
       input,
     });
 
@@ -206,6 +233,9 @@ export class DailyDiscoveryRunner {
     dryRun: boolean;
     mode: string;
     triggeredBy: string;
+    triggeredById?: string;
+    intentId?: string;
+    intentName?: string;
   }) {
     return prisma.discoveryRun.create({
       data: {
@@ -213,6 +243,9 @@ export class DailyDiscoveryRunner {
         mode: options.mode,
         dryRun: options.dryRun,
         triggeredBy: options.triggeredBy,
+        triggeredById: options.triggeredById,
+        intentId: options.intentId,
+        intentName: options.intentName,
       },
     });
   }

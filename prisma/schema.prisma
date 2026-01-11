@@ -158,8 +158,13 @@ model DiscoveryRun {
   mode   String @default("daily")
   dryRun Boolean @default(false)
 
+  // Intent used for this run (null for legacy/daily runs)
+  intentId   String? // e.g., "referral_ecosystem_prospects"
+  intentName String? // Human-readable name for display
+
   // Who/what triggered this run
-  triggeredBy String? // "cron", "manual", "test-script"
+  triggeredBy   String? // "cron", "manual", "test-script"
+  triggeredById String? // User ID if manually triggered
 
   // Results (JSON for flexibility)
   stats Json?
@@ -178,5 +183,6 @@ model DiscoveryRun {
   @@index([status])
   @@index([startedAt])
   @@index([mode])
+  @@index([intentId])
   @@map("discovery_runs")
 }
