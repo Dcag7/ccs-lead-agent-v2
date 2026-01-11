@@ -74,6 +74,7 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
    * Check if channel is enabled
    * Google discovery is always enabled (Day 1 channel)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isEnabled(_config: DiscoveryChannelInput['config']): boolean {
     // Google is a Day 1 enabled channel - always active
     // Only check if Google CSE is configured

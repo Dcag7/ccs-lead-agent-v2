@@ -45,8 +45,7 @@ export class CompanyEnrichmentRunner {
    * @returns Enrichment summary
    */
   async enrichCompany(
-    companyId: string,
-    options?: EnrichmentOptions
+    companyId: string
   ): Promise<EnrichmentSummary> {
     // Load company from database
     const company = await prisma.company.findUnique({
