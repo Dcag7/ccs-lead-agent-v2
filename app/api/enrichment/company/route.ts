@@ -91,7 +91,9 @@ export async function POST(request: NextRequest) {
 
     // Run enrichment using CompanyEnrichmentRunner
     const runner = new CompanyEnrichmentRunner();
-    const enrichmentSummary = await runner.enrichCompany(companyId);
+    const enrichmentSummary = await runner.enrichCompany(companyId, {
+      forceRefresh: forceRefresh || false,
+    });
 
     // Fetch updated company from database
     const updatedCompany = await prisma.company.findUnique({
