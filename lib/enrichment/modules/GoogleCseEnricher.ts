@@ -8,7 +8,6 @@
 import type { ICompanyEnricher } from '../ICompanyEnricher';
 import type {
   CompanyEnrichmentInput,
-  EnrichmentOptions,
   EnrichmentResult,
 } from '../types';
 import {
