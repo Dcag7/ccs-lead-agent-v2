@@ -5,21 +5,18 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import LeadForm from "../../components/LeadForm";
 
-interface EditLeadPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function EditLeadPage({ params }: EditLeadPageProps) {
+export default async function EditLeadPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/login");
   }
 
+  // Await params to get the id
+  const { id } = await props.params;
+
   const lead = await prisma.lead.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!lead) {
@@ -66,7 +63,7 @@ export default async function EditLeadPage({ params }: EditLeadPageProps) {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link
-            href={`/dashboard/leads/${params.id}`}
+            href={`/dashboard/leads/${id}`}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
             ← Back to Lead Details

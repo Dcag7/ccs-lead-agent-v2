@@ -7,15 +7,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ContactForm from "../../components/ContactForm";
 
-export default async function EditContactPage({ params }: { params: { id: string } }) {
+export default async function EditContactPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/login");
   }
 
+  // Await params to get the id
+  const { id } = await props.params;
+
   const contact = await prisma.contact.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!contact) {
