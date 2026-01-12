@@ -15,6 +15,8 @@ import {
   applyIntentById,
   validateIntentId,
   getActiveIntents,
+  getIntentById,
+  getAnalysisConfigForIntent,
 } from '@/lib/discovery/intents';
 import type {
   ManualDiscoveryRequest,
@@ -42,8 +44,8 @@ export async function GET(): Promise<NextResponse> {
     );
   }
 
-  // Check for admin role
-  const userRole = (session.user as { role?: string }).role;
+  // Check for admin role (case-insensitive)
+  const userRole = (session.user as { role?: string }).role?.toLowerCase();
   if (userRole !== 'admin') {
     return NextResponse.json(
       { success: false, error: 'Admin access required' },
@@ -60,6 +62,7 @@ export async function GET(): Promise<NextResponse> {
     targetCountries: intent.targetCountries,
     channels: intent.channels,
     limits: intent.limits,
+    geography: intent.geography,
   }));
 
   return NextResponse.json({
@@ -85,9 +88,9 @@ export async function POST(
     );
   }
 
-  // 2. Check for admin role
+  // 2. Check for admin role (case-insensitive)
   const userId = (session.user as { id?: string }).id;
-  const userRole = (session.user as { role?: string }).role;
+  const userRole = (session.user as { role?: string }).role?.toLowerCase();
 
   if (userRole !== 'admin') {
     return NextResponse.json(
@@ -146,6 +149,10 @@ export async function POST(
     );
   }
 
+  // 6.1 Get analysis config for web scraping
+  const intent = getIntentById(intentId);
+  const analysisConfig = intent ? getAnalysisConfigForIntent(intent) : undefined;
+
   // 7. Log the run
   console.log(
     JSON.stringify({
@@ -174,6 +181,12 @@ export async function POST(
       maxCompanies: resolvedConfig.limits.maxCompanies,
       maxLeads: resolvedConfig.limits.maxLeads,
       timeBudgetMs: resolvedConfig.limits.timeBudgetMs,
+      // Enable web scraping with analysis config
+      enableScraping: true,
+      analysisConfig,
+      // Legacy: keyword filtering (used if scraping fails)
+      includeKeywords: resolvedConfig.includeKeywords,
+      excludeKeywords: resolvedConfig.excludeKeywords,
       // Snapshot intent config for run record
       intentConfig: {
         intentId: resolvedConfig.intentId,

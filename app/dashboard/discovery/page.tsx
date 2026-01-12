@@ -15,7 +15,7 @@ export default async function DiscoveryPage() {
     redirect('/login');
   }
 
-  const userRole = (session.user as { role?: string }).role;
+  const userRole = (session.user as { role?: string }).role?.toLowerCase();
   if (userRole !== 'admin') {
     redirect('/dashboard');
   }
