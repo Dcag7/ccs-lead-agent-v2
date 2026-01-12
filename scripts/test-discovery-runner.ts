@@ -35,16 +35,49 @@ async function main() {
   // List intents and exit
   if (listIntents) {
     console.log('\n📋 Available Discovery Intents:');
-    console.log('═'.repeat(60));
-    getActiveIntents().forEach((intent) => {
-      console.log(`\n  ${intent.id}`);
-      console.log(`  Name: ${intent.name}`);
-      console.log(`  Description: ${intent.description}`);
-      console.log(`  Countries: ${intent.targetCountries.join(', ')}`);
-      console.log(`  Channels: ${intent.channels.join(', ')}`);
+    console.log('═'.repeat(70));
+    
+    const intents = getActiveIntents();
+    const newIntents = intents.filter(i => 
+      ['agencies_all', 'schools_all', 'tenders_uniforms_merch', 'businesses_sme_ceo_and_corporate_marketing'].includes(i.id)
+    );
+    const legacyIntents = intents.filter(i => 
+      !['agencies_all', 'schools_all', 'tenders_uniforms_merch', 'businesses_sme_ceo_and_corporate_marketing'].includes(i.id)
+    );
+    
+    console.log('\n🆕 CCS-Aligned Intents (Gauteng-first):');
+    console.log('─'.repeat(70));
+    newIntents.forEach((intent) => {
+      console.log(`\n  📌 ${intent.id}`);
+      console.log(`     Name: ${intent.name}`);
+      console.log(`     Category: ${intent.category}`);
+      console.log(`     Description: ${intent.description.substring(0, 80)}...`);
+      console.log(`     Countries: ${intent.targetCountries.join(', ')}`);
+      console.log(`     Geography: ${intent.geography ? `Gauteng-first (boost: ${intent.geography.regionBoost || 0.15})` : 'N/A'}`);
+      console.log(`     Limits: ${intent.limits?.maxCompanies || 10} companies, ${intent.limits?.maxLeads || 10} leads, ${intent.limits?.maxQueries || 3} queries`);
+      console.log(`     Queries (sample): ${intent.seedQueries.slice(0, 2).join(' | ')}`);
     });
-    console.log('\n' + '═'.repeat(60));
-    console.log('Usage: npx tsx scripts/test-discovery-runner.ts --intent <intent_id> --dry-run\n');
+    
+    if (legacyIntents.length > 0) {
+      console.log('\n\n📦 Legacy Intents:');
+      console.log('─'.repeat(70));
+      legacyIntents.forEach((intent) => {
+        console.log(`\n  ${intent.id}`);
+        console.log(`     Name: ${intent.name}`);
+        console.log(`     Category: ${intent.category}`);
+        console.log(`     Countries: ${intent.targetCountries.join(', ')}`);
+      });
+    }
+    
+    console.log('\n' + '═'.repeat(70));
+    console.log('\n📊 Summary:');
+    console.log(`   Total Active Intents: ${intents.length}`);
+    console.log(`   CCS-Aligned (new): ${newIntents.length}`);
+    console.log(`   Legacy: ${legacyIntents.length}`);
+    console.log('\n🚀 Usage:');
+    console.log('   npx tsx scripts/test-discovery-runner.ts --intent agencies_all --dry-run');
+    console.log('   npx tsx scripts/test-discovery-runner.ts --intent tenders_uniforms_merch --dry-run');
+    console.log('\n');
     return;
   }
 
