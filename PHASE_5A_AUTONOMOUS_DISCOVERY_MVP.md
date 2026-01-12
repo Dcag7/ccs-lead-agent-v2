@@ -180,24 +180,38 @@ model DiscoveryRun {
 
 ---
 
-## 5. Default Discovery Queries (MVP)
+## 5. Intent-Based Discovery (Updated)
 
-For MVP, hardcoded queries focused on CCS Apparel's market:
+Discovery now uses **intent templates** aligned to CCS Apparel's real-world targets.
+Daily runs execute multiple intents sequentially.
 
+### Default Daily Intents
 ```typescript
-const DISCOVERY_QUERIES = [
-  'corporate clothing suppliers South Africa',
-  'workwear manufacturers Johannesburg',
-  'promotional clothing companies Cape Town',
-  'uniform suppliers Botswana',
-  'branded apparel South Africa',
-  'corporate gifts Pretoria',
-  'school uniform manufacturers South Africa',
-  'hospitality uniforms Cape Town',
-  'construction workwear suppliers',
-  'branded merchandise companies Gauteng',
+const DEFAULT_DAILY_INTENTS = [
+  'agencies_all',           // Marketing/branding agencies
+  'tenders_uniforms_merch', // Government tenders via etenders.gov.za
+  'businesses_sme_ceo_and_corporate_marketing', // SME and corporate buyers
 ];
 ```
+
+### Available Intent Templates
+
+| Intent ID | Target | Geography |
+|-----------|--------|-----------|
+| `agencies_all` | Marketing/branding/creative agencies | ZA, Gauteng-first |
+| `schools_all` | Schools for uniforms/embroidery | ZA, Gauteng-first |
+| `tenders_uniforms_merch` | Government tenders (etenders.gov.za) | ZA, Gauteng-first |
+| `businesses_sme_ceo_and_corporate_marketing` | SME and corporate buyers | ZA, Gauteng-first |
+
+### Global Negative Keywords
+All intents filter out: `jobs`, `vacancies`, `internship`, `retail`, `careers`, etc.
+
+### Gauteng-First Geography
+- Priority regions: Johannesburg, Pretoria, Sandton, Midrand, Centurion, etc.
+- Scoring boost for Gauteng mentions (not exclusion of other regions)
+
+### Tender Sourcing
+Tender intent uses `site:etenders.gov.za` queries to focus on National Treasury eTender Portal.
 
 ---
 

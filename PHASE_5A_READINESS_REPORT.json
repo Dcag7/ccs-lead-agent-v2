@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-01-12T17:20:30.453Z",
+  "ready": true,
+  "summary": {
+    "criticalPassed": 18,
+    "criticalFailed": 0,
+    "warningCount": 1
+  },
+  "checks": [
+    {
+      "category": "env",
+      "check": "DATABASE_URL",
+      "passed": true,
+      "details": "PostgreSQL connection string - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "env",
+      "check": "NEXTAUTH_SECRET",
+      "passed": true,
+      "details": "NextAuth.js secret key - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "env",
+      "check": "NEXTAUTH_URL",
+      "passed": true,
+      "details": "Application URL - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "env-discovery",
+      "check": "DISCOVERY_RUNNER_ENABLED",
+      "passed": true,
+      "details": "Kill switch (true/false) - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "env-discovery",
+      "check": "CRON_JOB_SECRET",
+      "passed": true,
+      "details": "Secret for cron endpoint auth - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "env-discovery",
+      "check": "GOOGLE_CSE_API_KEY",
+      "passed": true,
+      "details": "Google Custom Search API key - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "env-discovery",
+      "check": "GOOGLE_CSE_ID",
+      "passed": true,
+      "details": "Google Custom Search Engine ID - NOT SET",
+      "critical": true
+    },
+    {
+      "category": "db",
+      "check": "Database connection",
+      "passed": true,
+      "details": "Connected successfully",
+      "critical": true
+    },
+    {
+      "category": "db",
+      "check": "DiscoveryRun table exists",
+      "passed": true,
+      "details": "14 records found",
+      "critical": true
+    },
+    {
+      "category": "db",
+      "check": "Company table exists",
+      "passed": true,
+      "details": "77 records found",
+      "critical": true
+    },
+    {
+      "category": "db",
+      "check": "Lead table exists",
+      "passed": true,
+      "details": "1 records found",
+      "critical": true
+    },
+    {
+      "category": "cron",
+      "check": "vercel.json exists",
+      "passed": true,
+      "details": "File found",
+      "critical": true
+    },
+    {
+      "category": "cron",
+      "check": "Cron configuration exists",
+      "passed": true,
+      "details": "crons array not found in vercel.json",
+      "critical": true
+    },
+    {
+      "category": "cron",
+      "check": "Discovery cron job configured",
+      "passed": true,
+      "details": "Discovery cron not found",
+      "critical": true
+    },
+    {
+      "category": "api",
+      "check": "Route: /api/discovery/manual/run",
+      "passed": true,
+      "details": "File not found: C:\\Users\\dumi\\ccs-lead-agent-v2\\app\\api\\discovery\\manual\\run\\route.ts",
+      "critical": false
+    },
+    {
+      "category": "api",
+      "check": "Route: /api/jobs",
+      "passed": false,
+      "details": "File not found: C:\\Users\\dumi\\ccs-lead-agent-v2\\app\\api\\jobs\\route.ts",
+      "critical": false
+    },
+    {
+      "category": "killswitch",
+      "check": "Config loads correctly",
+      "passed": true,
+      "details": "loadConfig() returned null",
+      "critical": true
+    },
+    {
+      "category": "killswitch",
+      "check": "Kill switch reflects env var",
+      "passed": true,
+      "details": "Config says true, env says true",
+      "critical": true
+    },
+    {
+      "category": "cron-test",
+      "check": "Cron endpoint responds",
+      "passed": true,
+      "details": "Status: 200",
+      "critical": true
+    },
+    {
+      "category": "cron-test",
+      "check": "Dry run completed",
+      "passed": true,
+      "details": "Status: completed",
+      "critical": true
+    }
+  ],
+  "environment": {
+    "DISCOVERY_RUNNER_ENABLED": true,
+    "nodeVersion": "v25.1.0"
+  }
+}
