@@ -2,8 +2,9 @@
 
 > **Status:** Living Document  
 > **Created:** January 11, 2026  
-> **Last Updated:** January 11, 2026  
-> **Purpose:** Track completion status of all phases at a glance
+> **Last Updated:** January 13, 2026  
+> **Purpose:** Track completion status of all phases at a glance  
+> **What Changed:** Added Phase 5B (Brain + Assisted Outreach), updated Phase 6 with Respond.io MVP scope
 
 ---
 
@@ -16,8 +17,8 @@
 | 3 - Scoring | ✅ Complete | 80% |
 | 4 - Lead Management | ✅ Complete | 90% |
 | 5A - Autonomous Discovery | ✅ Complete | 100% |
-| 5B - Brain/Policy | ❌ Planned | 0% |
-| 6A - Messaging Foundation | ❌ Planned | 0% |
+| 5B - Brain/Policy + Assisted Outreach | ❌ Planned | 0% |
+| 6A - Omnichannel Foundation (Respond.io) | ❌ Planned | 0% |
 | 6B - Assisted Replies | ❌ Planned | 0% |
 | 6C - Controlled Autopilot | ❌ Planned | 0% |
 | 7 - Playbooks | ❌ Future | 0% |
@@ -110,29 +111,29 @@
 
 ---
 
-### Phase 5B: Policy/Knowledge Brain
+### Phase 5B: Policy/Knowledge Brain + Assisted Outreach
 
 | Attribute | Value |
 |-----------|-------|
 | **Status** | ❌ Planned |
 | **Completion** | 0% |
-| **Key Features Included** | (Planned) ICP definition, allow/block lists, deterministic rules engine, action planner output, policy configuration UI |
-| **Key Exclusions** | Autonomous message sending, ML/AI recommendations, outreach execution |
-| **Documentation** | [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) (Phase 5B section) |
-| **Notes/Risks** | No autonomous execution - recommendations only. |
+| **Key Features Included** | (Planned) ICP definition, allow/block lists, deterministic rules engine, action planner output, policy configuration UI, assisted outreach (Yolande Formula), message templates, human approval workflow |
+| **Key Exclusions** | Autonomous message sending, ML/AI recommendations, outreach execution without approval |
+| **Documentation** | [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) (Phase 5B section), [PHASE_5B_ASSISTED_OUTREACH_MVP.md](./PHASE_5B_ASSISTED_OUTREACH_MVP.md) |
+| **Notes/Risks** | No autonomous execution - recommendations and assisted outreach only. All outreach requires human approval. |
 
 ---
 
-### Phase 6A: Omnichannel Messaging Foundation (Read-Only)
+### Phase 6A: Omnichannel Messaging Foundation (Respond.io - Read-Only)
 
 | Attribute | Value |
 |-----------|-------|
 | **Status** | ❌ Planned |
 | **Completion** | 0% |
-| **Key Features Included** | (Planned) Conversation data model, message data model, channel account model, webhook ingestion, identity resolution v1, unified inbox UI, conversation timeline |
+| **Key Features Included** | (Planned) Conversation data model, message data model, channel account model, Respond.io webhook ingestion, identity resolution v1, unified inbox UI, conversation timeline, read-only mode |
 | **Key Exclusions** | Sending messages, auto-replies, direct channel connections (Gmail, WhatsApp Cloud), file storage |
-| **Documentation** | [PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md](./PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md), [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) (Phase 6A section) |
-| **Notes/Risks** | Respond.io is primary integration. LinkedIn messaging NOT supported (API limitations). |
+| **Documentation** | [PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md](./PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md), [PHASE_6_OMNICHANNEL_RESPONDIO_MVP.md](./PHASE_6_OMNICHANNEL_RESPONDIO_MVP.md), [OMNICHANNEL_DATA_MODEL.md](./OMNICHANNEL_DATA_MODEL.md), [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) (Phase 6A section) |
+| **Notes/Risks** | Respond.io is primary integration. LinkedIn messaging NOT supported (API limitations). Phase 6A is read-only - no sending capability. |
 
 ---
 
@@ -270,6 +271,7 @@ Based on current status, recommended next implementation:
 | 2026-01-11 | Phase 5A marked as In Progress (25%); added completed items checklist |
 | 2026-01-11 | Phase 5A implementation complete (90%); pending: manual verification + deployment |
 | 2026-01-11 | **Phase 5A marked as Complete (100%)**; added manual discovery with intents, safety guardrails |
+| 2026-01-13 | Updated Phase 5B to include Assisted Outreach (Yolande Formula); updated Phase 6A with Respond.io MVP scope and new documentation |
 
 ---
 

@@ -2,8 +2,9 @@
 
 > **Status:** Living Document  
 > **Created:** January 11, 2026  
-> **Last Updated:** January 11, 2026  
-> **Supersedes:** Previous Phase 5–7 references in VISION_GAP_ANALYSIS.md and PHASE_Status_Report.md
+> **Last Updated:** January 13, 2026  
+> **Supersedes:** Previous Phase 5–7 references in VISION_GAP_ANALYSIS.md and PHASE_Status_Report.md  
+> **What Changed:** Added assisted outreach (Yolande Formula) to Phase 5B, updated Phase 6 with Respond.io-first approach, added handoff workflows
 
 ---
 
@@ -30,9 +31,9 @@ This document defines the revised roadmap for CCS Lead Agent v2, phases 5 throug
 
 | Phase | Name | Status | Focus | Autonomous Messaging? |
 |-------|------|--------|-------|----------------------|
-| 5A | Autonomous Daily Discovery | Planned | Scheduled discovery runs | No |
-| 5B | Policy/Knowledge Brain | Planned | ICP + rules + action planning | No |
-| 6A | Omnichannel Foundation (Read-only) | Planned | Ingest conversations | No |
+| 5A | Autonomous Daily Discovery | ✅ Complete | Scheduled discovery runs | No |
+| 5B | Policy/Knowledge Brain + Assisted Outreach | Planned | ICP + rules + action planning + outreach templates | No (human approval required) |
+| 6A | Omnichannel Foundation (Respond.io - Read-only) | Planned | Ingest conversations via Respond.io | No |
 | 6B | Assisted Replies (Human-in-loop) | Planned | Draft suggestions, manual send | No |
 | 6C | Controlled Autopilot | Planned | Opt-in auto-reply, guardrails | Yes (restricted) |
 | 7 | Multi-step Playbooks | Future | Sequences + campaigns | Yes (restricted) |
@@ -131,9 +132,9 @@ interface DiscoveryConfiguration {
 
 ---
 
-## Phase 5B: Policy/Knowledge Brain
+## Phase 5B: Policy/Knowledge Brain + Assisted Outreach
 
-**Goal:** Create a deterministic rules engine that defines the Ideal Customer Profile (ICP), allow/block lists, and generates action recommendations WITHOUT autonomous execution.
+**Goal:** Create a deterministic rules engine that defines the Ideal Customer Profile (ICP), allow/block lists, generates action recommendations, and provides assisted outreach message generation (Yolande Formula) WITHOUT autonomous execution.
 
 ### Scope
 
@@ -144,11 +145,20 @@ interface DiscoveryConfiguration {
 - **Action planner output** (recommended next actions for leads)
 - **Policy configuration UI** (admin-only)
 - **Action queue** (recommendations stored, not executed)
+- **Assisted Outreach (Yolande Formula):**
+  - Message generator with templates
+  - Context-aware suggestions (lead/company, intent, event context)
+  - Social proof integration (Standard Bank PPBSA, Vodacom, ISUZU, etc.)
+  - Catalog/portfolio link placeholders
+  - **Human approval required** before sending
+  - Rate limits and suppression lists
+  - Opt-out handling
 
 #### Out of Scope
 - Autonomous message sending (Phase 6C)
 - Machine learning or AI recommendations (Phase 8)
-- Outreach execution (recommendations only)
+- Outreach execution without human approval (all outreach requires approval)
+- LinkedIn messaging automation (manual copy-paste only)
 
 ### Data Model Changes (Spec Only)
 
@@ -251,6 +261,11 @@ interface ActionPlannerResult {
 - [ ] Allow/block lists manageable via admin UI
 - [ ] Action recommendations generated for all leads
 - [ ] Recommendations visible in lead detail page
+- [ ] Outreach message generator creates suggested messages
+- [ ] Outreach templates available (Agencies, Schools, Businesses, Events)
+- [ ] Human approval required for all outreach messages
+- [ ] Rate limits enforced
+- [ ] Suppression lists checked before sending
 - [ ] No autonomous execution (approve/reject workflow required)
 
 ### Dependencies
@@ -258,9 +273,9 @@ interface ActionPlannerResult {
 
 ---
 
-## Phase 6A: Omnichannel Messaging Foundation (Read-Only)
+## Phase 6A: Omnichannel Messaging Foundation (Respond.io - Read-Only)
 
-**Goal:** Ingest conversations from external messaging platforms (starting with Respond.io) into a unified conversation model. Read-only ingestion with no sending capability.
+**Goal:** Ingest conversations from Respond.io (Email, WhatsApp, Instagram, Facebook) into a unified conversation model. Read-only ingestion with no sending capability. Respond.io is the first integration target.
 
 ### Scope
 
@@ -282,11 +297,13 @@ interface ActionPlannerResult {
 
 ### Connector Architecture
 
-See **PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md** for full specification including:
+See **PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md** and **PHASE_6_OMNICHANNEL_RESPONDIO_MVP.md** for full specification including:
 - `IChannelConnector` interface
-- Provider implementation plan
+- Respond.io connector implementation (first)
+- Provider implementation plan (Gmail, WhatsApp Cloud, Meta Business - future)
 - Identity resolution strategy
 - Timeline threading rules
+- Canonical data model (see **OMNICHANNEL_DATA_MODEL.md**)
 
 ### Data Model Changes (Spec Only)
 
@@ -382,15 +399,18 @@ Attachment (metadata only)
 
 ### Success Criteria
 - [ ] Respond.io webhook receives messages
+- [ ] Webhook signature verification works
 - [ ] Messages stored in unified Message model
 - [ ] Identity resolution matches to existing contacts (v1)
 - [ ] Unified inbox displays all conversations
 - [ ] Conversation timeline shows message history
-- [ ] No sending capability (read-only)
+- [ ] Channel indicators show correct channel (Email, WhatsApp, Instagram, Facebook)
+- [ ] No sending capability (read-only enforced)
 
 ### Dependencies
-- Respond.io account with API access
+- Respond.io account with API access and webhook capability
 - Phase 4 lead management (complete)
+- Phase 5B (optional) - Brain can inform conversation assignment and context
 
 ---
 
@@ -664,6 +684,7 @@ Phase 6A (3 weeks) → Phase 6B (2 weeks) → Phase 5A (2 weeks) → Phase 5B (2
 | Date | Version | Changes |
 |------|---------|---------|
 | 2026-01-11 | 1.0 | Initial roadmap v2 creation |
+| 2026-01-13 | 1.1 | Added assisted outreach (Yolande Formula) to Phase 5B, updated Phase 6A with Respond.io-first approach, added handoff workflows, updated success criteria |
 
 ---
 
