@@ -16,6 +16,10 @@
 import 'dotenv/config';
 import { prisma } from '../lib/prisma';
 import { loadConfig } from '../lib/discovery/runner/config';
+import {
+  getIntentById,
+  GLOBAL_NEGATIVE_KEYWORDS,
+} from '../lib/discovery/intents';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -136,7 +140,7 @@ async function main() {
         console.log(`     Path: ${discoveryCron.path}`);
       }
     }
-  } catch (error) {
+  } catch {
     check('cron', 'vercel.json exists', false, 'File not found or invalid JSON');
   }
 
@@ -180,10 +184,73 @@ async function main() {
   console.log('');
 
   // ─────────────────────────────────────────────────────────────────────
-  // 6. CRON ENDPOINT TEST (optional)
+  // 6. DISCOVERY INTENTS
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 6. Discovery Intents\n');
+
+  const requiredIntents = [
+    'agencies_all',
+    'schools_all',
+    'tenders_uniforms_merch',
+    'businesses_sme_ceo_and_corporate_marketing',
+    'events_exhibitions_sa',
+  ];
+
+  for (const intentId of requiredIntents) {
+    const intent = getIntentById(intentId);
+    check(
+      'intents',
+      `Intent "${intentId}" exists`,
+      intent !== undefined,
+      `Intent ${intentId} not found in catalog`,
+      true
+    );
+    if (intent) {
+      check(
+        'intents',
+        `Intent "${intentId}" is active`,
+        intent.active === true,
+        `Intent ${intentId} is not active`,
+        false
+      );
+    }
+  }
+
+  // Check global negative keywords
+  check(
+    'intents',
+    'Global negative keywords defined',
+    GLOBAL_NEGATIVE_KEYWORDS.length > 0,
+    `Expected global negative keywords, got ${GLOBAL_NEGATIVE_KEYWORDS.length}`,
+    true
+  );
+
+  // Check tender intent has site constraint
+  const tenderIntent = getIntentById('tenders_uniforms_merch');
+  if (tenderIntent) {
+    const hasSiteQuery = tenderIntent.seedQueries.some((q) =>
+      q.toLowerCase().includes('site:etenders.gov.za')
+    );
+    check(
+      'intents',
+      'Tender intent uses site:etenders.gov.za',
+      hasSiteQuery,
+      'Tender intent should include site:etenders.gov.za queries',
+      false
+    );
+  }
+
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 7. CRON ENDPOINT TEST (optional)
+  // ─────────────────────────────────────────────────────────────────────
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 7. CRON ENDPOINT TEST (optional)
   // ─────────────────────────────────────────────────────────────────────
   if (testCron) {
-    console.log('📋 6. Cron Endpoint Test\n');
+    console.log('📋 7. Cron Endpoint Test\n');
 
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const secret = process.env.CRON_JOB_SECRET;

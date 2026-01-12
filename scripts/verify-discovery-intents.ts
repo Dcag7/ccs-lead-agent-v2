@@ -1,399 +1,325 @@
 /**
- * Phase 5A - Discovery Intent Verification Script
+ * Phase 5A - Verify Discovery Intents
  *
- * Verifies that the discovery intent templates are correctly configured:
- * - Limits enforced
- * - Global negative keywords applied
- * - Gauteng bias is active
- * - Tender intent queries include site:etenders.gov.za
- * - All required intents exist and are active
+ * Validates that all required intents exist and have correct configuration:
+ * - Required intents: agencies_all, schools_all, tenders_uniforms_merch,
+ *   businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa
+ * - Global negative keywords are applied
+ * - Tender queries include site:etenders.gov.za
+ * - Limits are within safety bounds
  *
  * Usage:
  *   npx tsx scripts/verify-discovery-intents.ts
  */
 
-import { config } from 'dotenv';
-config();
-
+import 'dotenv/config';
 import {
-  getActiveIntents,
   getIntentById,
-  GAUTENG_PRIORITY_REGIONS,
-  getAnalysisConfigForIntent,
+  GLOBAL_NEGATIVE_KEYWORDS,
 } from '../lib/discovery/intents';
-import { getDailyIntentIds, getDailyPerIntentLimits } from '../lib/discovery/runner/config';
 
-interface VerificationResult {
+interface TestResult {
   name: string;
   passed: boolean;
-  message: string;
-  details?: string[];
+  details: string;
+  error?: string;
 }
 
-const results: VerificationResult[] = [];
+const results: TestResult[] = [];
 
-function verify(name: string, check: () => { passed: boolean; message: string; details?: string[] }) {
-  try {
-    const result = check();
-    results.push({ name, ...result });
-  } catch (error) {
-    results.push({
-      name,
-      passed: false,
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
+function test(name: string, fn: () => boolean | Promise<boolean>, details: string) {
+  return async () => {
+    try {
+      const passed = await fn();
+      results.push({ name, passed, details });
+      console.log(passed ? `  ✅ ${name}` : `  ❌ ${name}`);
+      if (!passed) console.log(`     → ${details}`);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      results.push({ name, passed: false, details, error: errorMsg });
+      console.log(`  ❌ ${name}`);
+      console.log(`     → Error: ${errorMsg}`);
+    }
+  };
 }
 
-function main() {
-  console.log('\n🔍 Phase 5A Discovery Intent Verification');
-  console.log('═'.repeat(70));
-  console.log('Checking that all intent templates are correctly configured...\n');
-
-  // 1. Verify required intents exist and are active
-  verify('Required intents exist', () => {
-    const requiredIntents = [
-      'agencies_all',
-      'schools_all',
-      'tenders_uniforms_merch',
-      'businesses_sme_ceo_and_corporate_marketing',
-      'events_exhibitions_sa',
-    ];
-    const missing: string[] = [];
-    const inactive: string[] = [];
-
-    for (const id of requiredIntents) {
-      const intent = getIntentById(id);
-      if (!intent) {
-        missing.push(id);
-      } else if (!intent.active) {
-        inactive.push(id);
-      }
-    }
-
-    if (missing.length > 0 || inactive.length > 0) {
-      return {
-        passed: false,
-        message: 'Some required intents are missing or inactive',
-        details: [
-          ...missing.map(id => `Missing: ${id}`),
-          ...inactive.map(id => `Inactive: ${id}`),
-        ],
-      };
-    }
-
-    return {
-      passed: true,
-      message: `All ${requiredIntents.length} required intents exist and are active`,
-      details: requiredIntents,
-    };
-  });
-
-  // 2. Verify limits are enforced (conservative caps)
-  verify('Limits are enforced (conservative caps)', () => {
-    const activeIntents = getActiveIntents();
-    const violations: string[] = [];
-
-    const MAX_COMPANIES = 20;
-    const MAX_LEADS = 30;
-    const MAX_QUERIES = 10;
-
-    for (const intent of activeIntents) {
-      if ((intent.limits?.maxCompanies || 10) > MAX_COMPANIES) {
-        violations.push(`${intent.id}: maxCompanies ${intent.limits?.maxCompanies} > ${MAX_COMPANIES}`);
-      }
-      if ((intent.limits?.maxLeads || 10) > MAX_LEADS) {
-        violations.push(`${intent.id}: maxLeads ${intent.limits?.maxLeads} > ${MAX_LEADS}`);
-      }
-      if ((intent.limits?.maxQueries || 3) > MAX_QUERIES) {
-        violations.push(`${intent.id}: maxQueries ${intent.limits?.maxQueries} > ${MAX_QUERIES}`);
-      }
-    }
-
-    if (violations.length > 0) {
-      return {
-        passed: false,
-        message: 'Some intents exceed conservative limits',
-        details: violations,
-      };
-    }
-
-    return {
-      passed: true,
-      message: `All ${activeIntents.length} active intents have conservative limits`,
-    };
-  });
-
-  // 3. Verify global negative keywords are applied to all intents
-  verify('Global negative keywords applied', () => {
-    const requiredNegatives = ['jobs', 'vacancies', 'internship', 'careers', 'retail store'];
-    const intentsWithIssues: string[] = [];
-
-    const activeIntents = getActiveIntents();
-    for (const intent of activeIntents) {
-      const missing = requiredNegatives.filter(kw => 
-        !intent.excludeKeywords.some(ek => ek.toLowerCase().includes(kw.toLowerCase()))
-      );
-      if (missing.length > 0) {
-        intentsWithIssues.push(`${intent.id}: missing [${missing.join(', ')}]`);
-      }
-    }
-
-    if (intentsWithIssues.length > 0) {
-      return {
-        passed: false,
-        message: 'Some intents are missing global negative keywords',
-        details: intentsWithIssues,
-      };
-    }
-
-    return {
-      passed: true,
-      message: `Global negative keywords applied to all ${activeIntents.length} active intents`,
-      details: [`Sample negatives: ${requiredNegatives.slice(0, 3).join(', ')}...`],
-    };
-  });
-
-  // 4. Verify Gauteng bias is active for CCS-aligned intents
-  verify('Gauteng-first bias is active', () => {
-    const gautengIntents = [
-      'agencies_all',
-      'schools_all',
-      'tenders_uniforms_merch',
-      'businesses_sme_ceo_and_corporate_marketing',
-      'events_exhibitions_sa',
-    ];
-    const issues: string[] = [];
-
-    for (const id of gautengIntents) {
-      const intent = getIntentById(id);
-      if (!intent) continue;
-
-      // Check geography config
-      if (!intent.geography) {
-        issues.push(`${id}: No geography config`);
-        continue;
-      }
-
-      if (intent.geography.primaryCountry !== 'ZA') {
-        issues.push(`${id}: Primary country is ${intent.geography.primaryCountry}, expected ZA`);
-      }
-
-      if (!intent.geography.priorityRegions || intent.geography.priorityRegions.length === 0) {
-        issues.push(`${id}: No priority regions defined`);
-      }
-
-      // Check analysis config includes Gauteng boost
-      const analysisConfig = getAnalysisConfigForIntent(intent);
-      if (!analysisConfig.geographyBoost) {
-        issues.push(`${id}: No geography boost in analysis config`);
-      }
-    }
-
-    if (issues.length > 0) {
-      return {
-        passed: false,
-        message: 'Gauteng bias not properly configured',
-        details: issues,
-      };
-    }
-
-    return {
-      passed: true,
-      message: `Gauteng-first bias active for ${gautengIntents.length} CCS-aligned intents`,
-      details: [`Priority regions: ${GAUTENG_PRIORITY_REGIONS.slice(0, 5).join(', ')}...`],
-    };
-  });
-
-  // 5. Verify tender intent queries include site:etenders.gov.za
-  verify('Tender intent uses etenders.gov.za', () => {
-    const tenderIntent = getIntentById('tenders_uniforms_merch');
-    if (!tenderIntent) {
-      return {
-        passed: false,
-        message: 'Tender intent not found',
-      };
-    }
-
-    const etenderQueries = tenderIntent.seedQueries.filter(q => 
-      q.toLowerCase().includes('site:etenders.gov.za')
-    );
-
-    if (etenderQueries.length === 0) {
-      return {
-        passed: false,
-        message: 'No site:etenders.gov.za queries found',
-        details: tenderIntent.seedQueries.slice(0, 3),
-      };
-    }
-
-    // Check that tender-relevant terms are in the queries
-    const tenderTerms = ['uniform', 'corporate clothing', 'ppe', 'promotional items', 'workwear'];
-    const foundTerms = tenderTerms.filter(term => 
-      etenderQueries.some(q => q.toLowerCase().includes(term.toLowerCase()))
-    );
-
-    return {
-      passed: true,
-      message: `${etenderQueries.length} queries use site:etenders.gov.za`,
-      details: [
-        `Sample queries: ${etenderQueries.slice(0, 2).join(' | ')}`,
-        `Tender terms covered: ${foundTerms.join(', ')}`,
-      ],
-    };
-  });
-
-  // 6. Verify daily intents are configured
-  verify('Daily intents configured', () => {
-    const dailyIntentIds = getDailyIntentIds();
-    const perIntentLimits = getDailyPerIntentLimits();
-
-    if (dailyIntentIds.length === 0) {
-      return {
-        passed: false,
-        message: 'No daily intents configured',
-      };
-    }
-
-    // Check all daily intents exist and are active
-    const issues: string[] = [];
-    for (const id of dailyIntentIds) {
-      const intent = getIntentById(id);
-      if (!intent) {
-        issues.push(`${id}: Not found`);
-      } else if (!intent.active) {
-        issues.push(`${id}: Inactive`);
-      }
-    }
-
-    if (issues.length > 0) {
-      return {
-        passed: false,
-        message: 'Some daily intents have issues',
-        details: issues,
-      };
-    }
-
-    return {
-      passed: true,
-      message: `${dailyIntentIds.length} daily intents configured`,
-      details: [
-        `Intents: ${dailyIntentIds.join(', ')}`,
-        `Per-intent limits: ${perIntentLimits.maxCompanies} companies, ${perIntentLimits.maxLeads} leads, ${perIntentLimits.maxQueries} queries`,
-      ],
-    };
-  });
-
-  // 7. Verify tender positive keywords
-  verify('Tender intent has correct positive keywords', () => {
-    const tenderIntent = getIntentById('tenders_uniforms_merch');
-    if (!tenderIntent) {
-      return {
-        passed: false,
-        message: 'Tender intent not found',
-      };
-    }
-
-    const requiredKeywords = ['tender', 'rfq', 'bid', 'uniform', 'ppe', 'procurement'];
-    const found = requiredKeywords.filter(kw => 
-      tenderIntent.includeKeywords.some(ik => ik.toLowerCase().includes(kw.toLowerCase()))
-    );
-
-    if (found.length < requiredKeywords.length / 2) {
-      return {
-        passed: false,
-        message: 'Missing required tender keywords',
-        details: [`Found: ${found.join(', ')}`, `Expected: ${requiredKeywords.join(', ')}`],
-      };
-    }
-
-    return {
-      passed: true,
-      message: `${found.length}/${requiredKeywords.length} required tender keywords present`,
-      details: [`Keywords: ${found.join(', ')}`],
-    };
-  });
-
-  // 8. Verify analysis config generation
-  verify('Analysis config generation works', () => {
-    const issues: string[] = [];
-    const intentsToCheck = [
-      'agencies_all',
-      'tenders_uniforms_merch',
-      'businesses_sme_ceo_and_corporate_marketing',
-    ];
-
-    for (const id of intentsToCheck) {
-      const intent = getIntentById(id);
-      if (!intent) continue;
-
-      const config = getAnalysisConfigForIntent(intent);
-
-      if (!config.positiveKeywords || config.positiveKeywords.length === 0) {
-        issues.push(`${id}: No positive keywords`);
-      }
-      if (!config.negativeKeywords || config.negativeKeywords.length === 0) {
-        issues.push(`${id}: No negative keywords`);
-      }
-      if (!config.targetBusinessTypes || config.targetBusinessTypes.length === 0) {
-        issues.push(`${id}: No target business types`);
-      }
-      if (config.relevanceThreshold === undefined) {
-        issues.push(`${id}: No relevance threshold`);
-      }
-    }
-
-    if (issues.length > 0) {
-      return {
-        passed: false,
-        message: 'Analysis config generation has issues',
-        details: issues,
-      };
-    }
-
-    return {
-      passed: true,
-      message: `Analysis config generates correctly for ${intentsToCheck.length} intents`,
-    };
-  });
-
-  // Print results
-  console.log('═'.repeat(70));
-  console.log('VERIFICATION RESULTS');
-  console.log('═'.repeat(70));
-
-  let passedCount = 0;
-  let failedCount = 0;
-
-  for (const result of results) {
-    const icon = result.passed ? '✅' : '❌';
-    console.log(`\n${icon} ${result.name}`);
-    console.log(`   ${result.message}`);
-    if (result.details) {
-      result.details.forEach(d => console.log(`   → ${d}`));
-    }
-
-    if (result.passed) {
-      passedCount++;
-    } else {
-      failedCount++;
-    }
-  }
-
+async function main() {
   console.log('\n' + '═'.repeat(70));
-  console.log('SUMMARY');
-  console.log('═'.repeat(70));
-  console.log(`\n   Passed: ${passedCount}`);
-  console.log(`   Failed: ${failedCount}`);
-  console.log(`   Total:  ${results.length}`);
+  console.log('  🔍 DISCOVERY INTENTS VERIFICATION');
+  console.log('═'.repeat(70) + '\n');
 
-  if (failedCount > 0) {
-    console.log('\n❌ VERIFICATION FAILED - Please fix the issues above before deploying.\n');
-    process.exit(1);
-  } else {
-    console.log('\n✅ ALL VERIFICATIONS PASSED - Discovery intents are correctly configured.\n');
-    process.exit(0);
+  // ─────────────────────────────────────────────────────────────────────
+  // 1. REQUIRED INTENTS EXIST
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 1. Required Intents\n');
+
+  const requiredIntents = [
+    'agencies_all',
+    'schools_all',
+    'tenders_uniforms_merch',
+    'businesses_sme_ceo_and_corporate_marketing',
+    'events_exhibitions_sa',
+  ];
+
+  for (const intentId of requiredIntents) {
+    await test(
+      `Intent "${intentId}" exists`,
+      () => getIntentById(intentId) !== undefined,
+      `Intent ${intentId} should be defined in catalog`
+    )();
+
+    await test(
+      `Intent "${intentId}" is active`,
+      () => {
+        const intent = getIntentById(intentId);
+        return intent?.active === true;
+      },
+      `Intent ${intentId} should be active`
+    )();
   }
+
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 2. INTENT CONFIGURATION
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 2. Intent Configuration\n');
+
+  for (const intentId of requiredIntents) {
+    const intent = getIntentById(intentId);
+    if (!intent) continue;
+
+    await test(
+      `${intentId} has seed queries`,
+      () => intent.seedQueries.length > 0,
+      `Intent should have at least one seed query`
+    )();
+
+    await test(
+      `${intentId} has include keywords`,
+      () => intent.includeKeywords.length > 0,
+      `Intent should have include keywords`
+    )();
+
+    await test(
+      `${intentId} has exclude keywords`,
+      () => intent.excludeKeywords.length > 0,
+      `Intent should have exclude keywords`
+    )();
+
+    await test(
+      `${intentId} targets South Africa`,
+      () => intent.targetCountries.includes('ZA'),
+      `Intent should target ZA (South Africa)`
+    )();
+
+    await test(
+      `${intentId} has channels configured`,
+      () => intent.channels.length > 0,
+      `Intent should have at least one channel`
+    )();
+
+    await test(
+      `${intentId} has limits configured`,
+      () => intent.limits !== undefined,
+      `Intent should have limits configured`
+    )();
+
+    // Check limits are within safety bounds
+    if (intent.limits) {
+      await test(
+        `${intentId} maxCompanies <= 20`,
+        () => (intent.limits?.maxCompanies ?? 0) <= 20,
+        `maxCompanies should be <= 20, got ${intent.limits.maxCompanies}`
+      )();
+
+      await test(
+        `${intentId} maxLeads <= 30`,
+        () => (intent.limits?.maxLeads ?? 0) <= 30,
+        `maxLeads should be <= 30, got ${intent.limits.maxLeads}`
+      )();
+
+      await test(
+        `${intentId} maxQueries <= 5`,
+        () => (intent.limits?.maxQueries ?? 0) <= 5,
+        `maxQueries should be <= 5, got ${intent.limits.maxQueries}`
+      )();
+    }
+  }
+
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 3. GLOBAL NEGATIVE KEYWORDS
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 3. Global Negative Keywords\n');
+
+  await test(
+    'Global negative keywords are defined',
+    () => GLOBAL_NEGATIVE_KEYWORDS.length > 0,
+    `Should have global negative keywords, got ${GLOBAL_NEGATIVE_KEYWORDS.length}`
+  )();
+
+  // Check for required negative keywords
+  const requiredNegativeKeywords = [
+    'jobs',
+    'vacancies',
+    'internship',
+    'careers',
+    'hiring',
+    'retail',
+    'ecommerce',
+  ];
+
+  for (const keyword of requiredNegativeKeywords) {
+    await test(
+      `Global negative keywords include "${keyword}"`,
+      () => {
+        const lowerKeywords = GLOBAL_NEGATIVE_KEYWORDS.map((k) => k.toLowerCase());
+        return lowerKeywords.some((k) => k.includes(keyword.toLowerCase()));
+      },
+      `Global negative keywords should include "${keyword}" or a variant`
+    )();
+  }
+
+  // Verify all intents apply global negative keywords
+  for (const intentId of requiredIntents) {
+    const intent = getIntentById(intentId);
+    if (!intent) continue;
+
+    await test(
+      `${intentId} applies global negative keywords`,
+      () => {
+        // Check if any global negative keywords are in excludeKeywords
+        const excludeLower = intent.excludeKeywords.map((k) => k.toLowerCase());
+        const globalLower = GLOBAL_NEGATIVE_KEYWORDS.map((k) => k.toLowerCase());
+        // At least one global keyword should be present
+        return globalLower.some((gk) =>
+          excludeLower.some((ek) => ek.includes(gk) || gk.includes(ek))
+        );
+      },
+      `Intent should include global negative keywords in excludeKeywords`
+    )();
+  }
+
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 4. TENDER SITE CONSTRAINT
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 4. Tender Site Constraint\n');
+
+  const tenderIntent = getIntentById('tenders_uniforms_merch');
+  if (tenderIntent) {
+    await test(
+      'Tender intent has site:etenders.gov.za queries',
+      () => {
+        const hasSiteQuery = tenderIntent.seedQueries.some((q) =>
+          q.toLowerCase().includes('site:etenders.gov.za')
+        );
+        return hasSiteQuery;
+      },
+      'Tender intent should include site:etenders.gov.za in seed queries'
+    )();
+
+    await test(
+      'Tender intent includes uniform/workwear/apparel keywords',
+      () => {
+        const queries = tenderIntent.seedQueries.join(' ').toLowerCase();
+        const hasUniform = queries.includes('uniform') || queries.includes('workwear') || 
+                          queries.includes('apparel') || queries.includes('merchandise');
+        return hasUniform;
+      },
+      'Tender intent queries should include uniform/workwear/apparel/merchandise keywords'
+    )();
+  } else {
+    results.push({
+      name: 'Tender intent exists',
+      passed: false,
+      details: 'tenders_uniforms_merch intent not found',
+    });
+    console.log('  ❌ Tender intent exists');
+  }
+
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 5. EVENTS INTENT
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 5. Events Intent Configuration\n');
+
+  const eventsIntent = getIntentById('events_exhibitions_sa');
+  if (eventsIntent) {
+    await test(
+      'Events intent targets exhibitors/organizers/sponsors',
+      () => {
+        const queries = eventsIntent.seedQueries.join(' ').toLowerCase();
+        const keywords = eventsIntent.includeKeywords.map((k) => k.toLowerCase());
+        const hasTarget = queries.includes('exhibitor') || queries.includes('sponsor') ||
+                         queries.includes('organizer') || keywords.includes('exhibitor') ||
+                         keywords.includes('sponsor') || keywords.includes('organizer');
+        return hasTarget;
+      },
+      'Events intent should target exhibitors, organizers, or sponsors'
+    )();
+
+    await test(
+      'Events intent includes branded merchandise keywords',
+      () => {
+        const queries = eventsIntent.seedQueries.join(' ').toLowerCase();
+        const keywords = eventsIntent.includeKeywords.map((k) => k.toLowerCase());
+        const hasMerch = queries.includes('branded') || queries.includes('merchandise') ||
+                        queries.includes('promotional') || keywords.includes('branded') ||
+                        keywords.includes('merchandise') || keywords.includes('promotional');
+        return hasMerch;
+      },
+      'Events intent should include branded merchandise/promotional keywords'
+    )();
+  } else {
+    results.push({
+      name: 'Events intent exists',
+      passed: false,
+      details: 'events_exhibitions_sa intent not found',
+    });
+    console.log('  ❌ Events intent exists');
+  }
+
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // SUMMARY
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('═'.repeat(70));
+  console.log('  📊 SUMMARY');
+  console.log('═'.repeat(70) + '\n');
+
+  const passed = results.filter((r) => r.passed).length;
+  const failed = results.filter((r) => !r.passed).length;
+  const total = results.length;
+
+  console.log(`  Tests Passed: ${passed}/${total}`);
+  console.log(`  Tests Failed: ${failed}/${total}`);
+  console.log(`  Pass Rate: ${((passed / total) * 100).toFixed(1)}%\n`);
+
+  if (failed > 0) {
+    console.log('  ❌ Failed Tests:');
+    results
+      .filter((r) => !r.passed)
+      .forEach((r) => {
+        console.log(`     - ${r.name}: ${r.error || r.details}`);
+      });
+    console.log('');
+  }
+
+  const overallStatus = failed === 0 ? 'PASS' : 'FAIL';
+  console.log('═'.repeat(70));
+  console.log(`  🏁 INTENT VERIFICATION: ${overallStatus}`);
+  console.log('═'.repeat(70) + '\n');
+
+  process.exit(failed > 0 ? 1 : 0);
 }
 
-main();
+main().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

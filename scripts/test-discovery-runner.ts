@@ -1,342 +1,210 @@
 /**
- * Phase 5A - Discovery Runner Test Script
+ * Phase 5A - Test Discovery Runner
  *
- * Tests the discovery runner locally (not through the API).
- * Can run in dry-run mode (no DB writes) or real mode.
- * Supports intent-based runs.
+ * Tests the discovery runner functionality:
+ * - Lists all available intents
+ * - Runs a single intent with --dry-run mode
+ * - Validates runner configuration
  *
  * Usage:
- *   npx tsx scripts/test-discovery-runner.ts --dry-run
- *   npx tsx scripts/test-discovery-runner.ts --real
- *   npx tsx scripts/test-discovery-runner.ts --api --dry-run
- *   npx tsx scripts/test-discovery-runner.ts --intent referral_ecosystem_prospects --dry-run
- *   npx tsx scripts/test-discovery-runner.ts --list-intents
+ *   npx tsx scripts/test-discovery-runner.ts
+ *   npx tsx scripts/test-discovery-runner.ts --intent agencies_all
+ *   npx tsx scripts/test-discovery-runner.ts --intent agencies_all --dry-run
  */
 
-import { config } from 'dotenv';
-config();
-
+import 'dotenv/config';
 import { DailyDiscoveryRunner } from '../lib/discovery/runner/DailyDiscoveryRunner';
-import { loadConfig } from '../lib/discovery/runner/config';
 import {
   getActiveIntents,
   getIntentById,
   applyIntentById,
+  getAnalysisConfigForIntent,
 } from '../lib/discovery/intents';
+import { getLimitsForMode } from '../lib/discovery/runner/config';
 
 async function main() {
   const args = process.argv.slice(2);
-  const isDryRun = args.includes('--dry-run') || !args.includes('--real');
-  const useApi = args.includes('--api');
-  const listIntents = args.includes('--list-intents');
-  const intentIndex = args.indexOf('--intent');
-  const intentId = intentIndex !== -1 ? args[intentIndex + 1] : undefined;
+  const intentArg = args.find((arg) => arg.startsWith('--intent='))?.split('=')[1];
+  const intentId = intentArg || args[args.indexOf('--intent') + 1];
+  const dryRun = args.includes('--dry-run') || args.includes('--dryrun');
 
-  // List intents and exit
-  if (listIntents) {
-    console.log('\n📋 Available Discovery Intents:');
-    console.log('═'.repeat(70));
-    
-    const intents = getActiveIntents();
-    const newIntents = intents.filter(i => 
-      ['agencies_all', 'schools_all', 'tenders_uniforms_merch', 'businesses_sme_ceo_and_corporate_marketing'].includes(i.id)
-    );
-    const legacyIntents = intents.filter(i => 
-      !['agencies_all', 'schools_all', 'tenders_uniforms_merch', 'businesses_sme_ceo_and_corporate_marketing'].includes(i.id)
-    );
-    
-    console.log('\n🆕 CCS-Aligned Intents (Gauteng-first):');
-    console.log('─'.repeat(70));
-    newIntents.forEach((intent) => {
-      console.log(`\n  📌 ${intent.id}`);
-      console.log(`     Name: ${intent.name}`);
-      console.log(`     Category: ${intent.category}`);
-      console.log(`     Description: ${intent.description.substring(0, 80)}...`);
-      console.log(`     Countries: ${intent.targetCountries.join(', ')}`);
-      console.log(`     Geography: ${intent.geography ? `Gauteng-first (boost: ${intent.geography.regionBoost || 0.15})` : 'N/A'}`);
-      console.log(`     Limits: ${intent.limits?.maxCompanies || 10} companies, ${intent.limits?.maxLeads || 10} leads, ${intent.limits?.maxQueries || 3} queries`);
-      console.log(`     Queries (sample): ${intent.seedQueries.slice(0, 2).join(' | ')}`);
-    });
-    
-    if (legacyIntents.length > 0) {
-      console.log('\n\n📦 Legacy Intents:');
-      console.log('─'.repeat(70));
-      legacyIntents.forEach((intent) => {
-        console.log(`\n  ${intent.id}`);
-        console.log(`     Name: ${intent.name}`);
-        console.log(`     Category: ${intent.category}`);
-        console.log(`     Countries: ${intent.targetCountries.join(', ')}`);
-      });
-    }
-    
-    console.log('\n' + '═'.repeat(70));
-    console.log('\n📊 Summary:');
-    console.log(`   Total Active Intents: ${intents.length}`);
-    console.log(`   CCS-Aligned (new): ${newIntents.length}`);
-    console.log(`   Legacy: ${legacyIntents.length}`);
-    console.log('\n🚀 Usage:');
-    console.log('   npx tsx scripts/test-discovery-runner.ts --intent agencies_all --dry-run');
-    console.log('   npx tsx scripts/test-discovery-runner.ts --intent tenders_uniforms_merch --dry-run');
-    console.log('\n');
-    return;
-  }
+  console.log('\n' + '═'.repeat(70));
+  console.log('  🧪 DISCOVERY RUNNER TEST');
+  console.log('═'.repeat(70) + '\n');
 
-  console.log('\n🔍 Phase 5A Discovery Runner Test');
-  console.log('═'.repeat(60));
-  console.log(`Mode: ${isDryRun ? 'DRY RUN (no DB writes)' : 'REAL (will write to DB)'}`);
-  console.log(`Method: ${useApi ? 'API call' : 'Direct runner'}`);
-  if (intentId) {
-    console.log(`Intent: ${intentId}`);
-  }
-  console.log('═'.repeat(60) + '\n');
+  // ─────────────────────────────────────────────────────────────────────
+  // 1. LIST INTENTS
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 Available Intents\n');
 
-  // Load and display config
-  const runnerConfig = loadConfig();
-  console.log('📋 Configuration:');
-  console.log(`   Enabled: ${runnerConfig.enabled}`);
-  console.log(`   Max Companies: ${runnerConfig.maxCompaniesPerRun}`);
-  console.log(`   Max Leads: ${runnerConfig.maxLeadsPerRun}`);
-  console.log(`   Max Queries: ${runnerConfig.maxQueries}`);
-  console.log(`   Max Runtime: ${runnerConfig.maxRuntimeSeconds}s`);
-  console.log(`   Channels: ${runnerConfig.enabledChannels.join(', ')}`);
-  console.log('');
+  const intents = getActiveIntents();
+  console.log(`  Found ${intents.length} active intent(s):\n`);
 
-  if (!runnerConfig.enabled) {
-    console.log('⚠️  Discovery runner is DISABLED (DISCOVERY_RUNNER_ENABLED != true)');
-    console.log('   Set DISCOVERY_RUNNER_ENABLED=true in .env to enable');
-    console.log('');
-    console.log('   Running anyway for testing...');
+  for (const intent of intents) {
+    console.log(`  • ${intent.id}`);
+    console.log(`    Name: ${intent.name}`);
+    console.log(`    Category: ${intent.category}`);
+    console.log(`    Countries: ${intent.targetCountries.join(', ')}`);
+    console.log(`    Queries: ${intent.seedQueries.length}`);
+    console.log(`    Limits: ${intent.limits?.maxCompanies ?? 'N/A'} companies, ${intent.limits?.maxLeads ?? 'N/A'} leads, ${intent.limits?.maxQueries ?? 'N/A'} queries`);
     console.log('');
   }
 
-  try {
-    if (useApi) {
-      await runViaApi(isDryRun, intentId);
-    } else {
-      await runDirect(isDryRun, intentId);
-    }
-  } catch (error) {
-    console.error('❌ Test failed with error:');
-    console.error(error);
-    process.exit(1);
-  }
-}
-
-async function runDirect(isDryRun: boolean, intentId?: string) {
-  console.log('🚀 Starting discovery run (direct)...\n');
+  // ─────────────────────────────────────────────────────────────────────
+  // 2. RUNNER CONFIGURATION
+  // ─────────────────────────────────────────────────────────────────────
+  console.log('📋 Runner Configuration\n');
 
   const runner = new DailyDiscoveryRunner();
+  const config = runner.getConfig();
 
-  // If intent specified, apply it
+  console.log(`  Enabled: ${runner.isEnabled() ? '✅' : '❌'}`);
+  console.log(`  Max Companies Per Run: ${config.maxCompaniesPerRun}`);
+  console.log(`  Max Leads Per Run: ${config.maxLeadsPerRun}`);
+  console.log(`  Max Queries: ${config.maxQueries}`);
+  console.log(`  Max Runtime: ${config.maxRuntimeSeconds}s`);
+  console.log(`  Channels: ${config.enabledChannels.join(', ')}`);
+  console.log('');
+
+  // Check limits
+  const manualLimits = getLimitsForMode('manual');
+  console.log(`  Manual Mode Limits:`);
+  console.log(`    Max Companies: ${manualLimits.maxCompanies}`);
+  console.log(`    Max Leads: ${manualLimits.maxLeads}`);
+  console.log(`    Max Queries: ${manualLimits.maxQueries}`);
+  console.log('');
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 3. RUN INTENT (if specified)
+  // ─────────────────────────────────────────────────────────────────────
   if (intentId) {
+    console.log('📋 Running Intent Discovery\n');
+
     const intent = getIntentById(intentId);
     if (!intent) {
-      console.error(`❌ Intent "${intentId}" not found`);
-      console.log('\nAvailable intents:');
-      getActiveIntents().forEach((i) => console.log(`  - ${i.id}`));
+      console.error(`  ❌ Intent "${intentId}" not found`);
+      console.log('\n  Available intents:');
+      intents.forEach((i) => console.log(`    - ${i.id}`));
       process.exit(1);
     }
 
-    const resolved = applyIntentById(intentId);
-    if (!resolved) {
-      console.error(`❌ Failed to resolve intent "${intentId}"`);
+    if (!intent.active) {
+      console.error(`  ❌ Intent "${intentId}" is not active`);
       process.exit(1);
     }
 
-    console.log(`📌 Using intent: ${intent.name}`);
-    console.log(`   Queries: ${resolved.queries.length}`);
-    console.log(`   Countries: ${resolved.targetCountries.join(', ')}`);
-    console.log(`   Max Companies: ${resolved.limits.maxCompanies}`);
+    console.log(`  Intent: ${intent.name} (${intent.id})`);
+    console.log(`  Mode: ${dryRun ? 'DRY RUN (no DB writes)' : 'LIVE (will write to DB)'}`);
     console.log('');
 
-    const result = await runner.run({
-      dryRun: isDryRun,
-      mode: 'test',
-      triggeredBy: 'test-script',
-      intentId: resolved.intentId,
-      intentName: resolved.intentName,
-      queries: resolved.queries.slice(0, 5), // Limit for testing
-      channels: resolved.channels,
-      maxCompanies: Math.min(resolved.limits.maxCompanies, 10), // Limit for testing
-      maxLeads: Math.min(resolved.limits.maxLeads, 20),
-      timeBudgetMs: 60000, // 60 second budget for testing
-      intentConfig: {
+    // Resolve intent configuration
+    const resolved = applyIntentById(intentId);
+    if (!resolved) {
+      console.error(`  ❌ Failed to resolve intent: ${intentId}`);
+      process.exit(1);
+    }
+
+    const analysisConfig = getAnalysisConfigForIntent(intent);
+
+    console.log(`  Queries: ${resolved.queries.length} (using first ${Math.min(resolved.queries.length, resolved.limits.maxQueries)})`);
+    console.log(`  Channels: ${resolved.channels.join(', ')}`);
+    console.log(`  Limits: ${resolved.limits.maxCompanies} companies, ${resolved.limits.maxLeads} leads, ${resolved.limits.maxQueries} queries`);
+    console.log(`  Time Budget: ${(resolved.limits.timeBudgetMs / 1000).toFixed(0)}s`);
+    console.log('');
+
+    console.log('  🚀 Starting discovery run...\n');
+
+    try {
+      const result = await runner.run({
+        dryRun,
+        mode: 'test',
+        triggeredBy: 'test-discovery-runner',
         intentId: resolved.intentId,
         intentName: resolved.intentName,
-        targetCountries: resolved.targetCountries,
-        queriesCount: resolved.queries.length,
-        includeKeywordsCount: resolved.includeKeywords.length,
-        excludeKeywordsCount: resolved.excludeKeywords.length,
-      },
-    });
+        queries: resolved.queries.slice(0, resolved.limits.maxQueries),
+        channels: resolved.channels,
+        maxCompanies: resolved.limits.maxCompanies,
+        maxLeads: resolved.limits.maxLeads,
+        timeBudgetMs: resolved.limits.timeBudgetMs,
+        enableScraping: true,
+        analysisConfig,
+        includeKeywords: resolved.includeKeywords,
+        excludeKeywords: resolved.excludeKeywords,
+        intentConfig: {
+          intentId: resolved.intentId,
+          intentName: resolved.intentName,
+          targetCountries: resolved.targetCountries,
+          queriesCount: resolved.queries.length,
+          includeKeywordsCount: resolved.includeKeywords.length,
+          excludeKeywordsCount: resolved.excludeKeywords.length,
+        },
+      });
 
-    displayResult(result);
-  } else {
-    // Default run without intent
-    const result = await runner.run({
-      dryRun: isDryRun,
-      mode: 'test',
-      triggeredBy: 'test-script',
-      maxCompanies: 10, // Limit for testing
-    });
+      console.log('  📊 Results:\n');
+      console.log(`    Run ID: ${result.runId}`);
+      console.log(`    Status: ${result.status}`);
+      console.log(`    Success: ${result.success ? '✅' : '❌'}`);
+      console.log(`    Dry Run: ${result.dryRun ? 'Yes' : 'No'}`);
+      console.log(`    Duration: ${(result.stats.durationMs / 1000).toFixed(2)}s`);
+      console.log(`    Total Discovered: ${result.stats.totalDiscovered}`);
+      console.log(`    After Dedupe: ${result.stats.totalAfterDedupe}`);
+      console.log(`    Companies Created: ${result.stats.companiesCreated}`);
+      console.log(`    Contacts Created: ${result.stats.contactsCreated}`);
+      console.log(`    Leads Created: ${result.stats.leadsCreated}`);
+      console.log('');
 
-    displayResult(result);
-  }
-}
+      if (Object.keys(result.stats.channelResults).length > 0) {
+        console.log('    Channel Results:');
+        for (const [channel, count] of Object.entries(result.stats.channelResults)) {
+          console.log(`      ${channel}: ${count}`);
+        }
+        console.log('');
+      }
 
-async function runViaApi(isDryRun: boolean, intentId?: string) {
-  console.log('🚀 Starting discovery run (via API)...\n');
+      if (Object.keys(result.stats.channelErrors).length > 0) {
+        console.log('    ⚠️  Channel Errors:');
+        for (const [channel, error] of Object.entries(result.stats.channelErrors)) {
+          console.log(`      ${channel}: ${error}`);
+        }
+        console.log('');
+      }
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  const secret = process.env.CRON_JOB_SECRET;
+      if (result.stats.errors && result.stats.errors.length > 0) {
+        console.log('    ❌ Errors:');
+        result.stats.errors.forEach((err) => {
+          console.log(`      [${err.type}] ${err.message}`);
+        });
+        console.log('');
+      }
 
-  if (!secret) {
-    console.error('❌ CRON_JOB_SECRET not set in environment');
-    process.exit(1);
-  }
+      if (result.stats.stoppedEarly) {
+        console.log(`    ⚠️  Run stopped early: ${result.stats.stoppedReason || 'unknown'}`);
+        console.log('');
+      }
 
-  // If using intent, use manual API; otherwise use cron API
-  if (intentId) {
-    console.log(`📌 Using intent: ${intentId}`);
-    console.log('   Using manual discovery API...\n');
+      if (result.error) {
+        console.log(`    ❌ Error: ${result.error}`);
+        console.log('');
+      }
 
-    // Note: This requires session auth, not just secret
-    // For testing, we'd need to use the cron route instead
-    console.log('⚠️  Manual API requires session authentication.');
-    console.log('   Use the web UI at /dashboard/discovery for manual runs.');
-    console.log('   Or test without --api flag for direct runner test.\n');
+      console.log('═'.repeat(70));
+      console.log(`  🏁 TEST ${result.success ? 'PASSED' : 'FAILED'}`);
+      console.log('═'.repeat(70) + '\n');
 
-    // Fall back to cron route
-    const response = await fetch(`${baseUrl}/api/jobs/discovery/run`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-job-secret': secret,
-      },
-      body: JSON.stringify({
-        dryRun: isDryRun,
-        mode: 'test',
-        maxCompanies: 10,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error(`❌ API returned ${response.status}:`, result);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`  ❌ Discovery run failed: ${errorMessage}`);
+      console.error(error);
       process.exit(1);
     }
-
-    displayResult(result);
   } else {
-    const response = await fetch(`${baseUrl}/api/jobs/discovery/run`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-job-secret': secret,
-      },
-      body: JSON.stringify({
-        dryRun: isDryRun,
-        mode: 'test',
-        maxCompanies: 10,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error(`❌ API returned ${response.status}:`, result);
-      process.exit(1);
-    }
-
-    displayResult(result);
+    console.log('💡 Tip: Run a specific intent with:');
+    console.log('   npx tsx scripts/test-discovery-runner.ts --intent <intent-id> --dry-run\n');
   }
 }
 
-function displayResult(result: {
-  success: boolean;
-  runId: string;
-  dryRun: boolean;
-  status: string;
-  error?: string;
-  stats: {
-    totalDiscovered: number;
-    totalAfterDedupe: number;
-    companiesCreated: number;
-    companiesSkipped: number;
-    contactsCreated: number;
-    contactsSkipped: number;
-    leadsCreated: number;
-    leadsSkipped: number;
-    durationMs: number;
-    stoppedEarly?: boolean;
-    stoppedReason?: string;
-    channelErrors?: Record<string, string>;
-    errors: Array<{ type: string; message: string }>;
-    limitsUsed?: {
-      maxCompanies: number;
-      maxLeads: number;
-      maxQueries: number;
-      maxRuntimeSeconds: number;
-      channels: string[];
-    };
-  };
-}) {
-  console.log('═'.repeat(60));
-  console.log('📊 RESULTS');
-  console.log('═'.repeat(60));
-
-  console.log(`\n✅ Run ID: ${result.runId}`);
-  console.log(`   Status: ${result.status}`);
-  console.log(`   Dry Run: ${result.dryRun}`);
-  console.log(`   Success: ${result.success}`);
-
-  if (result.error) {
-    console.log(`   Error: ${result.error}`);
-  }
-
-  if (result.stats.stoppedEarly) {
-    console.log(`   ⚠️ Stopped Early: ${result.stats.stoppedReason}`);
-  }
-
-  console.log('\n📈 Statistics:');
-  console.log(`   Discovered: ${result.stats.totalDiscovered} total → ${result.stats.totalAfterDedupe} after dedupe`);
-  console.log(`   Duration: ${(result.stats.durationMs / 1000).toFixed(2)}s`);
-
-  console.log('\n📦 Created Records:');
-  console.log(`   Companies: ${result.stats.companiesCreated} created, ${result.stats.companiesSkipped} skipped`);
-  console.log(`   Contacts: ${result.stats.contactsCreated} created, ${result.stats.contactsSkipped} skipped`);
-  console.log(`   Leads: ${result.stats.leadsCreated} created, ${result.stats.leadsSkipped} skipped`);
-
-  if (result.stats.limitsUsed) {
-    console.log('\n⚙️ Limits Used:');
-    console.log(`   Max Companies: ${result.stats.limitsUsed.maxCompanies}`);
-    console.log(`   Max Leads: ${result.stats.limitsUsed.maxLeads}`);
-    console.log(`   Max Runtime: ${result.stats.limitsUsed.maxRuntimeSeconds}s`);
-    console.log(`   Channels: ${result.stats.limitsUsed.channels.join(', ')}`);
-  }
-
-  // Channel errors (partial failures)
-  if (result.stats.channelErrors && Object.keys(result.stats.channelErrors).length > 0) {
-    console.log(`\n⚠️ Channel Errors (partial failures):`);
-    Object.entries(result.stats.channelErrors).forEach(([channel, error]) => {
-      console.log(`   [${channel}] ${error}`);
-    });
-  }
-
-  if (result.stats.errors.length > 0) {
-    console.log(`\n⚠️ Errors (${result.stats.errors.length}):`);
-    result.stats.errors.slice(0, 5).forEach((err, i) => {
-      console.log(`   ${i + 1}. [${err.type}] ${err.message}`);
-    });
-    if (result.stats.errors.length > 5) {
-      console.log(`   ... and ${result.stats.errors.length - 5} more`);
-    }
-  }
-
-  console.log('\n' + '═'.repeat(60));
-  console.log(result.success ? '✅ Test completed successfully!' : '❌ Test completed with errors');
-  console.log('═'.repeat(60) + '\n');
-}
-
-main().catch(console.error);
+main().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

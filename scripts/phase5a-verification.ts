@@ -63,8 +63,8 @@ async function main() {
 
   await test(
     'Discovery limits are defined',
-    () => DISCOVERY_LIMITS.daily.maxCompanies === 30 && DISCOVERY_LIMITS.manual.maxCompanies === 10,
-    `Expected daily=30, manual=10. Got daily=${DISCOVERY_LIMITS.daily.maxCompanies}, manual=${DISCOVERY_LIMITS.manual.maxCompanies}`
+    () => DISCOVERY_LIMITS.daily.maxCompanies === 30 && DISCOVERY_LIMITS.manual.maxCompanies === 20,
+    `Expected daily=30, manual=20. Got daily=${DISCOVERY_LIMITS.daily.maxCompanies}, manual=${DISCOVERY_LIMITS.manual.maxCompanies}`
   )();
 
   await test(
@@ -80,9 +80,9 @@ async function main() {
     'getLimitsForMode returns correct manual limits',
     () => {
       const limits = getLimitsForMode('manual');
-      return limits.maxCompanies === 10 && limits.maxLeads === 10 && limits.maxQueries === 3;
+      return limits.maxCompanies === 20 && limits.maxLeads === 30 && limits.maxQueries === 5;
     },
-    'Manual limits should be 10/10/3'
+    'Manual limits should be 20/30/5'
   )();
 
   console.log('');

@@ -33,9 +33,9 @@ export const DISCOVERY_LIMITS = {
   },
   /** Manual discovery - triggered by admin */
   manual: {
-    maxCompanies: 10,  // Max 10 companies per manual run
-    maxLeads: 10,      // Max 10 leads per manual run
-    maxQueries: 3,     // Fewer queries for manual runs
+    maxCompanies: 20,  // Max 20 companies per manual run (safety cap)
+    maxLeads: 30,      // Max 30 leads per manual run (safety cap)
+    maxQueries: 5,     // Max 5 queries per manual run (safety cap)
   },
 } as const;
 
