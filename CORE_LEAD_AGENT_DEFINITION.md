@@ -94,10 +94,16 @@ The Lead Agent operates at different autonomy levels depending on the phase:
 - ✅ Discovery metadata storage (implemented)
 - ✅ **Phase 5A Complete:** Autonomous discovery runner
   - ✅ Daily scheduling via Vercel Cron (06:00 UTC)
-  - ✅ Manual discovery with 7 intent templates (4 CCS-aligned)
-  - ✅ **CCS-Aligned Intent Templates:**
-    - `agencies_all` - Marketing/branding/creative agencies
-    - `schools_all` - Schools for uniforms/embroidery
+  - ✅ Manual discovery with intent templates (admin UI at `/dashboard/discovery`)
+  - ✅ **CCS-Aligned Intent Templates (5 required intents):**
+    - `agencies_all` - Marketing/branding/creative agencies (Gauteng-first)
+    - `schools_all` - Schools for uniforms/embroidery (Gauteng-first)
+    - `tenders_uniforms_merch` - Government tenders via site:etenders.gov.za
+    - `businesses_sme_ceo_and_corporate_marketing` - SME/Corporate buyers
+    - `events_exhibitions_sa` - Event organizers/exhibitors/sponsors
+  - ✅ Safety guardrails (kill switch DISCOVERY_RUNNER_ENABLED, manual limits: maxCompanies≤20, maxLeads≤30, maxQueries≤5)
+  - ✅ Global negative keywords (jobs/vacancies/internship/careers/hiring + retail/ecommerce filtering)
+  - ✅ DiscoveryRun tracking with full stats, errors, intent metadata
     - `tenders_uniforms_merch` - Government tenders via etenders.gov.za
     - `businesses_sme_ceo_and_corporate_marketing` - SME and corporate buyers
   - ✅ **Geography:** South Africa only, Gauteng-first bias (scoring boost, not exclusion)

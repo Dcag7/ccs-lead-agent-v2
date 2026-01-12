@@ -45,21 +45,31 @@ This document defines the revised roadmap for CCS Lead Agent v2, phases 5 throug
 
 **Goal:** Transform the existing Phase 1 discovery architecture into a scheduled, autonomous system that runs daily to find new prospects.
 
+**Status:** ✅ Complete (January 2026)
+
 ### Scope
 
 #### In Scope
-- **Daily scheduling via cron** (Vercel Cron Jobs or external scheduler)
-- **Discovery run tracking** (run ID, start time, end time, status)
-- **Budget/quota management** (max searches per day, cost limits)
-- **Idempotency** (prevent duplicate prospects within same run)
-- **Failure handling** (retry logic, partial failure tolerance)
-- **Alerting** (email/Slack notification on failures or quota exhaustion)
+- **Daily scheduling via cron** (Vercel Cron Jobs - 06:00 UTC daily)
+- **Manual discovery button** (admin-only UI at `/dashboard/discovery`)
+- **Intent templates** (code-first discovery strategies):
+  - `agencies_all` - Marketing/branding/creative agencies (Gauteng-first)
+  - `schools_all` - Schools for uniforms/embroidery (Gauteng-first)
+  - `tenders_uniforms_merch` - Government tenders via site:etenders.gov.za
+  - `businesses_sme_ceo_and_corporate_marketing` - SME/Corporate buyers
+  - `events_exhibitions_sa` - Event organizers/exhibitors/sponsors
+- **Discovery run tracking** (run ID, start time, end time, status, stats)
+- **Budget/quota management** (max companies, leads, queries per run)
+- **Safety guardrails** (kill switch, time budgets, max limits, dry-run mode)
+- **Idempotency** (prevent duplicate prospects via existing deduplication)
+- **Failure handling** (graceful degradation, partial failure tolerance)
 - **Run history** (last N runs visible in dashboard)
+- **Global negative keywords** (jobs/vacancies/retail pollution filtering)
 
 #### Out of Scope
 - Real-time discovery (stays batch-based daily)
-- User-triggered discovery (manual trigger is Phase 4B scope if needed)
 - Discovery result approval workflow (prospects created immediately)
+- Alerting (deferred to Phase 5B)
 
 ### Data Model Changes (Spec Only)
 

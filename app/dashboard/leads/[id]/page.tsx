@@ -7,6 +7,7 @@ import LeadScoring from "../components/LeadScoring";
 import LeadStatusManager from "./components/LeadStatusManager";
 import LeadOwnerManager from "./components/LeadOwnerManager";
 import LeadNotes from "./components/LeadNotes";
+import OutreachSection from "./components/OutreachSection";
 
 export default async function LeadDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -227,6 +228,9 @@ export default async function LeadDetailPage(props: { params: Promise<{ id: stri
                 currentUserId={(session.user as { id?: string })?.id || null}
               />
             </div>
+
+            {/* Phase 5B: Outreach */}
+            <OutreachSection leadId={lead.id} />
 
             {/* Lead Scoring Controls */}
             <LeadScoring

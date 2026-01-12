@@ -86,7 +86,7 @@
 |-----------|-------|
 | **Status** | ✅ Complete |
 | **Completion** | 100% |
-| **Key Features Included** | Daily scheduling via Vercel Cron, Manual discovery with intent templates, DiscoveryRun tracking model, budget/quota management, safety guardrails (kill switch, time budgets, max limits), idempotency via existing deduplication, dry-run mode, run history UI, admin-only Discovery UI |
+| **Key Features Included** | Daily scheduling via Vercel Cron (06:00 UTC), Manual discovery with 5 intent templates (agencies_all, schools_all, tenders_uniforms_merch, businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa), DiscoveryRun tracking model, budget/quota management, safety guardrails (kill switch, time budgets, max limits: manual 20/30/5, daily 30/30/5), idempotency via existing deduplication, dry-run mode, run history UI, admin-only Discovery UI at /dashboard/discovery, global negative keywords (jobs/vacancies/retail filtering), Gauteng-first geography bias, tender site constraint (site:etenders.gov.za) |
 | **Key Exclusions** | Real-time discovery, discovery result approval workflow, alerting (deferred to 5B) |
 | **Documentation** | [PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_DESIGN.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_MVP.md), [PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md](./PHASE_5A_AUTONOMOUS_DISCOVERY_CONSTRAINTS.md), [PHASE_5A_TESTING.md](./PHASE_5A_TESTING.md) |
 | **Notes/Risks** | Uses Vercel Cron. No outreach. No LLM brain. Production-ready. |
@@ -99,11 +99,15 @@
 - [x] DailyDiscoveryRunner with safety guardrails
 - [x] Secured cron job API route (`/api/jobs/discovery/run`)
 - [x] Manual discovery API route (`/api/discovery/manual/run`)
-- [x] Intent templates (4 built-in: referral, agencies, buyers, events)
+- [x] Intent templates (5 required CCS-aligned: agencies_all, schools_all, tenders_uniforms_merch, businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa)
+- [x] Global negative keywords (jobs/vacancies/retail filtering)
+- [x] Tender site constraint (site:etenders.gov.za)
+- [x] Gauteng-first geography bias
+- [x] Manual limit safety caps (maxCompanies≤20, maxLeads≤30, maxQueries≤5)
 - [x] Vercel cron configuration (`vercel.json`)
 - [x] Run history UI (`/dashboard/discovery-runs`)
 - [x] Manual discovery UI (`/dashboard/discovery`)
-- [x] Test script (`scripts/test-discovery-runner.ts`)
+- [x] Test scripts (`scripts/test-discovery-runner.ts`, `scripts/verify-discovery-intents.ts`)
 - [x] Kill switch (DISCOVERY_RUNNER_ENABLED)
 - [x] Time budgets (graceful stop)
 - [x] Max limits (companies, leads, queries)

@@ -2,10 +2,10 @@
 
 **Purpose:** A B2B Lead Generation and Business Development system designed specifically for CCS Apparel. More than a CRM—the CCS Lead Agent is evolving into an autonomous digital employee that finds, qualifies, and nurtures leads across multiple communication channels.
 
-**Version:** 4.0  
-**Last Updated:** January 13, 2026  
-**Status:** Production Ready (Phases 1–4 + 5A Discovery)  
-**What Changed:** Reframed as evolving "Omnichannel Lead Agent" with assisted outreach, Respond.io integration, and agent brain architecture
+**Version:** 5.0  
+**Last Updated:** January 12, 2026  
+**Status:** Production Ready (Phases 1–4 + 5A Discovery + 5B Assisted Outreach)  
+**What Changed:** Phase 5B: Assisted Outreach (Human-Approved) with Yolandé Formula playbooks, draft generation, and safety guardrails
 
 ---
 
@@ -16,7 +16,7 @@ The CCS Lead Agent is a **purpose-built system** that operates as a tireless dig
 1. **Find prospects autonomously** — Discover new leads through web searches, keywords, and signals
 2. **Enrich and qualify leads** — Add missing data and score leads based on fit
 3. **Manage the pipeline** — Track status, ownership, and notes across the sales cycle
-4. **Assist with outreach** — (Future) Generate suggested messages with human approval required
+4. **Assist with outreach** — ✅ Generate suggested messages with human approval required (Phase 5B)
 5. **Communicate across channels** — (Future) Unified inbox via Respond.io (Email, WhatsApp, Instagram, Facebook)
 6. **Handle replies** — (Future) Manage conversations, suggest responses, handoff to human when needed
 7. **Learn and improve** — (Future) Get smarter based on outcomes
@@ -484,7 +484,7 @@ Fully Human-Controlled      Human-in-the-Loop             Controlled Autopilot
 
 ### **Phase 5A: Autonomous Daily Discovery** ✅ *Complete*
 - ✅ Scheduled daily discovery runs via Vercel Cron (06:00 UTC)
-- ✅ Manual discovery with intent templates (7 built-in intents, 4 CCS-aligned)
+- ✅ Manual discovery with intent templates (5 required CCS-aligned intents: agencies_all, schools_all, tenders_uniforms_merch, businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa)
 - ✅ **NEW:** Intent templates aligned to CCS Apparel's real-world targets:
   - `agencies_all` - Marketing/branding/creative agencies (Gauteng-first)
   - `schools_all` - Schools for uniforms/embroidery
@@ -562,7 +562,7 @@ Automatically finding missing company information (website, industry) from web s
 
 ### **Discovery**
 The process of finding new prospects automatically through web searches, keywords, and signal extraction. Phase 5A is complete with:
-- **Intent Templates:** Predefined discovery strategies targeting specific prospect types (agencies, schools, tenders, businesses)
+- **Intent Templates:** Predefined discovery strategies targeting specific prospect types (agencies_all, schools_all, tenders_uniforms_merch, businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa)
 - **Manual Discovery:** Admin-triggered runs using intent templates with optional limit overrides
 - **Autonomous Discovery:** Daily scheduled runs via Vercel Cron executing multiple intents
 - **Geography Bias:** Gauteng-first scoring (priority regions get score boost, others not excluded)
