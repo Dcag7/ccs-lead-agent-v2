@@ -234,6 +234,15 @@ export interface DiscoveryCompanyResult {
   /** Website URL (if found) */
   website?: string;
   
+  /** Company description (from website scraping) */
+  description?: string;
+  
+  /** Primary email address (from website scraping) */
+  email?: string;
+  
+  /** Primary phone number (from website scraping) */
+  phone?: string;
+  
   /** Industry classification (if found) */
   industry?: string;
   

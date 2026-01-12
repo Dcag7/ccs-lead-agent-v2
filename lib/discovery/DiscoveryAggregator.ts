@@ -15,6 +15,7 @@ import type {
 import type { IDiscoveryChannel } from './channels/IDiscoveryChannel';
 import { GoogleDiscoveryChannel } from './channels/google/GoogleDiscoveryChannel';
 import { KeywordDiscoveryChannel } from './channels/keyword/KeywordDiscoveryChannel';
+import type { AnalysisConfig } from './scraper';
 
 /**
  * Discovery Aggregator Configuration
@@ -25,6 +26,24 @@ export interface DiscoveryAggregatorConfig {
   
   /** Input configuration for discovery execution */
   input: DiscoveryChannelInput;
+
+  /**
+   * Configuration for content analysis (for scraping-enabled channels)
+   * When provided, enables web scraping and content analysis
+   */
+  analysisConfig?: AnalysisConfig;
+
+  /**
+   * Whether to enable web scraping for discovered URLs
+   * Default: true if analysisConfig is provided
+   */
+  enableScraping?: boolean;
+
+  // Legacy options (deprecated - use analysisConfig instead)
+  /** @deprecated Use analysisConfig.positiveKeywords instead */
+  includeKeywords?: string[];
+  /** @deprecated Use analysisConfig.negativeKeywords instead */
+  excludeKeywords?: string[];
 }
 
 /**
@@ -57,13 +76,30 @@ export interface DiscoveryAggregatorResult {
  * Does NOT write to database - only returns results.
  */
 export class DiscoveryAggregator {
-  private channels: Map<string, IDiscoveryChannel>;
-
-  constructor() {
-    // Initialize channels
-    this.channels = new Map();
-    this.channels.set('google', new GoogleDiscoveryChannel());
-    this.channels.set('keyword', new KeywordDiscoveryChannel());
+  /**
+   * Create channel instance with optional scraping and analysis config
+   */
+  private createChannel(
+    channelType: string,
+    config: DiscoveryAggregatorConfig
+  ): IDiscoveryChannel | null {
+    switch (channelType) {
+      case 'google':
+        // Determine if scraping should be enabled
+        const enableScraping = config.enableScraping ?? !!config.analysisConfig;
+        
+        return new GoogleDiscoveryChannel({
+          enableScraping,
+          analysisConfig: config.analysisConfig,
+          // Legacy support
+          includeKeywords: config.includeKeywords,
+          excludeKeywords: config.excludeKeywords,
+        });
+      case 'keyword':
+        return new KeywordDiscoveryChannel();
+      default:
+        return null;
+    }
   }
 
   /**
@@ -85,7 +121,8 @@ export class DiscoveryAggregator {
       const channelResults: Record<string, number> = {};
 
       for (const channelType of channelsToExecute) {
-        const channel = this.channels.get(channelType);
+        // Create channel with scraping and analysis config
+        const channel = this.createChannel(channelType, config);
         
         if (!channel) {
           // Skip unknown channels
@@ -215,6 +252,6 @@ export class DiscoveryAggregator {
    * @returns Array of available channel types
    */
   getAvailableChannels(): string[] {
-    return Array.from(this.channels.keys());
+    return ['google', 'keyword'];
   }
 }

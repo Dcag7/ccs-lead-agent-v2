@@ -3,11 +3,11 @@
  * 
  * Day 1 Enabled Channel
  * - Executes Google searches using configured search queries
- * - Parses search results for company websites and contact information
- * - Extracts URLs, company names, brief descriptions
+ * - Scrapes discovered websites to extract company information
+ * - Analyzes content to determine relevance to discovery intent
  * - Returns DiscoveryResult objects (no database writes)
  * 
- * Based on PHASE_1_Discovery_MVP_Definition.md
+ * Enhanced with web scraping for better accuracy.
  */
 
 import type { IGoogleDiscoveryChannel } from './IGoogleDiscoveryChannel';
@@ -18,6 +18,7 @@ import type {
   DiscoveryCompanyResult,
   DiscoveryMetadata,
 } from '../../types';
+import { webScraper, contentAnalyzer, type AnalysisConfig } from '../../scraper';
 
 /**
  * Google CSE API Response Structure
@@ -43,9 +44,38 @@ interface GoogleCSEResponse {
 export interface GoogleDiscoveryChannelOptions {
   /**
    * Whether to filter out non-company websites (social media, directories, etc.)
-   * Default: false (no filtering)
+   * Default: true
    */
   filterNonCompanyWebsites?: boolean;
+
+  /**
+   * Whether to scrape and analyze websites for relevance
+   * Default: true (recommended for better accuracy)
+   */
+  enableScraping?: boolean;
+
+  /**
+   * Configuration for content analysis (when scraping is enabled)
+   */
+  analysisConfig?: AnalysisConfig;
+
+  /**
+   * Timeout for scraping individual sites (ms)
+   * Default: 8000
+   */
+  scrapeTimeout?: number;
+
+  /**
+   * Maximum number of sites to scrape per query
+   * Default: 10
+   */
+  maxSitesToScrape?: number;
+
+  // Legacy options (kept for backward compatibility but deprecated)
+  /** @deprecated Use analysisConfig.positiveKeywords instead */
+  includeKeywords?: string[];
+  /** @deprecated Use analysisConfig.negativeKeywords instead */
+  excludeKeywords?: string[];
 }
 
 /**
@@ -59,7 +89,10 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
 
   constructor(options: GoogleDiscoveryChannelOptions = {}) {
     this.options = {
-      filterNonCompanyWebsites: false, // Default: no filtering
+      filterNonCompanyWebsites: true, // Filter out social media, etc.
+      enableScraping: true, // Enable scraping for better results
+      scrapeTimeout: 8000,
+      maxSitesToScrape: 10,
       ...options,
     };
   }
@@ -176,11 +209,8 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
     const apiKey = process.env.GOOGLE_CSE_API_KEY!;
     const searchEngineId = process.env.GOOGLE_CSE_ID!;
 
-    // Build search query (add "company" suffix if not present)
-    let searchQuery = query.trim();
-    if (!searchQuery.toLowerCase().includes('company')) {
-      searchQuery = `${searchQuery} company`;
-    }
+    // Build search query - don't add "company" as it may limit results
+    const searchQuery = query.trim();
 
     // Construct Google CSE API URL
     const url = new URL('https://www.googleapis.com/customsearch/v1');
@@ -205,22 +235,123 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
     const data: GoogleCSEResponse = await response.json();
     const items = data.items || [];
 
-    // Convert Google search results to DiscoveryResult objects
+    console.log(`[GoogleDiscovery] Query "${searchQuery}" returned ${items.length} results`);
+
+    // Step 1: Filter out obvious non-company URLs
+    const filteredItems = this.options.filterNonCompanyWebsites
+      ? items.filter(item => this.isLikelyCompanyUrl(item.link))
+      : items;
+
+    console.log(`[GoogleDiscovery] After URL filtering: ${filteredItems.length} results`);
+
+    // Step 2: Scrape and analyze if enabled
+    if (this.options.enableScraping && this.options.analysisConfig) {
+      return this.scrapeAndAnalyze(filteredItems, query);
+    }
+
+    // Fallback: Convert results without scraping
+    return this.convertToResults(filteredItems, query);
+  }
+
+  /**
+   * Scrape websites and analyze content for relevance
+   */
+  private async scrapeAndAnalyze(
+    items: Array<{ title: string; link: string; snippet: string; displayLink?: string }>,
+    query: string
+  ): Promise<DiscoveryCompanyResult[]> {
+    const results: DiscoveryCompanyResult[] = [];
+    const maxSites = this.options.maxSitesToScrape || 10;
+    const timeout = this.options.scrapeTimeout || 8000;
+    const analysisConfig = this.options.analysisConfig!;
+
+    // Limit sites to scrape
+    const sitesToScrape = items.slice(0, maxSites);
+    console.log(`[GoogleDiscovery] Scraping ${sitesToScrape.length} sites...`);
+
+    // Scrape in parallel (with concurrency of 3)
+    const scrapedContent = await webScraper.scrapeMany(
+      sitesToScrape.map(item => item.link),
+      { timeout, concurrency: 3 }
+    );
+
+    // Analyze each scraped site
+    for (let i = 0; i < scrapedContent.length; i++) {
+      const content = scrapedContent[i];
+      const item = sitesToScrape[i];
+
+      // Analyze content
+      const relevance = contentAnalyzer.analyze(content, analysisConfig);
+      
+      console.log(`[GoogleDiscovery] ${item.displayLink}: score=${relevance.score}, relevant=${relevance.isRelevant}`);
+
+      // Only include relevant companies
+      if (relevance.isRelevant) {
+        const discoveryMetadata: DiscoveryMetadata = {
+          discoverySource: 'google',
+          discoveryTimestamp: new Date(),
+          discoveryMethod: query,
+          additionalMetadata: {
+            searchResultTitle: item.title,
+            searchResultSnippet: item.snippet,
+            displayLink: item.displayLink,
+            // Include scraping results
+            scrapedTitle: content.title,
+            scrapedDescription: content.description,
+            relevanceScore: relevance.score,
+            relevanceReasons: relevance.reasons,
+            detectedIndustry: relevance.detectedIndustry,
+            confidence: relevance.confidence,
+            hasContact: !!content.contact,
+            hasLinkedIn: !!content.socialLinks?.linkedin,
+          },
+        };
+
+        // Use scraped company name if available, fallback to title extraction
+        const companyName = content.companyName || 
+                          this.extractCompanyName(item.title, item.snippet);
+
+        const companyResult: DiscoveryCompanyResult = {
+          type: 'company',
+          name: companyName,
+          website: item.link,
+          description: content.description,
+          discoveryMetadata,
+        };
+
+        // Add contact info if found
+        if (content.contact?.email) {
+          companyResult.email = content.contact.email;
+        }
+        if (content.contact?.phone) {
+          companyResult.phone = content.contact.phone;
+        }
+
+        results.push(companyResult);
+      }
+    }
+
+    console.log(`[GoogleDiscovery] Found ${results.length} relevant companies after analysis`);
+    return results;
+  }
+
+  /**
+   * Convert items to results without scraping (fallback)
+   */
+  private convertToResults(
+    items: Array<{ title: string; link: string; snippet: string; displayLink?: string }>,
+    query: string
+  ): DiscoveryCompanyResult[] {
     const results: DiscoveryCompanyResult[] = [];
 
     for (const item of items) {
-      // Optional: Filter out non-company websites (if enabled)
-      if (this.options.filterNonCompanyWebsites) {
-        const { isLikelyCompanyWebsite } = await import('../../../googleSearch');
-        if (!isLikelyCompanyWebsite(item.link)) {
-          continue;
-        }
+      // Legacy keyword filtering (if configured)
+      if (!this.passesKeywordFilter(item.title, item.snippet)) {
+        continue;
       }
 
-      // Extract company name from title (best effort)
       const companyName = this.extractCompanyName(item.title, item.snippet);
 
-      // Create discovery metadata
       const discoveryMetadata: DiscoveryMetadata = {
         discoverySource: 'google',
         discoveryTimestamp: new Date(),
@@ -232,13 +363,10 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
         },
       };
 
-      // Create DiscoveryCompanyResult
-      // Note: Industry inference removed per requirements - no inferred industry output
       const companyResult: DiscoveryCompanyResult = {
         type: 'company',
         name: companyName,
         website: item.link,
-        // industry field removed - no inference from snippets
         discoveryMetadata,
       };
 
@@ -246,6 +374,72 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
     }
 
     return results;
+  }
+
+  /**
+   * Check if URL is likely a company website (quick filter)
+   */
+  private isLikelyCompanyUrl(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+
+      // Exclude common non-company domains
+      const excludedDomains = [
+        'facebook.com', 'linkedin.com', 'twitter.com', 'x.com',
+        'instagram.com', 'youtube.com', 'tiktok.com',
+        'wikipedia.org', 'wiktionary.org',
+        'indeed.com', 'glassdoor.com', 'linkedin.com/jobs',
+        'yelp.com', 'yellowpages.com', 'whitepages.com',
+        'pinterest.com', 'reddit.com', 'quora.com',
+        'amazon.com', 'ebay.com', 'alibaba.com',
+      ];
+
+      for (const domain of excludedDomains) {
+        if (hostname.includes(domain)) {
+          return false;
+        }
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if a result passes keyword filtering
+   * Returns true if:
+   * - No includeKeywords configured OR at least one includeKeyword matches
+   * - No excludeKeywords configured OR no excludeKeywords match
+   */
+  private passesKeywordFilter(title: string, snippet?: string): boolean {
+    const text = `${title} ${snippet || ''}`.toLowerCase();
+
+    // Check exclude keywords first (if any match, reject)
+    if (this.options.excludeKeywords && this.options.excludeKeywords.length > 0) {
+      for (const keyword of this.options.excludeKeywords) {
+        if (text.includes(keyword.toLowerCase())) {
+          return false;
+        }
+      }
+    }
+
+    // Check include keywords (if configured, at least one must match)
+    if (this.options.includeKeywords && this.options.includeKeywords.length > 0) {
+      let hasMatch = false;
+      for (const keyword of this.options.includeKeywords) {
+        if (text.includes(keyword.toLowerCase())) {
+          hasMatch = true;
+          break;
+        }
+      }
+      if (!hasMatch) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**

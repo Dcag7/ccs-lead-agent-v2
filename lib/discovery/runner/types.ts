@@ -76,6 +76,19 @@ export interface RunOptions {
   timeBudgetMs?: number;
   /** Intent configuration snapshot for recording */
   intentConfig?: IntentConfigSnapshot;
+  /** Keywords that MUST appear in results (for filtering) - deprecated, use analysisConfig */
+  includeKeywords?: string[];
+  /** Keywords that MUST NOT appear in results (for filtering) - deprecated, use analysisConfig */
+  excludeKeywords?: string[];
+  /** Configuration for web scraping and content analysis */
+  analysisConfig?: {
+    positiveKeywords: string[];
+    negativeKeywords: string[];
+    targetBusinessTypes: string[];
+    relevanceThreshold?: number;
+  };
+  /** Whether to enable web scraping (default: true if analysisConfig provided) */
+  enableScraping?: boolean;
 }
 
 /**
@@ -144,6 +157,8 @@ export interface DiscoveryJobRequest {
   mode?: 'daily' | 'manual' | 'test';
   /** Override max companies */
   maxCompanies?: number;
+  /** Specific intent ID to run (for single-intent runs) */
+  intentId?: string;
 }
 
 /**

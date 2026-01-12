@@ -11,9 +11,19 @@ export type {
   ResolvedIntentConfig,
   ManualDiscoveryRequest,
   ManualDiscoveryResponse,
+  IntentCategory,
+  GeographyConfig,
 } from './types';
 
-// Catalog
+// Catalog - New intents
+export {
+  AGENCIES_ALL,
+  SCHOOLS_ALL,
+  TENDERS_UNIFORMS_MERCH,
+  BUSINESSES_SME_CEO_AND_CORPORATE_MARKETING,
+} from './catalog';
+
+// Catalog - Legacy intents (for backward compatibility)
 export {
   INTENT_CATALOG,
   REFERRAL_ECOSYSTEM_PROSPECTS,
@@ -23,7 +33,18 @@ export {
   getIntentById,
   getActiveIntents,
   getIntentsByCategory,
+  getAnalysisConfigForIntent,
   COUNTRY_NAMES,
+} from './catalog';
+
+// New exports for Gauteng-first and global keywords
+export {
+  GLOBAL_NEGATIVE_KEYWORDS,
+  GAUTENG_PRIORITY_REGIONS,
+  ZA_GAUTENG_FIRST_GEOGRAPHY,
+  DEFAULT_DAILY_INTENTS,
+  hasGautengPriorityRegion,
+  getGautengBoostScore,
 } from './catalog';
 
 // Apply Intent

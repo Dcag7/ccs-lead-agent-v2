@@ -17,6 +17,31 @@ export type DiscoveryChannel = 'google' | 'keyword';
 export type CountryCode = 'ZA' | 'BW' | 'NA' | 'MZ' | 'ZW' | 'KE' | 'NG' | 'GH';
 
 /**
+ * Intent categories for grouping discovery templates
+ */
+export type IntentCategory = 
+  | 'referral' 
+  | 'agency' 
+  | 'buyer' 
+  | 'event' 
+  | 'schools' 
+  | 'tenders' 
+  | 'business'
+  | 'custom';
+
+/**
+ * Geography configuration for targeting
+ */
+export interface GeographyConfig {
+  /** Primary country (ISO 2-letter code) */
+  primaryCountry: CountryCode;
+  /** Prioritized regions/cities within the country */
+  priorityRegions?: string[];
+  /** Boost score for priority regions (0-1, default 0.2) */
+  regionBoost?: number;
+}
+
+/**
  * Discovery intent definition
  *
  * An intent is a code-first template that configures discovery
@@ -60,10 +85,13 @@ export interface DiscoveryIntent {
   };
 
   /** Category for grouping intents */
-  category: 'referral' | 'agency' | 'buyer' | 'event' | 'custom';
+  category: IntentCategory;
 
   /** Whether intent is active and available for use */
   active: boolean;
+
+  /** Geography targeting configuration (optional, for Gauteng-first bias etc.) */
+  geography?: GeographyConfig;
 }
 
 /**

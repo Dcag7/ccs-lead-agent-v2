@@ -15,12 +15,16 @@ import { getIntentById, COUNTRY_NAMES } from './catalog';
 
 /**
  * Default limits if not specified in intent or overrides
+ * 
+ * Conservative limits to conserve API quota:
+ * - Google CSE free tier: 100 queries/day
+ * - Each query may scrape up to 10 sites
  */
 const DEFAULT_LIMITS = {
-  maxLeads: 100,
-  maxCompanies: 50,
-  maxQueries: 10,
-  timeBudgetMs: 300000, // 5 minutes
+  maxLeads: 10,      // Max 10 leads per run
+  maxCompanies: 10,  // Max 10 companies per run
+  maxQueries: 3,     // Max 3 queries per run
+  timeBudgetMs: 120000, // 2 minutes
 };
 
 /**

@@ -3,7 +3,14 @@
  */
 
 export { DailyDiscoveryRunner, discoveryRunner } from './DailyDiscoveryRunner';
-export { loadConfig, getDiscoveryQueries, TimeBudget, DEFAULT_DISCOVERY_QUERIES } from './config';
+export { 
+  loadConfig, 
+  getDiscoveryQueries, 
+  TimeBudget, 
+  DEFAULT_DISCOVERY_QUERIES,
+  getLimitsForMode,
+  DISCOVERY_LIMITS,
+} from './config';
 export type {
   DiscoveryRunnerConfig,
   RunOptions,

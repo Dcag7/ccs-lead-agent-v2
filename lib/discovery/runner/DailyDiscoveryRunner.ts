@@ -14,7 +14,7 @@ import { prisma } from '../../prisma';
 import { DiscoveryAggregator } from '../DiscoveryAggregator';
 import { persistDiscoveryResults } from '../persistDiscoveryResults';
 import type { DiscoveryChannelInput } from '../types';
-import { loadConfig, getDiscoveryQueries, TimeBudget } from './config';
+import { loadConfig, getDiscoveryQueries, TimeBudget, getLimitsForMode } from './config';
 import type {
   DiscoveryRunnerConfig,
   RunOptions,
@@ -60,11 +60,21 @@ export class DailyDiscoveryRunner {
     const intentId = options.intentId;
     const intentName = options.intentName;
     const intentConfig = options.intentConfig;
+    const includeKeywords = options.includeKeywords;
+    const excludeKeywords = options.excludeKeywords;
+    const analysisConfig = options.analysisConfig;
+    const enableScraping = options.enableScraping ?? !!analysisConfig;
 
-    // Resolve limits (options > config defaults)
-    const maxCompanies = options.maxCompanies ?? this.config.maxCompaniesPerRun;
-    const maxLeads = options.maxLeads ?? this.config.maxLeadsPerRun;
-    const maxQueries = this.config.maxQueries;
+    // Get mode-specific limits (manual = 10, daily = 30)
+    const modeLimits = getLimitsForMode(mode);
+
+    // Resolve limits (options > mode defaults > config defaults)
+    // Priority: explicit options > mode-specific limits > config defaults
+    const maxCompanies = options.maxCompanies ?? modeLimits.maxCompanies;
+    const maxLeads = options.maxLeads ?? modeLimits.maxLeads;
+    const maxQueries = options.queries?.length 
+      ? Math.min(options.queries.length, modeLimits.maxQueries)
+      : modeLimits.maxQueries;
     const maxPagesPerQuery = this.config.maxPagesPerQuery;
     const timeBudgetSeconds = options.timeBudgetMs
       ? Math.ceil(options.timeBudgetMs / 1000)
@@ -113,13 +123,17 @@ export class DailyDiscoveryRunner {
           ? options.queries.slice(0, maxQueries)
           : getDiscoveryQueries(maxQueries);
 
-      // Execute discovery with safe channel handling
+      // Execute discovery with safe channel handling (with scraping if configured)
       const discoveryResults = await this.executeDiscoverySafe(
         queries,
         timeBudget,
         maxCompanies,
         channelsToUse,
-        channelErrors
+        channelErrors,
+        includeKeywords,
+        excludeKeywords,
+        analysisConfig,
+        enableScraping
       );
 
       // Check if we stopped due to time budget
@@ -229,7 +243,16 @@ export class DailyDiscoveryRunner {
     timeBudget: TimeBudget,
     maxCompanies: number,
     channels: Array<'google' | 'keyword'>,
-    channelErrors: Record<string, string>
+    channelErrors: Record<string, string>,
+    includeKeywords?: string[],
+    excludeKeywords?: string[],
+    analysisConfig?: {
+      positiveKeywords: string[];
+      negativeKeywords: string[];
+      targetBusinessTypes: string[];
+      relevanceThreshold?: number;
+    },
+    enableScraping?: boolean
   ) {
     // Check time budget before starting
     if (timeBudget.isExpired()) {
@@ -260,10 +283,16 @@ export class DailyDiscoveryRunner {
     };
 
     try {
-      // Execute discovery
+      // Execute discovery with scraping and content analysis
       const result = await this.aggregator.execute({
         enabledChannels: channels,
         input,
+        // Pass analysis config for scraping-enabled discovery
+        analysisConfig,
+        enableScraping,
+        // Legacy support
+        includeKeywords,
+        excludeKeywords,
       });
 
       // Record any channel-specific errors from aggregator
