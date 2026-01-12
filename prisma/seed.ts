@@ -1,6 +1,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { seedPlaybooksByName } from "../lib/outreach/playbooks";
 
 const prisma = new PrismaClient();
 
@@ -46,6 +47,9 @@ async function main() {
   });
 
   console.log("✅ Test user created/updated:", testUser.email);
+
+  // Phase 5B: Seed outreach playbooks
+  await seedPlaybooksByName(prisma);
 
   console.log("🎉 Seeding completed!");
 }

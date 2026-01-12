@@ -20,6 +20,10 @@ model User {
   assignedLeads Lead[]     @relation("AssignedLeads")
   notes         LeadNote[] @relation("UserNotes")
 
+  // Phase 5B: Outreach
+  createdOutreachDrafts  OutreachDraft[] @relation("CreatedOutreachDrafts")
+  approvedOutreachDrafts OutreachDraft[] @relation("ApprovedOutreachDrafts")
+
   @@map("users")
 }
 
@@ -101,6 +105,9 @@ model Lead {
   assignedToId String?
   assignedTo   User?      @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
   notes        LeadNote[] @relation("LeadNotes")
+
+  // Phase 5B: Outreach
+  outreachDrafts OutreachDraft[]
 
   @@index([email])
   @@index([status])
@@ -185,4 +192,82 @@ model DiscoveryRun {
   @@index([mode])
   @@index([intentId])
   @@map("discovery_runs")
+}
+
+// Phase 5B: Assisted Outreach
+model OutreachPlaybook {
+  id              String   @id @default(cuid())
+  name            String
+  audienceType    String   // e.g., "agencies", "schools", "businesses", "events", "tenders"
+  subjectTemplate String?  // Optional subject line template
+  bodyTemplate    String   // Body template with {{variable}} placeholders
+  variablesSchema Json?    // JSON schema describing available variables
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  drafts OutreachDraft[]
+
+  @@index([enabled])
+  @@index([audienceType])
+  @@map("outreach_playbooks")
+}
+
+model OutreachDraft {
+  id              String   @id @default(cuid())
+  leadId          String
+  playbookId      String
+  channel         String   @default("email") // "email", "whatsapp", "linkedin_manual"
+  subject         String?  // Generated/edited subject
+  body            String   // Generated/edited body
+  status          String   @default("draft") // "draft", "approved", "sent", "cancelled", "failed"
+  metadataJson    Json?    // Stores missingFields, warnings, etc.
+  createdByUserId String
+  approvedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  lead     Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  playbook OutreachPlaybook @relation(fields: [playbookId], references: [id], onDelete: Restrict)
+  createdBy User            @relation("CreatedOutreachDrafts", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  approvedBy User?          @relation("ApprovedOutreachDrafts", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([leadId])
+  @@index([playbookId])
+  @@index([status])
+  @@index([createdByUserId])
+  @@index([createdAt])
+  @@map("outreach_drafts")
+}
+
+model SuppressionEntry {
+  id        String   @id @default(cuid())
+  type      String   // "email", "domain", "company"
+  value     String   // The email/domain/company name to suppress
+  reason    String?  // Optional reason for suppression
+  createdAt DateTime @default(now())
+
+  @@unique([type, value], name: "type_value")
+  @@index([type])
+  @@index([value])
+  @@map("suppression_entries")
+}
+
+model OutboundMessageLog {
+  id               String   @id @default(cuid())
+  leadId           String
+  channel          String   // "email", "whatsapp", "linkedin_manual"
+  providerMessageId String? // External provider's message ID (if applicable)
+  to               String   // Recipient email/phone/etc
+  subject          String?  // Message subject (if applicable)
+  bodyPreview      String   // First 200 chars of body for logging
+  status           String   // "sent", "failed", "pending"
+  error            String?  // Error message if failed
+  createdAt        DateTime @default(now())
+
+  @@index([leadId])
+  @@index([channel])
+  @@index([status])
+  @@index([createdAt])
+  @@map("outbound_message_logs")
 }
