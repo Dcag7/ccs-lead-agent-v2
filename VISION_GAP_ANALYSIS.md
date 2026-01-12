@@ -1,6 +1,6 @@
 > This document is descriptive, not prescriptive.
 > It defines gaps and priorities, not implementation decisions.
-> **Updated:** January 11, 2026 - Revised to reflect omnichannel messaging and autonomous discovery vision
+> **Updated:** January 13, 2026 - Revised to reflect omnichannel messaging, assisted outreach, and evolving agent vision
 
 # 🔍 Vision vs. Current Implementation - Gap Analysis
 
@@ -12,24 +12,27 @@
 
 ## 📊 Executive Summary
 
-**Current Implementation Status:** ~45% of original vision, ~35% of revised vision
+**Current Implementation Status:** ~45% of original vision, ~40% of revised vision
 
 The system has a solid foundation (CRM, basic scoring, enrichment) and now includes **autonomous discovery**:
 
 1. **✅ Autonomous Discovery** - Phase 5A complete: daily + manual discovery with intents
-2. **Omnichannel Messaging** - No conversation management, no messaging across channels
-3. **Policy/Knowledge Brain** - No ICP rules, no action planning
-4. **Learning Capabilities** - Cannot improve over time
+2. **❌ Assisted Outreach** - No message generation, no outreach templates (Phase 5B planned)
+3. **❌ Omnichannel Messaging** - No conversation management, no messaging across channels (Phase 6 planned)
+4. **❌ Policy/Knowledge Brain** - No ICP rules, no action planning (Phase 5B planned)
+5. **❌ Learning Capabilities** - Cannot improve over time (Phase 8 planned)
 
 ### Vision Shift (January 2026)
 
 The original vision focused on "email outreach" as the communication method. The **revised vision** expands this to:
 
+- **Assisted Outreach (Yolande Formula)** - Template-based message generation with human approval (Phase 5B)
 - **Omnichannel Conversation System** - Email + WhatsApp + Instagram + Facebook via Respond.io (and future direct integrations)
 - **Unified Inbox** - All conversations in one place
 - **Human-in-the-Loop Safety** - Read-only first, assisted replies, then controlled autopilot
-- **Daily Autonomous Discovery** - Scheduled discovery runs with budgets and guardrails
-- **Brain/Policy Layer** - ICP constraints, allow/block lists, deterministic action planning
+- **Daily Autonomous Discovery** - Scheduled discovery runs with budgets and guardrails (✅ Complete)
+- **Brain/Policy Layer** - ICP constraints, allow/block lists, deterministic action planning (Phase 5B)
+- **Handoff Workflows** - Escalate to human when needed, seamless handoff (Phase 6B+)
 
 ---
 
@@ -101,20 +104,28 @@ The original vision focused on "email outreach" as the communication method. The
 
 ---
 
-### Gap 2: Policy/Knowledge Brain (Phase 5B Scope)
+### Gap 2: Policy/Knowledge Brain + Assisted Outreach (Phase 5B Scope)
 
 **Current State:**
 - No ICP definition beyond scoring rules
 - No allow/block lists
 - No action recommendations
+- No outreach message generation
+- No outreach templates
 
 **Required for "Lead Agent" Vision:**
 - ✅ ICP constraint definitions
 - ✅ Allow/block lists for domains, companies, contacts
 - ✅ Deterministic rules engine
 - ✅ Action planner (recommendations, not execution)
+- ✅ Assisted Outreach (Yolande Formula):
+  - Message generator with templates
+  - Context-aware suggestions
+  - Social proof integration
+  - Human approval workflow
+  - Rate limits and suppression lists
 
-**Impact:** Without brain, system cannot prioritize or recommend actions intelligently.
+**Impact:** Without brain and outreach, system cannot recommend actions or assist with outreach. Team still manually crafts every message.
 
 ---
 
@@ -126,6 +137,8 @@ The original vision focused on "email outreach" as the communication method. The
 - ❌ No channel accounts/integrations
 - ❌ No unified inbox
 - ❌ No messaging capability at all
+- ❌ No conversation timeline
+- ❌ No handoff workflows
 
 **Required for "Lead Agent" Vision:**
 - ✅ Conversation + Message data models
@@ -135,9 +148,10 @@ The original vision focused on "email outreach" as the communication method. The
 - ✅ Unified inbox UI
 - ✅ Conversation timeline
 - ✅ Reply capability (human-initiated)
+- ✅ Handoff to human workflows
 - ✅ Controlled autopilot (opt-in, guardrails, kill switch)
 
-**Impact:** Without messaging, system cannot support outreach workflows. Team still needs external tools (HubSpot, Respond.io dashboard).
+**Impact:** Without messaging, system cannot support outreach workflows or manage conversations. Team still needs external tools (HubSpot, Respond.io dashboard). Outreach messages (Phase 5B) cannot be sent through the system.
 
 **Note:** Original vision mentioned "email outreach" - revised vision expands to omnichannel (Email + WhatsApp + Instagram + Facebook) for comprehensive coverage.
 
@@ -240,6 +254,8 @@ The original vision focused on "email outreach" as the communication method. The
 | **Phase 5B: Brain** | ICP rules | ❌ Missing | **Critical** | High |
 | | Allow/block lists | ❌ Missing | **High** | High |
 | | Action planner | ❌ Missing | **High** | High |
+| | Assisted outreach | ❌ Missing | **Critical** | High |
+| | Outreach templates | ❌ Missing | **High** | High |
 | **Phase 6A: Messaging** | Conversation model | ❌ Missing | **Critical** | High |
 | | Message ingestion | ❌ Missing | **Critical** | High |
 | | Unified inbox | ❌ Missing | **Critical** | High |
@@ -309,17 +325,20 @@ The original vision focused on "email outreach" as the communication method. The
 - Discovery architecture (inactive)
 
 ### **What's Missing for "Lead Agent" Vision:**
-1. **Omnichannel Conversations** - NEW critical gap
-2. **Discovery Execution** - Architecture ready, needs trigger
-3. **Brain/Policy Layer** - No intelligent recommendations
-4. **Learning Capabilities** - Future phase
+1. **Assisted Outreach** - NEW critical gap (Phase 5B)
+2. **Omnichannel Conversations** - NEW critical gap (Phase 6)
+3. **Brain/Policy Layer** - No intelligent recommendations (Phase 5B)
+4. **Handoff Workflows** - No escalation/handoff system (Phase 6B+)
+5. **Learning Capabilities** - Future phase (Phase 8)
 
 ### **Current Reality:**
 The system is a **"Lead Management System"** not a **"Lead Agent"**. To become a true agent:
-- It must find leads automatically (discovery execution)
-- It must communicate across channels (omnichannel messaging)
-- It must recommend actions intelligently (brain)
-- It must learn from outcomes (learning loops)
+- ✅ It must find leads automatically (discovery execution) - **COMPLETE**
+- ❌ It must assist with outreach (assisted outreach) - **MISSING**
+- ❌ It must communicate across channels (omnichannel messaging) - **MISSING**
+- ❌ It must recommend actions intelligently (brain) - **MISSING**
+- ❌ It must handle replies and handoff (conversation management) - **MISSING**
+- ❌ It must learn from outcomes (learning loops) - **FUTURE**
 
 ---
 
@@ -375,6 +394,7 @@ Phase 5A (2 weeks) → Phase 5B (2 weeks) → Phase 6A (3 weeks) → Phase 6B (2
 | 2026-01-11 | Updated for omnichannel vision, added Phase 6 messaging gaps, revised priorities |
 | 2026-01-11 | Phase 5A marked as In Progress |
 | 2026-01-11 | Phase 5A marked as Complete (Gap 1 closed) |
+| 2026-01-13 | Added assisted outreach gap (Phase 5B), handoff workflows, updated priorities |
 
 ---
 

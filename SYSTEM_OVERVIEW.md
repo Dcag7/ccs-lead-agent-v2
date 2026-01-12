@@ -2,9 +2,10 @@
 
 **Purpose:** A B2B Lead Generation and Business Development system designed specifically for CCS Apparel. More than a CRM—the CCS Lead Agent is evolving into an autonomous digital employee that finds, qualifies, and nurtures leads across multiple communication channels.
 
-**Version:** 3.2  
-**Last Updated:** January 11, 2026  
-**Status:** Production Ready (Phases 1–4 + 5A Discovery)
+**Version:** 4.0  
+**Last Updated:** January 13, 2026  
+**Status:** Production Ready (Phases 1–4 + 5A Discovery)  
+**What Changed:** Reframed as evolving "Omnichannel Lead Agent" with assisted outreach, Respond.io integration, and agent brain architecture
 
 ---
 
@@ -15,8 +16,10 @@ The CCS Lead Agent is a **purpose-built system** that operates as a tireless dig
 1. **Find prospects autonomously** — Discover new leads through web searches, keywords, and signals
 2. **Enrich and qualify leads** — Add missing data and score leads based on fit
 3. **Manage the pipeline** — Track status, ownership, and notes across the sales cycle
-4. **Communicate across channels** — (Future) Engage via Email, WhatsApp, Instagram, and Facebook
-5. **Learn and improve** — (Future) Get smarter based on outcomes
+4. **Assist with outreach** — (Future) Generate suggested messages with human approval required
+5. **Communicate across channels** — (Future) Unified inbox via Respond.io (Email, WhatsApp, Instagram, Facebook)
+6. **Handle replies** — (Future) Manage conversations, suggest responses, handoff to human when needed
+7. **Learn and improve** — (Future) Get smarter based on outcomes
 
 ### Agent vs. Platform
 
@@ -25,7 +28,8 @@ The CCS Lead Agent is a **purpose-built system** that operates as a tireless dig
 | Waits for data input | Actively discovers prospects |
 | Requires manual data entry | Enriches data automatically |
 | Shows static records | Recommends next actions |
-| Separate tools for messaging | Unified conversation management |
+| Separate tools for messaging | Unified conversation management (Phase 6) |
+| Manual outreach only | Assisted outreach with templates (Phase 5B) |
 | Static scoring rules | (Future) Learns from outcomes |
 
 **The system is evolving through controlled phases**, moving from a passive database toward an intelligent, autonomous agent—always with human oversight and safety guardrails.
@@ -73,6 +77,7 @@ The Lead Agent's "brain" is a layered decision-making system that combines deter
 | **ICP Rules** | Define ideal customer characteristics | Deterministic rules engine |
 | **Allow/Block Lists** | Prevent contacting certain domains/people | Database lookups |
 | **Action Planner** | Recommend next steps for each lead | Rule matching + templates |
+| **Outreach Playbook** | Generate suggested outreach messages (Yolande Formula) | Template-based with context |
 | **Draft Suggestions** | Suggest reply content (templates) | Template matching |
 | **LLM Assistance** | Optional: Help draft messages, summarize | AI as a tool, not decision-maker |
 
@@ -125,7 +130,9 @@ The CCS Lead Agent operates through a cyclical process:
 | **ENRICH** | ✅ Active | Google CSE enrichment, website metadata |
 | **SCORE** | ✅ Active | Rule-based 0-100 scoring with classification |
 | **MANAGE** | ✅ Active | Full CRM: status, ownership, notes, bulk ops |
-| **MESSAGE** | ❌ Planned | Omnichannel inbox coming (Phase 6) |
+| **OUTREACH** | ❌ Planned | Assisted outreach with templates (Phase 5B) |
+| **MESSAGE** | ❌ Planned | Omnichannel inbox via Respond.io (Phase 6) |
+| **HANDOFF** | ❌ Planned | Human escalation and handoff workflows (Phase 6B+) |
 | **LEARN** | ❌ Future | Outcome tracking coming (Phase 8) |
 
 ---
@@ -208,10 +215,20 @@ Fully Human-Controlled      Human-in-the-Loop             Controlled Autopilot
                             
 • Manual data entry         • Auto-discovery runs         • Multi-step sequences
 • Manual enrichment         • Brain recommends actions    • Auto-replies (opt-in)
-• Manual scoring            • Human approves/rejects      • Self-improving rules
-• Manual outreach           • Assisted reply drafts       • Forecasting
-                            • Human clicks Send
+• Manual scoring            • Assisted outreach drafts    • Self-improving rules
+• Manual outreach           • Human approves/rejects      • Forecasting
+• Manual messaging          • Assisted reply drafts       • Daily autonomous cycles
+                            • Human clicks Send           • Learning from outcomes
 ```
+
+### Autonomy Levels
+
+| Level | Description | Current Phase | Example |
+|-------|-------------|---------------|---------|
+| **Manual** | All actions require human initiation | Phase 1-4 | User manually adds lead, sends email |
+| **Assisted** | System suggests, human approves | Phase 5B-6B | System generates outreach draft, user reviews and sends |
+| **Semi-Autonomous** | System acts within strict guardrails | Phase 6C+ | Opt-in auto-replies with rate limits, kill switch |
+| **Autonomous** | System operates independently with oversight | Phase 8+ | Self-improving discovery and messaging (future) |
 
 ---
 
@@ -467,20 +484,37 @@ Fully Human-Controlled      Human-in-the-Loop             Controlled Autopilot
 
 ### **Phase 5A: Autonomous Daily Discovery** ✅ *Complete*
 - ✅ Scheduled daily discovery runs via Vercel Cron (06:00 UTC)
-- ✅ Manual discovery with intent templates (4 built-in intents)
+- ✅ Manual discovery with intent templates (7 built-in intents, 4 CCS-aligned)
+- ✅ **NEW:** Intent templates aligned to CCS Apparel's real-world targets:
+  - `agencies_all` - Marketing/branding/creative agencies (Gauteng-first)
+  - `schools_all` - Schools for uniforms/embroidery
+  - `tenders_uniforms_merch` - Government tenders via etenders.gov.za
+  - `businesses_sme_ceo_and_corporate_marketing` - SME and corporate buyers
+- ✅ **NEW:** Gauteng-first geography bias (not exclusion) with scoring boost
+- ✅ **NEW:** Global negative keywords to filter jobs/vacancies/retail pollution
+- ✅ **NEW:** Tender sourcing via National Treasury eTender Portal (site:etenders.gov.za)
+- ✅ **NEW:** Daily runs execute multiple intents sequentially
 - ✅ Run tracking with DiscoveryRun model (full stats, errors, limits)
 - ✅ Budget and quota management via env vars
 - ✅ Safety guardrails: kill switch, time budgets, max limits
 - ✅ Dry-run mode for safe testing
-- ✅ Admin-only Discovery UI at /dashboard/discovery
+- ✅ Admin-only Discovery UI with limit overrides at /dashboard/discovery
 - ✅ Run history UI at /dashboard/discovery-runs
 - **Note:** No outreach, no LLM brain in this phase
 
-### **Phase 5B: Brain/Policy Layer**
+### **Phase 5B: Brain/Policy Layer + Assisted Outreach**
 - Ideal Customer Profile (ICP) rules
 - Allow/block lists
 - Action recommendations (human approval required)
 - Policy configuration UI
+- **Assisted Outreach (Yolande Formula):**
+  - Message generator with templates
+  - Context-aware suggestions (lead/company, intent, event context)
+  - Social proof integration (Standard Bank PPBSA, Vodacom, ISUZU, etc.)
+  - Catalog/portfolio link placeholders
+  - **Human approval required** before sending
+  - Rate limits and suppression lists
+  - Opt-out handling
 
 ### **Phase 6A: Omnichannel Inbox (Read-Only)**
 - Unified inbox for all channels (WhatsApp, Instagram, Facebook, Email)
@@ -527,7 +561,13 @@ A numerical value indicating the overall value of a company as a prospect. Based
 Automatically finding missing company information (website, industry) from web searches. Helps build complete company profiles without manual research.
 
 ### **Discovery**
-The process of finding new prospects automatically through web searches, keywords, and signal extraction. Currently architecture-ready, awaiting execution mechanism (Phase 5A).
+The process of finding new prospects automatically through web searches, keywords, and signal extraction. Phase 5A is complete with:
+- **Intent Templates:** Predefined discovery strategies targeting specific prospect types (agencies, schools, tenders, businesses)
+- **Manual Discovery:** Admin-triggered runs using intent templates with optional limit overrides
+- **Autonomous Discovery:** Daily scheduled runs via Vercel Cron executing multiple intents
+- **Geography Bias:** Gauteng-first scoring (priority regions get score boost, others not excluded)
+- **Tender Sourcing:** Government tenders via National Treasury eTender Portal (etenders.gov.za)
+- **Safety Guardrails:** Kill switch, time budgets, max limits, dry-run mode
 
 ### **Brain / Policy Layer**
 A deterministic rules engine that defines ICP characteristics, allow/block lists, and recommends actions. Uses rules, not AI guesswork. (Phase 5B)
@@ -573,9 +613,12 @@ Controlled automatic message replies with strict guardrails: opt-in only, templa
 | 2026-01-11 | 3.0 | Reframed as Lead Agent; added brain/autonomy concepts; aligned with Roadmap v2 |
 | 2026-01-11 | 3.1 | Updated DISCOVER status to In Progress (Phase 5A implementation started) |
 | 2026-01-11 | 3.2 | Phase 5A complete: autonomous + manual discovery with intents, safety guardrails |
+| 2026-01-12 | 3.3 | Added CCS-aligned intent templates (agencies/schools/tenders/businesses), Gauteng-first geography, tender sourcing via National Treasury eTender Portal, daily multi-intent runs |
+| 2026-01-13 | 4.0 | Reframed as evolving "Omnichannel Lead Agent"; added assisted outreach (Yolande Formula), Respond.io integration plan, autonomy levels, handoff workflows; updated operating loop |
 
 ---
 
-**Last Updated:** January 11, 2026  
-**Version:** 3.2  
-**Status:** Production Ready (Phases 1–4 + 5A) ✅
+**Last Updated:** January 13, 2026  
+**Version:** 4.0  
+**Status:** Production Ready (Phases 1–4 + 5A) ✅  
+**Next:** Phase 5B (Brain + Assisted Outreach) → Phase 6 (Omnichannel Messaging)

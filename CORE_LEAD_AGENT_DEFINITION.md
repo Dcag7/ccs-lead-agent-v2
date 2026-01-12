@@ -2,8 +2,9 @@
 
 > **Status:** Living Document - Source of Truth  
 > **Created:** January 11, 2026  
-> **Last Updated:** January 11, 2026 (v1.3)  
-> **Ownership:** This document MUST be updated whenever new phase features are added
+> **Last Updated:** January 13, 2026 (v2.0)  
+> **Ownership:** This document MUST be updated whenever new phase features are added  
+> **What Changed:** Added assisted outreach (Phase 5B), autonomy levels, omnichannel messaging architecture, handoff workflows
 
 ---
 
@@ -28,6 +29,19 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 | **Human-in-the-loop** | Critical decisions (especially messaging) require human approval |
 | **Transparent** | Actions are logged, explainable, and auditable |
 | **Incremental trust** | Autonomy is earned through proven reliability, phase by phase |
+| **Omnichannel** | Unified conversation management across Email, WhatsApp, Instagram, Facebook |
+| **Assisted, not automated** | Outreach and messaging are assisted with templates; human approval required |
+
+### Autonomy Levels
+
+The Lead Agent operates at different autonomy levels depending on the phase:
+
+| Level | Phase | Description | Example |
+|-------|-------|-------------|---------|
+| **Manual** | 1-4 | All actions require human initiation | User manually adds lead, sends email externally |
+| **Assisted** | 5B-6B | System suggests, human approves | System generates outreach draft, user reviews and clicks Send |
+| **Semi-Autonomous** | 6C+ | System acts within strict guardrails | Opt-in auto-replies with rate limits, kill switch, template-only |
+| **Autonomous** | 8+ | System operates independently with oversight | Self-improving discovery and messaging (future vision) |
 
 ### Update Requirements
 
@@ -80,12 +94,21 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 - ✅ Discovery metadata storage (implemented)
 - ✅ **Phase 5A Complete:** Autonomous discovery runner
   - ✅ Daily scheduling via Vercel Cron (06:00 UTC)
-  - ✅ Manual discovery with 4 intent templates
+  - ✅ Manual discovery with 7 intent templates (4 CCS-aligned)
+  - ✅ **CCS-Aligned Intent Templates:**
+    - `agencies_all` - Marketing/branding/creative agencies
+    - `schools_all` - Schools for uniforms/embroidery
+    - `tenders_uniforms_merch` - Government tenders via etenders.gov.za
+    - `businesses_sme_ceo_and_corporate_marketing` - SME and corporate buyers
+  - ✅ **Geography:** South Africa only, Gauteng-first bias (scoring boost, not exclusion)
+  - ✅ **Global Exclusions:** Jobs, vacancies, retail, internships filtered out
+  - ✅ **Tender Sourcing:** National Treasury eTender Portal (site:etenders.gov.za)
+  - ✅ Daily runs execute multiple intents sequentially with per-intent limits
   - ✅ DiscoveryRun tracking model with full stats
   - ✅ Secured job endpoints (cron + manual API)
   - ✅ Safety guardrails: kill switch, time budgets, max limits
   - ✅ Dry-run mode for testing without DB writes
-  - ✅ Admin-only Discovery UI at /dashboard/discovery
+  - ✅ Admin-only Discovery UI with limit overrides at /dashboard/discovery
   - **No outreach** - discovery only
 
 ---
@@ -106,6 +129,7 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 - ❌ No allow/block lists
 - ❌ No action recommendations
 - ❌ No deterministic rules engine
+- ❌ No assisted outreach message generation
 
 ### 2.3 Messaging / Conversations
 - ❌ No conversation storage
@@ -115,6 +139,8 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 - ❌ No channel integrations (Respond.io, email, WhatsApp)
 - ❌ No identity resolution for message senders
 - ❌ No autopilot / automated replies
+- ❌ No conversation timeline
+- ❌ No handoff to human workflows
 
 ### 2.4 Orders and Revenue
 - ❌ No orders tracking
@@ -171,8 +197,9 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 | **ENRICH** | ✅ Implemented | Google CSE, website metadata |
 | **SCORE** | ✅ Implemented | Rule-based 0-100 scoring |
 | **MANAGE** | ✅ Implemented | Full CRM capabilities |
-| **MESSAGE** | ❌ Not Started | Phase 6 |
-| **HANDOFF** | ❌ Not Started | Manual process today |
+| **OUTREACH** | ❌ Not Started | Phase 5B: Assisted outreach with templates (human approval) |
+| **MESSAGE** | ❌ Not Started | Phase 6: Omnichannel inbox via Respond.io |
+| **HANDOFF** | ❌ Not Started | Phase 6B+: Human escalation workflows |
 | **LEARN** | ❌ Not Started | Phase 8 |
 
 ---
@@ -192,13 +219,17 @@ The CCS Lead Agent is a **purpose-built digital employee** for CCS Apparel's bus
 
 | Guardrail | Phase | Description |
 |-----------|-------|-------------|
+| Human Approval (Outreach) | 5B | All outreach messages require human review and approval |
+| Suppression Lists | 5B | Never contact blocked domains/companies/contacts |
+| Rate Limits (Outreach) | 5B | Max outreach messages per day/week |
 | Read-Only Mode | 6A | No sending capability initially |
-| Human Approval | 6B | All sends require user click |
+| Human Approval (Replies) | 6B | All sends require user click |
 | Rate Limiting | 6C | Max messages per hour/day |
 | Quiet Hours | 6C | No sends during specified times |
 | Kill Switch | 6C | Instant disable all autopilot |
 | Audit Logging | 6C | Full trail of automated actions |
 | Escalation Rules | 6C | Auto-escalate on triggers |
+| Opt-Out Handling | 5B+ | Respect opt-out requests, maintain suppression list |
 
 ### 4.3 Discovery Guardrails (Phase 5A Complete)
 
@@ -311,7 +342,7 @@ Message Ingestion → Conversation/Message → Identity Resolution → Inbox
 
 | Integration | Type | Purpose | Phase |
 |-------------|------|---------|-------|
-| Respond.io | Webhook + API | Omnichannel messaging | 6A |
+| Respond.io | Webhook + API | Omnichannel messaging (Email, WhatsApp, Instagram, Facebook) | 6A |
 | Gmail | API | Direct email (future) | Post-6 |
 | WhatsApp Cloud | API | Direct WhatsApp (future) | Post-6 |
 | Vercel Cron | Scheduler | Discovery automation | 5A |
@@ -336,7 +367,8 @@ The CCS Lead Agent may use Large Language Models (LLMs) and other AI technologie
 
 | Use Case | Phase | Human Oversight |
 |----------|-------|-----------------|
-| Draft message suggestions | 6B | Human reviews and clicks Send |
+| Draft outreach message suggestions | 5B | Human reviews, edits, and approves before sending |
+| Draft reply message suggestions | 6B | Human reviews and clicks Send |
 | Summarize conversation history | 6B | Human reviews summary |
 | Extract structured data from text | 5B+ | Rules validate extraction |
 | Suggest reply templates | 6B | Human selects template |
@@ -397,6 +429,8 @@ The CCS Lead Agent may use Large Language Models (LLMs) and other AI technologie
 | 2026-01-11 | 1.0 | System | Initial document creation |
 | 2026-01-11 | 1.1 | System | Added agent identity principles, LLM usage policy |
 | 2026-01-11 | 1.2 | System | Updated discovery status to reflect Phase 5A in progress |
+| 2026-01-12 | 1.3 | System | Added CCS-aligned intent templates, Gauteng-first geography, tender sourcing via eTenders |
+| 2026-01-13 | 2.0 | System | Added assisted outreach (Phase 5B), autonomy levels, omnichannel messaging architecture, handoff workflows, Respond.io integration plan |
 
 ---
 
@@ -414,9 +448,10 @@ The CCS Lead Agent may use Large Language Models (LLMs) and other AI technologie
 | Discovery Architecture | 1 | PHASE_1_Discovery_Design_Locked.md |
 | Discovery Execution | 5A | ROADMAP_V2_PHASES_5_TO_8.md |
 | Brain/Policy Layer | 5B | ROADMAP_V2_PHASES_5_TO_8.md |
+| Assisted Outreach | 5B | PHASE_5B_ASSISTED_OUTREACH_MVP.md |
 | Enrichment | 2 | PHASE_2_ENRICHMENT_DESIGN.md |
 | Scoring | 3 | PHASE_Status_Report.md |
-| Messaging Foundation | 6A | PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md |
+| Messaging Foundation | 6A | PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md, PHASE_6_OMNICHANNEL_RESPONDIO_MVP.md |
 | Assisted Replies | 6B | PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md |
 | Controlled Autopilot | 6C | PHASE_6_OMNICHANNEL_MESSAGING_DESIGN.md |
 | Playbooks/Sequences | 7 | ROADMAP_V2_PHASES_5_TO_8.md |
@@ -441,4 +476,4 @@ When implementing a new feature, update this document:
 
 **Document Owner:** Project Lead  
 **Review Frequency:** After each phase completion  
-**Last Review:** January 11, 2026
+**Last Review:** January 13, 2026
