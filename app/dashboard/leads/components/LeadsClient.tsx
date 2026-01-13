@@ -92,28 +92,28 @@ export default function LeadsClient({
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      new: 'bg-[#E6F5F5] text-[#1B7A7A]',
-      contacted: 'bg-yellow-100 text-yellow-800',
-      qualified: 'bg-green-100 text-green-800',
-      proposal: 'bg-purple-100 text-purple-800',
-      negotiation: 'bg-orange-100 text-orange-800',
-      won: 'bg-green-200 text-green-900',
-      lost: 'bg-red-100 text-red-800',
-      archived: 'bg-gray-100 text-gray-800',
+      new: 'bg-emerald-50 text-emerald-700',
+      contacted: 'bg-amber-50 text-amber-700',
+      qualified: 'bg-teal-50 text-teal-700',
+      proposal: 'bg-purple-50 text-purple-700',
+      negotiation: 'bg-orange-50 text-orange-700',
+      won: 'bg-green-100 text-green-800',
+      lost: 'bg-red-50 text-red-700',
+      archived: 'bg-gray-100 text-gray-600',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-gray-100 text-gray-600';
   };
 
   const getClassificationColor = (classification: string | null) => {
     switch (classification) {
       case 'hot':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-50 text-red-700';
       case 'warm':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-50 text-amber-700';
       case 'cold':
-        return 'bg-[#E6F5F5] text-[#1B7A7A]';
+        return 'bg-blue-50 text-blue-700';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-600';
     }
   };
 
@@ -298,25 +298,25 @@ export default function LeadsClient({
   const someSelected = selectedLeadIds.size > 0 && selectedLeadIds.size < leads.length;
 
   return (
-    <div className="p-8">
+    <div className="p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-              <p className="text-gray-600 mt-1">Manage and track your lead pipeline</p>
+              <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+              <p className="text-sm text-gray-500 mt-1">Manage and track your lead pipeline</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handleRecalculate}
                 disabled={isRecalculating}
-                className="bg-[#10B981] text-white px-4 py-2 rounded-lg hover:bg-[#0D9668] font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md transition-all"
+                className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isRecalculating ? 'Recalculating...' : 'Recalculate Scores'}
               </button>
               <Link
                 href="/dashboard/leads/new"
-                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-lg hover:bg-[#155555] font-medium shadow-sm hover:shadow-md transition-all"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-md hover:from-emerald-600 hover:to-teal-700 text-sm font-medium transition-all"
               >
                 Add Lead
               </Link>
@@ -325,12 +325,12 @@ export default function LeadsClient({
         </div>
 
         {/* Advanced Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+            <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
             <button
               onClick={clearFilters}
-              className="text-sm text-[#1B7A7A] hover:text-[#155555]"
+              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
             >
               Clear All
             </button>
@@ -516,7 +516,7 @@ export default function LeadsClient({
           <div className="mt-4">
             <button
               onClick={() => setShowMoreFilters(!showMoreFilters)}
-              className="text-sm text-[#1B7A7A] hover:text-[#155555]"
+              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
             >
               {showMoreFilters ? '▼' : '▶'} More Filters (Company)
             </button>
@@ -674,23 +674,23 @@ export default function LeadsClient({
         )}
 
         {leads.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No leads found</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-12 text-center">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No leads found</h3>
+            <p className="text-sm text-gray-500 mb-4">
               Try adjusting your filters or add a new lead.
             </p>
             <Link
               href="/dashboard/leads/new"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium"
+              className="inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-md hover:from-emerald-600 hover:to-teal-700 text-sm font-medium"
             >
               Add Lead
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead className="bg-gray-50/80">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <input
@@ -700,7 +700,7 @@ export default function LeadsClient({
                           if (input) input.indeterminate = someSelected;
                         }}
                         onChange={(e) => handleSelectAll(e.target.checked)}
-                        className="rounded border-gray-300 text-[#1B7A7A] focus:ring-[#1B7A7A]"
+                        className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -743,13 +743,13 @@ export default function LeadsClient({
                           type="checkbox"
                           checked={selectedLeadIds.has(lead.id)}
                           onChange={(e) => handleSelectLead(lead.id, e.target.checked)}
-                          className="rounded border-gray-300 text-[#1B7A7A] focus:ring-[#1B7A7A]"
+                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
                           href={`/dashboard/leads/${lead.id}`}
-                          className="text-[#1B7A7A] hover:text-[#155555] font-medium"
+                          className="text-emerald-600 hover:text-emerald-700 font-medium"
                         >
                           {formatName(lead.firstName, lead.lastName)}
                         </Link>
@@ -761,7 +761,7 @@ export default function LeadsClient({
                         {lead.companyRel ? (
                           <Link
                             href={`/dashboard/companies/${lead.companyRel.id}`}
-                            className="text-[#1B7A7A] hover:text-[#155555]"
+                            className="text-emerald-600 hover:text-emerald-700"
                           >
                             {lead.companyRel.name}
                           </Link>
@@ -806,7 +806,7 @@ export default function LeadsClient({
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
                           href={`/dashboard/leads/${lead.id}/edit`}
-                          className="text-[#1B7A7A] hover:text-[#155555] mr-4"
+                          className="text-emerald-600 hover:text-emerald-700 mr-4"
                         >
                           Edit
                         </Link>

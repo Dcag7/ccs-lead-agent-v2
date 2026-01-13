@@ -79,25 +79,25 @@ export default function CompaniesClient({
   };
 
   return (
-    <div className="p-8">
+    <div className="p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Companies</h1>
-              <p className="text-gray-600 mt-1">Manage and explore company data</p>
+              <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
+              <p className="text-sm text-gray-500 mt-1">Manage and explore company data</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
             <button
               onClick={handleRecalculate}
               disabled={isRecalculating}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isRecalculating ? 'Recalculating...' : 'Recalculate Scores'}
             </button>
             <Link
               href="/dashboard/companies/new"
-                className="bg-[#1B7A7A] text-white px-4 py-2 rounded-lg hover:bg-[#155555] font-medium shadow-sm hover:shadow-md transition-all"
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-md hover:from-emerald-600 hover:to-teal-700 text-sm font-medium transition-all"
             >
               Add Company
             </Link>
@@ -106,9 +106,9 @@ export default function CompaniesClient({
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4 mb-6">
           <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-700">Minimum Score:</label>
+            <label className="text-sm font-medium text-gray-600">Minimum Score:</label>
             <input
               type="range"
               min="0"
@@ -116,7 +116,7 @@ export default function CompaniesClient({
               step="5"
               value={minScore}
               onChange={(e) => handleMinScoreChange(parseInt(e.target.value))}
-              className="flex-grow h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="flex-grow h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
             />
             <span className="text-sm font-medium text-gray-900 min-w-[50px]">
               {minScore}+
@@ -125,25 +125,25 @@ export default function CompaniesClient({
         </div>
 
         {companies.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No companies found</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-12 text-center">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No companies found</h3>
+            <p className="text-sm text-gray-500 mb-4">
               {currentMinScore > 0
                 ? `No companies with score >= ${currentMinScore}. Try adjusting the filter.`
                 : 'Get started by adding your first company.'}
             </p>
             <Link
               href="/dashboard/companies/new"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium"
+              className="inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-md hover:from-emerald-600 hover:to-teal-700 text-sm font-medium"
             >
               Add Company
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead className="bg-gray-50/80">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Name
@@ -174,13 +174,13 @@ export default function CompaniesClient({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-100">
                   {companies.map((company) => (
-                    <tr key={company.id} className="hover:bg-gray-50">
+                    <tr key={company.id} className="hover:bg-emerald-50/30">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
                           href={`/dashboard/companies/${company.id}`}
-                          className="text-[#1B7A7A] hover:text-[#155555] font-medium"
+                          className="text-emerald-600 hover:text-emerald-700 font-medium"
                         >
                           {company.name}
                         </Link>
@@ -206,13 +206,13 @@ export default function CompaniesClient({
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
                           href={`/dashboard/companies/${company.id}/edit`}
-                          className="text-[#1B7A7A] hover:text-[#155555] mr-4"
+                          className="text-emerald-600 hover:text-emerald-700 mr-4"
                         >
                           Edit
                         </Link>
                         <Link
                           href={`/dashboard/companies/${company.id}`}
-                          className="text-gray-600 hover:text-gray-800"
+                          className="text-gray-500 hover:text-gray-700"
                         >
                           View
                         </Link>
