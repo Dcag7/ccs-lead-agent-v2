@@ -85,13 +85,17 @@ interface RunStats {
 function RunDetailsModal({
   run,
   onClose,
+  onRefresh,
 }: {
   run: DiscoveryRun;
   onClose: () => void;
+  onRefresh?: () => void;
 }) {
   const stats = run.stats as RunStats | null;
   const [showMoreInclude, setShowMoreInclude] = useState(false);
   const [showMoreExclude, setShowMoreExclude] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const formatDuration = (ms: number) => {
     if (ms < 1000) return `${ms}ms`;
@@ -109,13 +113,36 @@ function RunDetailsModal({
         return 'bg-red-100 text-red-800';
       case 'running':
         return 'bg-blue-100 text-blue-800';
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-600';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
+  const handleStopRun = async () => {
+    setIsCancelling(true);
+    setCancelError(null);
+    try {
+      const res = await fetch(`/api/discovery/runs/${run.id}/cancel`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        onRefresh?.();
+      } else {
+        setCancelError(data.error || 'Failed to cancel run');
+      }
+    } catch (error) {
+      setCancelError(error instanceof Error ? error.message : 'Failed to cancel run');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const companiesCreated = stats?.companiesCreated ?? run.createdCompaniesCount ?? 0;
   const leadsCreated = stats?.leadsCreated ?? run.createdLeadsCount ?? 0;
+  const isRunning = run.status === 'running' || run.status === 'pending';
 
   const includeKeywords = (stats?.intentConfig?.includeKeywords as string[]) || [];
   const excludeKeywords = (stats?.intentConfig?.excludeKeywords as string[]) || [];
@@ -133,8 +160,22 @@ function RunDetailsModal({
             <p className="text-xs text-gray-500 font-mono">{run.id}</p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Stop Run Button (when running) */}
+            {isRunning && (
+              <button
+                onClick={handleStopRun}
+                disabled={isCancelling}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                </svg>
+                {isCancelling ? 'Stopping...' : 'Stop Run'}
+              </button>
+            )}
             {/* View Results Button */}
-            {stats?.totalAfterDedupe !== undefined && stats.totalAfterDedupe > 0 && (
+            {stats?.totalAfterDedupe !== undefined && stats.totalAfterDedupe > 0 && !isRunning && (
               <Link
                 href={`/dashboard/discovery/runs/${run.id}`}
                 onClick={onClose}
@@ -159,6 +200,12 @@ function RunDetailsModal({
         </div>
 
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          {/* Cancel Error */}
+          {cancelError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {cancelError}
+            </div>
+          )}
           {/* 2-Column Layout: Overview/Intent left, Limits/Channels right */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column: Overview & Intent */}
@@ -174,7 +221,7 @@ function RunDetailsModal({
                       <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
                       <span className={`inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(run.status)}`}>
                         {run.status}
-                        {run.dryRun && ' (dry run)'}
+                        {run.dryRun && ' (preview)'}
                       </span>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3">
@@ -402,23 +449,23 @@ function RunDetailsModal({
               )}
 
               {/* Action Buttons */}
-              {(companiesCreated > 0 || leadsCreated > 0) && !run.dryRun && (
+              {(companiesCreated > 0 || leadsCreated > 0 || (run.dryRun && stats?.totalAfterDedupe && stats.totalAfterDedupe > 0)) && (
                 <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-3">
                   {companiesCreated > 0 && (
                     <Link
-                      href="/dashboard/companies"
+                      href={run.dryRun ? `/dashboard/discovery/runs/${run.id}` : `/dashboard/discovery/runs/${run.id}`}
                       onClick={onClose}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
-                      View {companiesCreated} Companies
+                      View {companiesCreated} {run.dryRun ? 'Discovered' : 'Companies'}
                     </Link>
                   )}
                   {leadsCreated > 0 && (
                     <Link
-                      href="/dashboard/leads"
+                      href={`/dashboard/discovery/runs/${run.id}`}
                       onClick={onClose}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
                     >
@@ -428,8 +475,23 @@ function RunDetailsModal({
                       View {leadsCreated} Leads
                     </Link>
                   )}
+                  {run.dryRun && companiesCreated === 0 && leadsCreated === 0 && stats?.totalAfterDedupe && stats.totalAfterDedupe > 0 && (
+                    <Link
+                      href={`/dashboard/discovery/runs/${run.id}`}
+                      onClick={onClose}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View {stats.totalAfterDedupe} Discovered
+                    </Link>
+                  )}
                   <p className="w-full text-xs text-gray-500 mt-1">
-                    View newly discovered records to score and qualify them
+                    {run.dryRun 
+                      ? 'View discovered records (preview only - no records were created)'
+                      : 'View newly discovered records to score and qualify them'}
                   </p>
                 </div>
               )}
@@ -607,9 +669,9 @@ export default function DiscoveryClient({ initialRuns }: Props) {
       if (data.success) {
         const selectedIntent = intents.find((i) => i.id === selectedIntentId);
         setSuccess(
-          `${dryRun ? 'Dry run' : 'Discovery run'} completed: ${
+          `${dryRun ? 'Preview' : 'Discovery run'} completed: ${
             data.stats?.companiesCreated ?? 0
-          } companies created using "${selectedIntent?.name || selectedIntentId}"`
+          } companies ${dryRun ? 'discovered' : 'created'} using "${selectedIntent?.name || selectedIntentId}"`
         );
         await refreshRuns();
       } else {
@@ -649,11 +711,12 @@ export default function DiscoveryClient({ initialRuns }: Props) {
       failed: 'bg-red-100 text-red-800',
       running: 'bg-blue-100 text-blue-800',
       pending: 'bg-yellow-100 text-yellow-800',
+      cancelled: 'bg-gray-100 text-gray-600',
     };
     return (
       <span className={`${baseClasses} ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}>
         {status}
-        {dryRun && <span className="ml-1 text-gray-500">(dry run)</span>}
+        {dryRun && <span className="ml-1 text-gray-500">(preview)</span>}
       </span>
     );
   };
@@ -902,23 +965,36 @@ export default function DiscoveryClient({ initialRuns }: Props) {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => runDiscovery(true)}
-            disabled={isLoading || !runnerEnabled || googleConfigured === false}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title={googleConfigured === false ? 'Google Discovery is not configured' : undefined}
-          >
-            {isLoading ? 'Running...' : 'Dry Run'}
-          </button>
-          <button
-            onClick={() => runDiscovery(false)}
-            disabled={isLoading || !runnerEnabled || googleConfigured === false}
-            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title={googleConfigured === false ? 'Google Discovery is not configured' : undefined}
-          >
-            {isLoading ? 'Running...' : 'Run Now'}
-          </button>
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <button
+              onClick={() => runDiscovery(true)}
+              disabled={isLoading || !runnerEnabled || googleConfigured === false}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              title={googleConfigured === false ? 'Google Discovery is not configured' : 'Preview results without creating records'}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {isLoading ? 'Running...' : 'Preview Only'}
+            </button>
+            <button
+              onClick={() => runDiscovery(false)}
+              disabled={isLoading || !runnerEnabled || googleConfigured === false}
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              title={googleConfigured === false ? 'Google Discovery is not configured' : 'Run discovery and create records'}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {isLoading ? 'Running...' : 'Run Now'}
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">
+            <strong>Preview Only</strong> = discover and score companies without saving. <strong>Run Now</strong> = create Company records in the database.
+          </p>
         </div>
       </div>
 
@@ -1027,7 +1103,11 @@ export default function DiscoveryClient({ initialRuns }: Props) {
 
       {/* Run Detail Modal */}
       {selectedRun && (
-        <RunDetailsModal run={selectedRun} onClose={() => setSelectedRun(null)} />
+        <RunDetailsModal 
+          run={selectedRun} 
+          onClose={() => setSelectedRun(null)} 
+          onRefresh={refreshRuns}
+        />
       )}
     </div>
   );

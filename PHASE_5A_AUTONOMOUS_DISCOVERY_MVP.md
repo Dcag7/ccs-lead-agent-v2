@@ -31,8 +31,9 @@
 | **Secured Job Route** | POST `/api/jobs/discovery/run` with secret auth |
 | **Vercel Cron** | Daily schedule via `vercel.json` |
 | **Enable Switch** | `DISCOVERY_RUNNER_ENABLED` environment variable |
-| **Dry Run Mode** | Option to run without DB writes |
-| **Run History UI** | Simple table showing last 20 runs |
+| **Preview Only Mode** | Run discovery without creating DB records |
+| **Run History UI** | Automated Discovery page showing run history |
+| **Cancel Support** | Stop running jobs via cancel request |
 | **Test Script** | Local script to test runner |
 
 ### 2.2 Out of Scope (NOT in MVP)
@@ -80,7 +81,14 @@
 ### 3.4 UI
 
 - [x] Discovery runs list component
-- [x] Integration into admin dashboard (sidebar link added)
+- [x] Integration into admin dashboard
+- [x] Consolidated Discovery navigation (parent item with sub-items):
+  - Manual Discovery → `/dashboard/discovery`
+  - Automated Discovery → `/dashboard/discovery-runs`
+- [x] "Preview Only" mode (renamed from "Dry Run") with helper text
+- [x] Multi-select results with "Create Companies from Selected"
+- [x] Stop Run button for running/pending jobs
+- [x] Status badges including `cancelled` status
 
 ### 3.5 Scripts & Testing
 

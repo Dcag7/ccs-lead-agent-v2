@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import PageContainer from '@/app/dashboard/components/PageContainer';
 import DiscoveryRunResultsClient from './components/DiscoveryRunResultsClient';
 
 export const dynamic = 'force-dynamic';
@@ -37,42 +38,45 @@ export default async function DiscoveryRunResultsPage(
   const stats = (run.stats as Record<string, unknown>) || {};
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <nav className="text-sm text-gray-500 mb-2">
-            <Link href="/dashboard" className="hover:text-gray-700">
-              Dashboard
-            </Link>
-            <span className="mx-2">/</span>
-            <Link href="/dashboard/discovery" className="hover:text-gray-700">
-              Discovery
-            </Link>
-            <span className="mx-2">/</span>
-            <span>Run Results</span>
-          </nav>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Discovery Run Results
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {run.intentName || run.mode} - {new Date(run.startedAt).toLocaleString()}
-          </p>
-        </div>
-
-        <DiscoveryRunResultsClient
-          run={{
-            id: run.id,
-            status: run.status,
-            dryRun: run.dryRun,
-            intentId: run.intentId,
-            intentName: run.intentName,
-            startedAt: run.startedAt.toISOString(),
-            finishedAt: run.finishedAt?.toISOString() ?? null,
-            stats,
-          }}
-          results={results as Parameters<typeof DiscoveryRunResultsClient>[0]['results']}
-        />
+    <PageContainer>
+      <div className="mb-6">
+        <nav className="text-sm text-gray-500 mb-2">
+          <Link href="/dashboard" className="hover:text-gray-700">
+            Dashboard
+          </Link>
+          <span className="mx-2" aria-hidden="true">›</span>
+          <Link href="/dashboard/discovery" className="hover:text-gray-700">
+            Discovery
+          </Link>
+          <span className="mx-2" aria-hidden="true">›</span>
+          <Link href="/dashboard/discovery-runs" className="hover:text-gray-700">
+            Automated
+          </Link>
+          <span className="mx-2" aria-hidden="true">›</span>
+          <span>Results</span>
+        </nav>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Discovery Run Results
+        </h1>
+        <p className="text-gray-600 mt-1">
+          {run.intentName || run.mode} - {new Date(run.startedAt).toLocaleString()}
+          {run.dryRun && <span className="ml-2 text-amber-600 font-medium">(Preview Only)</span>}
+        </p>
       </div>
-    </div>
+
+      <DiscoveryRunResultsClient
+        run={{
+          id: run.id,
+          status: run.status,
+          dryRun: run.dryRun,
+          intentId: run.intentId,
+          intentName: run.intentName,
+          startedAt: run.startedAt.toISOString(),
+          finishedAt: run.finishedAt?.toISOString() ?? null,
+          stats,
+        }}
+        results={results}
+      />
+    </PageContainer>
   );
 }

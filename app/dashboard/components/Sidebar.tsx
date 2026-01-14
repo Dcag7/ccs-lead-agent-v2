@@ -2,12 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
+import { useState } from 'react';
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
+}
+
+interface NavSection {
+  name: string;
+  icon: React.ReactNode;
+  items: NavItem[];
 }
 
 const navItems: NavItem[] = [
@@ -56,25 +62,37 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    name: 'Discovery',
-    href: '/dashboard/discovery',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Discovery Runs',
-    href: '/dashboard/discovery-runs',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-    ),
-  },
 ];
+
+// Discovery section with sub-items
+const discoverySection: NavSection = {
+  name: 'Discovery',
+  icon: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  ),
+  items: [
+    {
+      name: 'Manual Discovery',
+      href: '/dashboard/discovery',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Automated Discovery',
+      href: '/dashboard/discovery-runs',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+  ],
+};
 
 // CCS Brand Icon SVG Component
 function BrandIcon({ className = '', size = 24 }: { className?: string; size?: number }) {
@@ -105,6 +123,11 @@ function BrandIcon({ className = '', size = 24 }: { className?: string; size?: n
 
 export default function Sidebar({ userEmail }: { userEmail?: string }) {
   const pathname = usePathname();
+  const [discoveryExpanded, setDiscoveryExpanded] = useState(
+    pathname?.startsWith('/dashboard/discovery') || false
+  );
+
+  const isDiscoveryActive = pathname?.startsWith('/dashboard/discovery');
 
   return (
     <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-100 flex flex-col">
@@ -127,6 +150,7 @@ export default function Sidebar({ userEmail }: { userEmail?: string }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {/* Regular nav items */}
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
           return (
@@ -147,6 +171,65 @@ export default function Sidebar({ userEmail }: { userEmail?: string }) {
             </Link>
           );
         })}
+
+        {/* Discovery Section (collapsible) */}
+        <div className="pt-2">
+          <button
+            onClick={() => setDiscoveryExpanded(!discoveryExpanded)}
+            className={`
+              w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+              ${
+                isDiscoveryActive && !discoveryExpanded
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md'
+                  : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+              }
+            `}
+          >
+            <div className="flex items-center gap-3">
+              <span className={isDiscoveryActive && !discoveryExpanded ? 'opacity-100' : 'opacity-70'}>
+                {discoverySection.icon}
+              </span>
+              <span>{discoverySection.name}</span>
+            </div>
+            <svg 
+              className={`w-4 h-4 transition-transform duration-200 ${discoveryExpanded ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Sub-items */}
+          {discoveryExpanded && (
+            <div className="mt-1 ml-4 pl-3 border-l-2 border-gray-100 space-y-1">
+              {discoverySection.items.map((item) => {
+                const isActive = pathname === item.href || 
+                  (item.href === '/dashboard/discovery' && pathname === '/dashboard/discovery') ||
+                  (item.href === '/dashboard/discovery-runs' && pathname?.startsWith('/dashboard/discovery-runs')) ||
+                  (item.href === '/dashboard/discovery' && pathname?.startsWith('/dashboard/discovery/runs'));
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`
+                      flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200
+                      ${
+                        isActive
+                          ? 'bg-emerald-100 text-emerald-800 font-medium'
+                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                      }
+                    `}
+                  >
+                    <span className={isActive ? 'opacity-100' : 'opacity-60'}>{item.icon}</span>
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* User Info */}

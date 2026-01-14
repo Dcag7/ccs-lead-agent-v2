@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import DiscoveryClient from './components/DiscoveryClient';
+import PageContainer from '../components/PageContainer';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -47,26 +48,28 @@ export default async function DiscoveryPage() {
   }));
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <nav className="text-sm text-gray-500 mb-2">
-            <Link href="/dashboard" className="hover:text-gray-700">
-              Dashboard
-            </Link>
-            <span className="mx-2">/</span>
-            <span>Discovery</span>
-          </nav>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Manual Discovery
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Run targeted discovery using predefined intent templates (Phase 5A)
-          </p>
-        </div>
-
-        <DiscoveryClient initialRuns={serializedRuns} />
+    <PageContainer>
+      <div className="mb-6">
+        <nav className="text-sm text-gray-500 mb-2">
+          <Link href="/dashboard" className="hover:text-gray-700">
+            Dashboard
+          </Link>
+          <span className="mx-2" aria-hidden="true">›</span>
+          <Link href="/dashboard/discovery" className="hover:text-gray-700">
+            Discovery
+          </Link>
+          <span className="mx-2" aria-hidden="true">›</span>
+          <span>Manual</span>
+        </nav>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Manual Discovery
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Run targeted discovery using predefined intent templates
+        </p>
       </div>
-    </div>
+
+      <DiscoveryClient initialRuns={serializedRuns} />
+    </PageContainer>
   );
 }

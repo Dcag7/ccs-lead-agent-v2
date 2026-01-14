@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface DiscoveryRun {
   id: string;
@@ -10,11 +11,14 @@ interface DiscoveryRun {
   mode: string;
   dryRun: boolean;
   triggeredBy: string | null;
+  intentName?: string | null;
+  cancelRequestedAt?: string | null;
   stats: {
     companiesCreated?: number;
     contactsCreated?: number;
     leadsCreated?: number;
     durationMs?: number;
+    totalAfterDedupe?: number;
   } | null;
   error: string | null;
   createdCompaniesCount: number;
@@ -41,10 +45,11 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, dryRun }: { status: string; dryRun?: boolean }) {
   const colors: Record<string, string> = {
     completed: 'bg-green-100 text-green-800',
-    running: 'bg-yellow-100 text-yellow-800',
+    completed_with_errors: 'bg-yellow-100 text-yellow-800',
+    running: 'bg-blue-100 text-blue-800',
     pending: 'bg-gray-100 text-gray-800',
     failed: 'bg-red-100 text-red-800',
     cancelled: 'bg-gray-100 text-gray-500',
@@ -55,6 +60,7 @@ function StatusBadge({ status }: { status: string }) {
       className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status] || colors.pending}`}
     >
       {status}
+      {dryRun && <span className="ml-1 text-gray-500">(preview)</span>}
     </span>
   );
 }
@@ -66,6 +72,24 @@ export default function DiscoveryRunsClient({
 }) {
   const [runs, setRuns] = useState<DiscoveryRun[]>(initialRuns);
   const [refreshing, setRefreshing] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const handleStopRun = async (runId: string) => {
+    setCancellingId(runId);
+    try {
+      const res = await fetch(`/api/discovery/runs/${runId}/cancel`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        // Refresh the list
+        handleRefresh();
+      }
+    } catch {
+      // Ignore errors
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   // Auto-refresh if there are running jobs
   useEffect(() => {
@@ -137,77 +161,111 @@ export default function DiscoveryRunsClient({
                   Status
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Intent / Mode
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Started
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Duration
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mode
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Skipped
+                  Results
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Errors
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {runs.map((run) => (
-                <tr key={run.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <StatusBadge status={run.status} />
-                    {run.dryRun && (
-                      <span className="ml-2 text-xs text-gray-400">
-                        (dry run)
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                    {formatDate(run.startedAt)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                    {formatDuration(run.stats?.durationMs)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                    {run.mode}
-                    {run.triggeredBy && (
-                      <span className="text-xs text-gray-400 ml-1">
-                        ({run.triggeredBy})
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    <span className="text-green-600">
-                      {run.createdCompaniesCount} companies
-                    </span>
-                    <br />
-                    <span className="text-blue-600 text-xs">
-                      {run.createdContactsCount} contacts,{' '}
-                      {run.createdLeadsCount} leads
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {run.skippedCount}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {run.errorCount > 0 ? (
-                      <span
-                        className="text-sm text-red-600 cursor-help"
-                        title={run.error || 'Errors occurred'}
-                      >
-                        {run.errorCount} error{run.errorCount !== 1 ? 's' : ''}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {runs.map((run) => {
+                const resultCount = run.dryRun 
+                  ? (run.stats?.totalAfterDedupe ?? 0)
+                  : run.createdCompaniesCount;
+                return (
+                  <tr key={run.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <StatusBadge status={run.status} dryRun={run.dryRun} />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <div className="font-medium text-gray-900">
+                        {run.intentName || run.mode}
+                      </div>
+                      {run.triggeredBy && (
+                        <div className="text-xs text-gray-400">
+                          via {run.triggeredBy}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                      {formatDate(run.startedAt)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                      {formatDuration(run.stats?.durationMs)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      {run.dryRun ? (
+                        <span className="text-amber-600">
+                          {run.stats?.totalAfterDedupe ?? 0} discovered
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-green-600">
+                            {run.createdCompaniesCount} companies
+                          </span>
+                          {(run.createdContactsCount > 0 || run.createdLeadsCount > 0) && (
+                            <div className="text-blue-600 text-xs">
+                              {run.createdContactsCount} contacts, {run.createdLeadsCount} leads
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {run.errorCount > 0 ? (
+                        <span
+                          className="text-sm text-red-600 cursor-help"
+                          title={run.error || 'Errors occurred'}
+                        >
+                          {run.errorCount}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <div className="flex items-center gap-2">
+                        {resultCount > 0 && (
+                          <Link
+                            href={`/dashboard/discovery/runs/${run.id}`}
+                            className="text-teal-600 hover:text-teal-800 font-medium"
+                          >
+                            View {resultCount} {run.dryRun ? 'discovered' : 'companies'}
+                          </Link>
+                        )}
+                        {resultCount === 0 && run.status !== 'running' && run.status !== 'pending' && (
+                          <span className="text-gray-400">No results</span>
+                        )}
+                        {(run.status === 'running' || run.status === 'pending') && !run.cancelRequestedAt && (
+                          <button
+                            onClick={() => handleStopRun(run.id)}
+                            disabled={cancellingId === run.id}
+                            className="px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                          >
+                            {cancellingId === run.id ? 'Stopping...' : 'Stop'}
+                          </button>
+                        )}
+                        {run.cancelRequestedAt && run.status === 'running' && (
+                          <span className="text-amber-600 text-xs">Stopping...</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

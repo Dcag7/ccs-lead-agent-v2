@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import DiscoveryRunsClient from './components/DiscoveryRunsClient';
+import PageContainer from '../components/PageContainer';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +9,7 @@ export default async function DiscoveryRunsPage() {
   // Fetch recent discovery runs
   const runs = await prisma.discoveryRun.findMany({
     orderBy: { startedAt: 'desc' },
-    take: 20,
+    take: 50,
   });
 
   // Serialize dates for client component
@@ -18,39 +19,49 @@ export default async function DiscoveryRunsPage() {
     finishedAt: run.finishedAt?.toISOString() ?? null,
     createdAt: run.createdAt.toISOString(),
     updatedAt: run.updatedAt.toISOString(),
+    cancelRequestedAt: run.cancelRequestedAt?.toISOString() ?? null,
     stats: run.stats as {
       companiesCreated?: number;
       contactsCreated?: number;
       leadsCreated?: number;
       durationMs?: number;
+      totalAfterDedupe?: number;
     } | null,
   }));
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <nav className="text-sm text-gray-500 mb-2">
-                <Link href="/dashboard" className="hover:text-gray-700">
-                  Dashboard
-                </Link>
-                <span className="mx-2">/</span>
-                <span>Discovery Runs</span>
-              </nav>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Discovery Runs
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Autonomous daily discovery run history (Phase 5A)
-              </p>
-            </div>
+    <PageContainer>
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <nav className="text-sm text-gray-500 mb-2">
+              <Link href="/dashboard" className="hover:text-gray-700">
+                Dashboard
+              </Link>
+              <span className="mx-2" aria-hidden="true">›</span>
+              <Link href="/dashboard/discovery" className="hover:text-gray-700">
+                Discovery
+              </Link>
+              <span className="mx-2" aria-hidden="true">›</span>
+              <span>Automated</span>
+            </nav>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Automated Discovery
+            </h1>
+            <p className="text-gray-600 mt-1">
+              History of scheduled and manual discovery runs
+            </p>
           </div>
+          <Link
+            href="/dashboard/discovery"
+            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium transition-colors"
+          >
+            Run Manual Discovery
+          </Link>
         </div>
-
-        <DiscoveryRunsClient initialRuns={serializedRuns} />
       </div>
-    </div>
+
+      <DiscoveryRunsClient initialRuns={serializedRuns} />
+    </PageContainer>
   );
 }

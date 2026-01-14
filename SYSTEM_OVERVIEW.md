@@ -563,11 +563,17 @@ Automatically finding missing company information (website, industry) from web s
 ### **Discovery**
 The process of finding new prospects automatically through web searches, keywords, and signal extraction. Phase 5A is complete with:
 - **Intent Templates:** Predefined discovery strategies targeting specific prospect types (agencies_all, schools_all, tenders_uniforms_merch, businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa)
-- **Manual Discovery:** Admin-triggered runs using intent templates with optional limit overrides
-- **Autonomous Discovery:** Daily scheduled runs via Vercel Cron executing multiple intents
+- **Manual Discovery:** Admin-triggered runs at `/dashboard/discovery`
+  - **Preview Only** mode: Discover and score without creating database records
+  - **Run Now** mode: Create actual Company records from discovered results
+  - Select from preview results and create companies selectively
+- **Automated Discovery:** Run history at `/dashboard/discovery-runs`
+  - View all runs (manual + scheduled) with stats
+  - Stop running jobs with cancel request
+- **Navigation:** Single "Discovery" section in sidebar with "Manual Discovery" and "Automated Discovery" sub-items
 - **Geography Bias:** Gauteng-first scoring (priority regions get score boost, others not excluded)
 - **Tender Sourcing:** Government tenders via National Treasury eTender Portal (etenders.gov.za)
-- **Safety Guardrails:** Kill switch, time budgets, max limits, dry-run mode
+- **Safety Guardrails:** Kill switch, time budgets, max limits, cancel support
 
 ### **Brain / Policy Layer**
 A deterministic rules engine that defines ICP characteristics, allow/block lists, and recommends actions. Uses rules, not AI guesswork. (Phase 5B)
