@@ -19,6 +19,7 @@ interface DiscoveryRun {
   errorCount: number;
   stats: Record<string, unknown> | null;
   error: string | null;
+  resultsJson?: unknown[] | null;
 }
 
 interface Props {
@@ -54,6 +55,92 @@ function getTriggeredByLabel(triggeredBy: string | null) {
   return triggeredBy;
 }
 
+/**
+ * Normalize raw results from resultsJson for display
+ */
+function normalizeResultsForPrint(rawResults: unknown[]): Array<{
+  name?: string;
+  website?: string;
+  description?: string;
+  email?: string;
+  phone?: string;
+  industry?: string;
+  relevanceScore?: number;
+  channel?: string;
+  source?: string;
+}> {
+  return rawResults.map((raw: unknown) => {
+    const item = raw as {
+      type?: string;
+      name?: string;
+      website?: string;
+      description?: string;
+      email?: string;
+      phone?: string;
+      industry?: string;
+      firstName?: string;
+      lastName?: string;
+      source?: string;
+      company?: {
+        name?: string;
+        website?: string;
+        description?: string;
+        email?: string;
+        phone?: string;
+        industry?: string;
+        discoveryMetadata?: {
+          discoverySource?: string;
+          additionalMetadata?: {
+            relevanceScore?: number;
+          };
+        };
+      };
+      contact?: {
+        name?: string;
+        email?: string;
+        phone?: string;
+      };
+      discoveryMetadata?: {
+        discoverySource?: string;
+        additionalMetadata?: {
+          relevanceScore?: number;
+          channel?: string;
+        };
+      };
+    };
+    if (item.type === 'lead') {
+      const company = item.company;
+      const contact = item.contact;
+      return {
+        name: contact?.name || company?.name,
+        website: company?.website,
+        description: company?.description,
+        email: contact?.email || company?.email,
+        phone: contact?.phone || company?.phone,
+        industry: company?.industry,
+        relevanceScore: company?.discoveryMetadata?.additionalMetadata?.relevanceScore,
+        channel: item.source || company?.discoveryMetadata?.discoverySource,
+        source: item.source || company?.discoveryMetadata?.discoverySource,
+      };
+    }
+
+    const metadata = item.discoveryMetadata;
+    const additionalMeta = metadata?.additionalMetadata;
+
+    return {
+      name: item.name || (item.firstName ? `${item.firstName} ${item.lastName || ''}`.trim() : undefined),
+      website: item.website,
+      description: item.description,
+      email: item.email,
+      phone: item.phone,
+      industry: item.industry,
+      relevanceScore: additionalMeta?.relevanceScore,
+      channel: metadata?.discoverySource || additionalMeta?.channel,
+      source: metadata?.discoverySource || additionalMeta?.channel,
+    };
+  });
+}
+
 export default function PrintViewClient({ runs }: Props) {
   useEffect(() => {
     // Trigger print dialog when component mounts
@@ -70,18 +157,30 @@ export default function PrintViewClient({ runs }: Props) {
           body {
             background: white;
           }
-          .no-print {
+          /* Hide all dashboard chrome */
+          nav,
+          aside,
+          header,
+          .sidebar,
+          .no-print,
+          button {
             display: none !important;
           }
           .print-container {
             max-width: 100%;
             padding: 0;
+            margin: 0;
           }
           table {
             page-break-inside: avoid;
+            border-collapse: collapse;
           }
           tr {
             page-break-inside: avoid;
+          }
+          th, td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
           }
         }
         @media screen {
@@ -222,7 +321,7 @@ export default function PrintViewClient({ runs }: Props) {
                 )}
 
                 {stats?.intentConfig && (
-                  <div>
+                  <div className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Configuration</h3>
                     <div className="text-sm space-y-1">
                       {stats.intentConfig.targetCountries && (
@@ -244,6 +343,58 @@ export default function PrintViewClient({ runs }: Props) {
                         </div>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Results Table */}
+                {run.resultsJson && Array.isArray(run.resultsJson) && run.resultsJson.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Discovered Companies</h3>
+                    <table className="w-full border-collapse border border-gray-300 text-sm">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Score</th>
+                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Company</th>
+                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Website</th>
+                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Description</th>
+                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Contact</th>
+                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Source</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {normalizeResultsForPrint(run.resultsJson).map((result, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="border border-gray-300 px-2 py-1">
+                              {result.relevanceScore !== undefined ? Math.round(result.relevanceScore) : '-'}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-1">
+                              <div className="font-medium text-gray-900">{result.name || '-'}</div>
+                              {result.industry && (
+                                <div className="text-xs text-gray-500">{result.industry}</div>
+                              )}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-1 text-gray-700">
+                              {result.website ? result.website.replace(/^https?:\/\//, '') : '-'}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-1 text-gray-700">
+                              {result.description ? (
+                                <div className="max-w-xs truncate" title={result.description}>
+                                  {result.description}
+                                </div>
+                              ) : '-'}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-1 text-gray-700">
+                              {result.email && <div>{result.email}</div>}
+                              {result.phone && <div className="text-xs">{result.phone}</div>}
+                              {!result.email && !result.phone && '-'}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-1 text-gray-700 capitalize">
+                              {result.source || result.channel || '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

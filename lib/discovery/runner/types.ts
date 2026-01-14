@@ -48,6 +48,7 @@ export interface IntentConfigSnapshot {
   excludeKeywords?: string[];
   includeKeywordsCount: number;
   excludeKeywordsCount: number;
+  category?: string;
 }
 
 /**

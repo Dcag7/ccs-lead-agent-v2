@@ -171,7 +171,7 @@ export default function Sidebar({ userEmail }: { userEmail?: string }) {
                 ${
                   isActive
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+                    : 'text-gray-900 hover:bg-emerald-50 hover:text-emerald-700'
                 }
               `}
             >
@@ -190,7 +190,7 @@ export default function Sidebar({ userEmail }: { userEmail?: string }) {
               ${
                 isDiscoveryActive && !discoveryExpanded
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+                  : 'text-gray-900 hover:bg-emerald-50 hover:text-emerald-700'
               }
             `}
           >
@@ -227,7 +227,7 @@ export default function Sidebar({ userEmail }: { userEmail?: string }) {
                       ${
                         isActive
                           ? 'bg-emerald-100 text-emerald-800 font-medium'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                          : 'text-gray-900 hover:bg-gray-50 hover:text-emerald-700'
                       }
                     `}
                   >

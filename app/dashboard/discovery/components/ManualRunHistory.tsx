@@ -99,7 +99,7 @@ export default function ManualRunHistory() {
 
   const handlePrint = (runIds: string[]) => {
     const ids = runIds.join(',');
-    window.open(`/dashboard/discovery/print?ids=${ids}`, '_blank');
+    window.open(`/print/discovery?ids=${ids}`, '_blank');
   };
 
   // Map runs to the format expected by RunHistoryTable

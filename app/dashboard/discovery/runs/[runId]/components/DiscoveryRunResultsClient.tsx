@@ -126,6 +126,7 @@ interface RunStats {
     queriesCount?: number;
     includeKeywords?: string[];
     excludeKeywords?: string[];
+    category?: string;
   };
   limitsUsed?: {
     maxCompanies?: number;
@@ -294,48 +295,56 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
   };
 
   const handleRerunAsReal = async () => {
-    if (!run.intentId) {
-      setRerunError('Cannot re-run: no intent ID found');
-      return;
-    }
-
     setIsRerunning(true);
     setRerunError(null);
 
     try {
-      const res = await fetch('/api/discovery/manual/run', {
+      // Materialize the existing run (convert dry-run to real run)
+      const res = await fetch(`/api/discovery/runs/${run.id}/materialize`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          intentId: run.intentId,
-          dryRun: false,
-          overrides: run.stats.limitsUsed
-            ? {
-                limits: {
-                  maxCompanies: run.stats.limitsUsed.maxCompanies,
-                  maxLeads: run.stats.limitsUsed.maxLeads,
-                  maxQueries: run.stats.limitsUsed.maxQueries,
-                  timeBudgetMs: run.stats.limitsUsed.maxRuntimeSeconds
-                    ? run.stats.limitsUsed.maxRuntimeSeconds * 1000
-                    : undefined,
-                },
-              }
-            : undefined,
-        }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
       });
+
+      // Check content-type before parsing
+      const contentType = res.headers.get('content-type');
+      if (!res.ok) {
+        console.error(`[Materialize] Response failed: status=${res.status}, content-type=${contentType}`);
+        if (!contentType?.includes('application/json')) {
+          const text = await res.text();
+          console.error(`[Materialize] Non-JSON response: ${text.substring(0, 200)}`);
+          setRerunError('Server returned non-JSON (likely auth redirect). Please refresh and sign in.');
+          return;
+        }
+      }
+
+      if (!contentType?.includes('application/json')) {
+        const text = await res.text();
+        console.error(`[Materialize] Non-JSON response: ${text.substring(0, 200)}`);
+        setRerunError('Server returned non-JSON (likely auth redirect). Please refresh and sign in.');
+        return;
+      }
 
       const data = await res.json();
 
       if (data.success) {
-        router.push(`/dashboard/discovery/runs/${data.runId}`);
+        // Refresh the page to show updated run status
+        router.refresh();
+        setShowRerunConfirm(false);
       } else {
-        setRerunError(data.error || 'Failed to re-run discovery');
+        setRerunError(data.error || 'Failed to materialize discovery run');
       }
     } catch (error) {
-      setRerunError(error instanceof Error ? error.message : 'Failed to re-run discovery');
+      if (error instanceof SyntaxError && error.message.includes('JSON')) {
+        setRerunError('Server returned invalid JSON. Please refresh and try again.');
+      } else {
+        setRerunError(error instanceof Error ? error.message : 'Failed to materialize discovery run');
+      }
+      console.error('[Materialize] Error:', error);
     } finally {
       setIsRerunning(false);
-      setShowRerunConfirm(false);
     }
   };
 
@@ -372,10 +381,10 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
                 {run.dryRun && ' (preview)'}
               </span>
               {run.intentName && (
-                <span className="text-sm text-gray-600">{run.intentName}</span>
+                <span className="text-sm text-gray-700">{run.intentName}</span>
               )}
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-700">
               Started: {new Date(run.startedAt).toLocaleString()}
               {run.finishedAt && (
                 <> • Finished: {new Date(run.finishedAt).toLocaleString()}</>
@@ -394,24 +403,59 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
 
         {run.stats.intentConfig && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Intent Configuration</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
-              <div>
-                <span className="text-gray-500">Countries:</span>{' '}
-                <span className="font-medium">{run.stats.intentConfig.targetCountries?.join(', ') || '-'}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Queries:</span>{' '}
-                <span className="font-medium">{run.stats.intentConfig.queriesCount || 0}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Include Keywords:</span>{' '}
-                <span className="font-medium">{includeKeywords.length}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Exclude Keywords:</span>{' '}
-                <span className="font-medium">{excludeKeywords.length}</span>
-              </div>
+            {/* One-line intent meta with · separators */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-700">
+              {run.stats.intentConfig.targetCountries && run.stats.intentConfig.targetCountries.length > 0 && (
+                <span className="whitespace-nowrap">
+                  <span className="font-medium text-gray-900">Countries:</span>{' '}
+                  {run.stats.intentConfig.targetCountries.join(', ')}
+                </span>
+              )}
+              {run.stats.intentConfig.category && (
+                <>
+                  <span className="text-gray-400">·</span>
+                  <span className="whitespace-nowrap">
+                    <span className="font-medium text-gray-900">Category:</span>{' '}
+                    {run.stats.intentConfig.category}
+                  </span>
+                </>
+              )}
+              {run.stats.limitsUsed?.channels && run.stats.limitsUsed.channels.length > 0 && (
+                <>
+                  <span className="text-gray-400">·</span>
+                  <span className="whitespace-nowrap">
+                    <span className="font-medium text-gray-900">Channels:</span>{' '}
+                    {run.stats.limitsUsed.channels.join(', ')}
+                  </span>
+                </>
+              )}
+              {run.stats.limitsUsed?.maxCompanies !== undefined && (
+                <>
+                  <span className="text-gray-400">·</span>
+                  <span className="whitespace-nowrap">
+                    <span className="font-medium text-gray-900">Max Companies:</span>{' '}
+                    {run.stats.limitsUsed.maxCompanies}
+                  </span>
+                </>
+              )}
+              {run.stats.limitsUsed?.maxLeads !== undefined && (
+                <>
+                  <span className="text-gray-400">·</span>
+                  <span className="whitespace-nowrap">
+                    <span className="font-medium text-gray-900">Max Leads:</span>{' '}
+                    {run.stats.limitsUsed.maxLeads}
+                  </span>
+                </>
+              )}
+              {run.stats.limitsUsed?.maxQueries !== undefined && (
+                <>
+                  <span className="text-gray-400">·</span>
+                  <span className="whitespace-nowrap">
+                    <span className="font-medium text-gray-900">Max Queries:</span>{' '}
+                    {run.stats.limitsUsed.maxQueries}
+                  </span>
+                </>
+              )}
             </div>
             
             {/* Include Keywords as Chips */}
@@ -798,9 +842,9 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
       {showRerunConfirm && (
         <div className="fixed inset-0 bg-gray-600/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Run as Real Discovery</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Run as Real (Create Records)</h3>
             <p className="text-sm text-gray-600 mb-6">
-              This will re-run discovery with the same intent and limits, creating actual Company records in the database. Continue?
+              This will create Company, Contact, and Lead records from the existing discovery results. The same run will be updated (no new run will be created). Continue?
             </p>
             {rerunError && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{rerunError}</div>

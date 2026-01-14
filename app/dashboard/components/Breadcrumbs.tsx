@@ -17,14 +17,14 @@ interface BreadcrumbsProps {
  */
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <nav className="text-sm text-gray-500 mb-2">
+    <nav className="text-sm text-gray-700 mb-2">
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         
         return (
           <span key={index}>
             {item.href && !isLast ? (
-              <Link href={item.href} className="hover:text-gray-700">
+              <Link href={item.href} className="hover:text-gray-900">
                 {item.label}
               </Link>
             ) : (

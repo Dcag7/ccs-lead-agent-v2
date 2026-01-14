@@ -197,6 +197,7 @@ export async function POST(
         excludeKeywords: resolvedConfig.excludeKeywords,
         includeKeywordsCount: resolvedConfig.includeKeywords.length,
         excludeKeywordsCount: resolvedConfig.excludeKeywords.length,
+        category: intent?.category,
       },
     });
 
