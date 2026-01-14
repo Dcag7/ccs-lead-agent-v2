@@ -57,6 +57,9 @@ export interface DiscoveryChannelInput {
   
   /** Additional parameters (UNDEFINED - channel-specific) */
   parameters?: Record<string, unknown>;
+  
+  /** Optional cancel check function - if returns true, discovery should stop gracefully */
+  cancelCheck?: () => Promise<boolean>;
 }
 
 /**

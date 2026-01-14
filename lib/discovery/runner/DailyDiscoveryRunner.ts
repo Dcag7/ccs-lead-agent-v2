@@ -130,17 +130,53 @@ export class DailyDiscoveryRunner {
           : getDiscoveryQueries(maxQueries);
 
       // Execute discovery with safe channel handling (with scraping if configured)
-      const discoveryResults = await this.executeDiscoverySafe(
-        queries,
-        timeBudget,
-        maxCompanies,
-        channelsToUse,
-        channelErrors,
-        includeKeywords,
-        excludeKeywords,
-        analysisConfig,
-        enableScraping
-      );
+      // Pass cancel check function for periodic cancellation checks
+      let discoveryResults: {
+        results: import('../types').DiscoveryResult[];
+        channelResults: Record<string, number>;
+        totalBeforeDedupe: number;
+        totalAfterDedupe: number;
+        success: boolean;
+        error?: string;
+        channelErrors?: Record<string, string>;
+      } | undefined;
+      
+      try {
+        discoveryResults = await this.executeDiscoverySafe(
+          queries,
+          timeBudget,
+          maxCompanies,
+          channelsToUse,
+          channelErrors,
+          includeKeywords,
+          excludeKeywords,
+          analysisConfig,
+          enableScraping,
+          run.id // Pass runId for cancel checks
+        );
+      } catch (error) {
+        // Check if this is a cancellation error
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        if (errorMessage.includes('cancelled')) {
+          // Save partial results if any were collected before cancellation
+          const partialResults = discoveryResults ? this.capResultsForStorage(
+            discoveryResults.results,
+            maxCompanies,
+            maxLeads
+          ) : undefined;
+          return this.handleCancellation(
+            run.id, 
+            startTime, 
+            limitsUsed, 
+            intentConfig, 
+            channelErrors,
+            discoveryResults,
+            partialResults
+          );
+        }
+        // Re-throw other errors
+        throw error;
+      }
 
       // Check for cancel after discovery
       if (await this.isCancelRequested(run.id)) {
@@ -367,7 +403,8 @@ export class DailyDiscoveryRunner {
       targetBusinessTypes: string[];
       relevanceThreshold?: number;
     },
-    enableScraping?: boolean
+    enableScraping?: boolean,
+    runId?: string
   ) {
     // Check time budget before starting
     if (timeBudget.isExpired()) {
@@ -398,6 +435,11 @@ export class DailyDiscoveryRunner {
     };
 
     try {
+      // Check for cancel before starting discovery
+      if (runId && await this.isCancelRequested(runId)) {
+        throw new Error('Discovery cancelled by user request');
+      }
+
       // Execute discovery with scraping and content analysis
       const result = await this.aggregator.execute({
         enabledChannels: channels,
@@ -408,10 +450,16 @@ export class DailyDiscoveryRunner {
         // Legacy support
         includeKeywords,
         excludeKeywords,
+        // Pass cancel check function for periodic checks
+        cancelCheck: runId ? async () => await this.isCancelRequested(runId) : undefined,
       });
 
       // Record any channel-specific errors from aggregator
       if (result.error) {
+        // Check if it's a cancellation error
+        if (result.error.includes('cancelled')) {
+          throw new Error('Discovery cancelled by user request');
+        }
         // If there's a general error but we still got results, it's a partial failure
         channelErrors['aggregator'] = result.error;
       }
@@ -420,6 +468,12 @@ export class DailyDiscoveryRunner {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
+      
+      // Check if this is a cancellation error
+      if (errorMessage.includes('cancelled')) {
+        throw error; // Re-throw to be handled by caller
+      }
+      
       channelErrors['discovery'] = errorMessage;
 
       // Return empty result on total failure

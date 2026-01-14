@@ -44,6 +44,12 @@ export interface DiscoveryAggregatorConfig {
   includeKeywords?: string[];
   /** @deprecated Use analysisConfig.negativeKeywords instead */
   excludeKeywords?: string[];
+
+  /**
+   * Optional cancel check function - if returns true, discovery should stop gracefully
+   * Called between channels and query batches
+   */
+  cancelCheck?: () => Promise<boolean>;
 }
 
 /**
@@ -125,6 +131,11 @@ export class DiscoveryAggregator {
       const channelErrors: Record<string, string> = {};
 
       for (const channelType of channelsToExecute) {
+        // Check for cancellation between channels
+        if (config.cancelCheck && await config.cancelCheck()) {
+          throw new Error('Discovery cancelled by user request');
+        }
+
         // Create channel with scraping and analysis config
         const channel = this.createChannel(channelType, config);
         
@@ -144,8 +155,12 @@ export class DiscoveryAggregator {
         }
 
         try {
-          // Execute channel discovery
-          const output = await channel.discover(config.input);
+          // Execute channel discovery (with cancel check passed through input)
+          const channelInput = {
+            ...config.input,
+            cancelCheck: config.cancelCheck,
+          };
+          const output = await channel.discover(channelInput);
           
           if (output.success && output.results.length > 0) {
             allResults.push(...output.results);

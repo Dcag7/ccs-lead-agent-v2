@@ -156,6 +156,11 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
       const allResults: DiscoveryResult[] = [];
       
       for (const query of searchQueries) {
+        // Check for cancellation between query batches
+        if (input.cancelCheck && await input.cancelCheck()) {
+          throw new Error('Discovery cancelled by user request');
+        }
+        
         const queryResults = await this.executeSearch(query);
         allResults.push(...queryResults);
       }
