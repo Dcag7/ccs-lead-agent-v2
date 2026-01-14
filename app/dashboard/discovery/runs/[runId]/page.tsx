@@ -105,9 +105,6 @@ export default async function DiscoveryRunResultsPage(
         <h1 className="text-3xl font-bold text-gray-900">
           Discovery Run Results
         </h1>
-        <p className="text-gray-600 mt-1">
-          {run.intentName || run.mode} - {new Date(run.startedAt).toLocaleString()}
-        </p>
       </div>
 
       {/* Banner explaining preview vs saved results */}

@@ -357,12 +357,15 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
     return 'text-gray-600 bg-gray-50';
   };
 
+  const includeKeywords = (run.stats.intentConfig?.includeKeywords as string[]) || [];
+  const excludeKeywords = (run.stats.intentConfig?.excludeKeywords as string[]) || [];
+
   return (
     <div className="space-y-6">
-      {/* Run Summary */}
+      {/* Run Summary - Consolidated Header */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-start justify-between mb-4">
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(run.status)}`}>
                 {run.status}
@@ -391,8 +394,8 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
 
         {run.stats.intentConfig && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">Intent Configuration</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Intent Configuration</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
               <div>
                 <span className="text-gray-500">Countries:</span>{' '}
                 <span className="font-medium">{run.stats.intentConfig.targetCountries?.join(', ') || '-'}</span>
@@ -403,13 +406,47 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
               </div>
               <div>
                 <span className="text-gray-500">Include Keywords:</span>{' '}
-                <span className="font-medium">{run.stats.intentConfig.includeKeywords?.length || 0}</span>
+                <span className="font-medium">{includeKeywords.length}</span>
               </div>
               <div>
                 <span className="text-gray-500">Exclude Keywords:</span>{' '}
-                <span className="font-medium">{run.stats.intentConfig.excludeKeywords?.length || 0}</span>
+                <span className="font-medium">{excludeKeywords.length}</span>
               </div>
             </div>
+            
+            {/* Include Keywords as Chips */}
+            {includeKeywords.length > 0 && (
+              <div className="mt-3">
+                <dt className="text-sm font-medium text-gray-700 mb-2">Include Keywords</dt>
+                <dd className="flex flex-wrap gap-2">
+                  {includeKeywords.map((keyword: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            )}
+
+            {/* Exclude Keywords as Chips */}
+            {excludeKeywords.length > 0 && (
+              <div className="mt-3">
+                <dt className="text-sm font-medium text-gray-700 mb-2">Exclude Keywords</dt>
+                <dd className="flex flex-wrap gap-2">
+                  {excludeKeywords.map((keyword: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            )}
           </div>
         )}
 
