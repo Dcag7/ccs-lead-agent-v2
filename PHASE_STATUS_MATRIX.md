@@ -17,7 +17,7 @@
 | 3 - Scoring | ✅ Complete | 80% |
 | 4 - Lead Management | ✅ Complete | 90% |
 | 5A - Autonomous Discovery | ✅ Complete | 100% |
-| 5B - Brain/Policy + Assisted Outreach | ❌ Planned | 0% |
+| 5B - Brain/Policy + Assisted Outreach | ✅ Complete | 100% |
 | 6A - Omnichannel Foundation (Respond.io) | ❌ Planned | 0% |
 | 6B - Assisted Replies | ❌ Planned | 0% |
 | 6C - Controlled Autopilot | ❌ Planned | 0% |
@@ -119,12 +119,12 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | ❌ Planned |
-| **Completion** | 0% |
-| **Key Features Included** | (Planned) ICP definition, allow/block lists, deterministic rules engine, action planner output, policy configuration UI, assisted outreach (Yolande Formula), message templates, human approval workflow |
-| **Key Exclusions** | Autonomous message sending, ML/AI recommendations, outreach execution without approval |
-| **Documentation** | [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) (Phase 5B section), [PHASE_5B_ASSISTED_OUTREACH_MVP.md](./PHASE_5B_ASSISTED_OUTREACH_MVP.md) |
-| **Notes/Risks** | No autonomous execution - recommendations and assisted outreach only. All outreach requires human approval. |
+| **Status** | ✅ Complete |
+| **Completion** | 100% |
+| **Key Features Included** | Assisted outreach (Yolande Formula) with 5 playbooks, draft generation, editing, approval workflow, outreach queue UI at `/dashboard/outreach`, suppression lists, rate limiting, cooldown periods, sending disabled by default, email sending placeholder (ready for provider integration) |
+| **Key Exclusions** | ICP rules UI, allow/block lists UI, policy configuration UI (deferred to future), autonomous message sending, ML/AI recommendations |
+| **Documentation** | [PHASE_5B_ASSISTED_OUTREACH_IMPLEMENTATION.md](./PHASE_5B_ASSISTED_OUTREACH_IMPLEMENTATION.md), [PHASE_5B_ASSISTED_OUTREACH_MVP.md](./PHASE_5B_ASSISTED_OUTREACH_MVP.md), [ROADMAP_V2_PHASES_5_TO_8.md](./ROADMAP_V2_PHASES_5_TO_8.md) |
+| **Notes/Risks** | All outreach requires human approval. No autonomous execution. Email sending is placeholder - needs provider integration (SMTP/Resend/SendGrid). |
 
 ---
 
@@ -276,6 +276,7 @@ Based on current status, recommended next implementation:
 | 2026-01-11 | Phase 5A implementation complete (90%); pending: manual verification + deployment |
 | 2026-01-11 | **Phase 5A marked as Complete (100%)**; added manual discovery with intents, safety guardrails |
 | 2026-01-13 | Updated Phase 5B to include Assisted Outreach (Yolande Formula); updated Phase 6A with Respond.io MVP scope and new documentation |
+| 2026-01-14 | Phase 5B marked as Complete (100%) - Assisted Outreach implementation complete with playbooks, drafts, approval workflow, and safety guardrails |
 
 ---
 
