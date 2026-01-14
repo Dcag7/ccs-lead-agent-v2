@@ -177,6 +177,10 @@ model DiscoveryRun {
   stats Json?
   error String? @db.Text
 
+  // Stored discovery results (after dedupe) for UI display
+  // Capped to maxCompanies/maxLeads limits, safe JSON (no secrets)
+  resultsJson Json? // Array of DiscoveryResult objects (after dedupe)
+
   // Denormalized counts for quick queries
   createdCompaniesCount Int @default(0)
   createdContactsCount  Int @default(0)

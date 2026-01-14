@@ -44,6 +44,8 @@ export interface IntentConfigSnapshot {
   intentName: string;
   targetCountries: string[];
   queriesCount: number;
+  includeKeywords?: string[];
+  excludeKeywords?: string[];
   includeKeywordsCount: number;
   excludeKeywordsCount: number;
 }
@@ -138,7 +140,7 @@ export interface RunResult {
   /** ID of the DiscoveryRun record */
   runId: string;
   /** Final status */
-  status: 'completed' | 'failed';
+  status: 'completed' | 'completed_with_errors' | 'failed';
   /** Whether this was a dry run */
   dryRun: boolean;
   /** Run statistics */

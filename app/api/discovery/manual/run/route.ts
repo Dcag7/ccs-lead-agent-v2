@@ -187,12 +187,14 @@ export async function POST(
       // Legacy: keyword filtering (used if scraping fails)
       includeKeywords: resolvedConfig.includeKeywords,
       excludeKeywords: resolvedConfig.excludeKeywords,
-      // Snapshot intent config for run record
+      // Snapshot intent config for run record (include actual keywords for UI)
       intentConfig: {
         intentId: resolvedConfig.intentId,
         intentName: resolvedConfig.intentName,
         targetCountries: resolvedConfig.targetCountries,
         queriesCount: resolvedConfig.queries.length,
+        includeKeywords: resolvedConfig.includeKeywords,
+        excludeKeywords: resolvedConfig.excludeKeywords,
         includeKeywordsCount: resolvedConfig.includeKeywords.length,
         excludeKeywordsCount: resolvedConfig.excludeKeywords.length,
       },

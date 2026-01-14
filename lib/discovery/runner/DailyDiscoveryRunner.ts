@@ -163,6 +163,13 @@ export class DailyDiscoveryRunner {
             }
           );
 
+      // Cap results to limits for storage (safe JSON, no secrets)
+      const resultsToStore = this.capResultsForStorage(
+        discoveryResults.results,
+        maxCompanies,
+        maxLeads
+      );
+
       // Build comprehensive stats
       const stats: DiscoveryRunStats = {
         channelResults: discoveryResults.channelResults,
@@ -197,12 +204,12 @@ export class DailyDiscoveryRunner {
           : 'completed';
 
       // Update run record with results
-      await this.completeRun(run.id, stats, finalStatus);
+      await this.completeRun(run.id, stats, finalStatus, resultsToStore);
 
       return {
         success: true,
         runId: run.id,
-        status: 'completed',
+        status: finalStatus as 'completed' | 'completed_with_errors',
         dryRun,
         stats,
       };
@@ -231,7 +238,7 @@ export class DailyDiscoveryRunner {
         intentConfig,
       };
 
-      // Mark run as failed
+      // Mark run as failed (no results to store on failure)
       await this.failRun(run.id, errorMessage, failureStats);
 
       return {
@@ -405,12 +412,41 @@ export class DailyDiscoveryRunner {
   }
 
   /**
+   * Cap results for storage (respects maxCompanies/maxLeads limits)
+   * Returns safe JSON-serializable results (no secrets)
+   */
+  private capResultsForStorage(
+    results: import('../types').DiscoveryResult[],
+    maxCompanies: number,
+    maxLeads: number
+  ): import('../types').DiscoveryResult[] {
+    let companyCount = 0;
+    let leadCount = 0;
+    const capped: import('../types').DiscoveryResult[] = [];
+
+    for (const result of results) {
+      if (result.type === 'company') {
+        if (companyCount >= maxCompanies) continue;
+        companyCount++;
+      } else if (result.type === 'lead') {
+        if (leadCount >= maxLeads) continue;
+        leadCount++;
+      }
+      // Always include contacts (they're linked to companies/leads)
+      capped.push(result);
+    }
+
+    return capped;
+  }
+
+  /**
    * Mark run as completed with stats
    */
   private async completeRun(
     runId: string,
     stats: DiscoveryRunStats,
-    status: string = 'completed'
+    status: string = 'completed',
+    resultsJson?: import('../types').DiscoveryResult[]
   ) {
     return prisma.discoveryRun.update({
       where: { id: runId },
@@ -418,6 +454,7 @@ export class DailyDiscoveryRunner {
         status,
         finishedAt: new Date(),
         stats: stats as object,
+        resultsJson: resultsJson ? (resultsJson as object) : undefined,
         createdCompaniesCount: stats.companiesCreated,
         createdContactsCount: stats.contactsCreated,
         createdLeadsCount: stats.leadsCreated,
