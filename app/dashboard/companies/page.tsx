@@ -12,6 +12,12 @@ type CompaniesSearchParams = {
   sortBy?: string;
   sortOrder?: string;
   minScore?: string;
+  search?: string;
+  country?: string;
+  industry?: string;
+  size?: string;
+  hasLeads?: string;
+  hasContacts?: string;
 };
 
 type CompanyWithCounts = Prisma.CompanyGetPayload<{
@@ -36,7 +42,7 @@ export default async function CompaniesPage(props: {
     }
 
     // Await and parse search params
-    const { sortBy, sortOrder, minScore } = await props.searchParams;
+    const { sortBy, sortOrder, minScore, search, country, industry, size, hasLeads, hasContacts } = await props.searchParams;
     
     const effectiveSortBy = sortBy || "createdAt";
     const effectiveSortOrder = sortOrder === "asc" ? "asc" : "desc";
@@ -48,17 +54,60 @@ export default async function CompaniesPage(props: {
       orderBy.score = effectiveSortOrder;
     } else if (effectiveSortBy === "createdAt") {
       orderBy.createdAt = effectiveSortOrder;
+    } else if (effectiveSortBy === "name") {
+      orderBy.name = effectiveSortOrder;
     } else {
       orderBy.createdAt = "desc";
     }
 
-    // Fetch all companies with counts
+    // Build where clause
+    const where: Prisma.CompanyWhereInput = {
+      score: { gte: effectiveMinScore },
+    };
+
+    // Text search (name, website, industry)
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { website: { contains: search, mode: 'insensitive' } },
+        { industry: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Country filter
+    if (country) {
+      where.country = country;
+    }
+
+    // Industry filter
+    if (industry) {
+      where.industry = industry;
+    }
+
+    // Size filter
+    if (size) {
+      where.size = size;
+    }
+
+    // Has leads filter
+    if (hasLeads === 'true') {
+      where.leads = { some: {} };
+    } else if (hasLeads === 'false') {
+      where.leads = { none: {} };
+    }
+
+    // Has contacts filter
+    if (hasContacts === 'true') {
+      where.contacts = { some: {} };
+    } else if (hasContacts === 'false') {
+      where.contacts = { none: {} };
+    }
+
+    // Fetch companies with counts
     let companies: CompanyWithCounts[] = [];
     try {
       companies = await prisma.company.findMany({
-        where: {
-          score: { gte: effectiveMinScore },
-        },
+        where,
         include: {
           _count: {
             select: {
@@ -74,12 +123,39 @@ export default async function CompaniesPage(props: {
       // Continue with empty array
     }
 
+    // Fetch unique filter values for dropdowns
+    let countries: string[] = [];
+    let industries: string[] = [];
+    let sizes: string[] = [];
+    try {
+      const allCompanies = await prisma.company.findMany({
+        select: {
+          country: true,
+          industry: true,
+          size: true,
+        },
+      });
+
+      countries = [...new Set(allCompanies.map(c => c.country).filter(Boolean) as string[])].sort();
+      industries = [...new Set(allCompanies.map(c => c.industry).filter(Boolean) as string[])].sort();
+      sizes = [...new Set(allCompanies.map(c => c.size).filter(Boolean) as string[])].sort();
+    } catch (error) {
+      console.error("Error fetching filter options:", error);
+    }
+
     return (
       <CompaniesClient
         companies={companies}
         userEmail={session.user?.email || ''}
         currentSort={{ sortBy: effectiveSortBy, sortOrder: effectiveSortOrder }}
         currentMinScore={effectiveMinScore}
+        search={search || ''}
+        country={country || ''}
+        industry={industry || ''}
+        size={size || ''}
+        hasLeads={hasLeads || ''}
+        hasContacts={hasContacts || ''}
+        filterOptions={{ countries, industries, sizes }}
       />
     );
   } catch (error) {
