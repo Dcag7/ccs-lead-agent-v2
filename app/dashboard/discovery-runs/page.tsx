@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import DiscoveryRunsClient from './components/DiscoveryRunsClient';
 import PageContainer from '../components/PageContainer';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -34,17 +35,13 @@ export default async function DiscoveryRunsPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <nav className="text-sm text-gray-500 mb-2">
-              <Link href="/dashboard" className="hover:text-gray-700">
-                Dashboard
-              </Link>
-              <span className="mx-2" aria-hidden="true">›</span>
-              <Link href="/dashboard/discovery" className="hover:text-gray-700">
-                Discovery
-              </Link>
-              <span className="mx-2" aria-hidden="true">›</span>
-              <span>Automated</span>
-            </nav>
+            <Breadcrumbs
+              items={[
+                { label: 'Dashboard', href: '/dashboard' },
+                { label: 'Discovery', href: '/dashboard/discovery' },
+                { label: 'Automated' },
+              ]}
+            />
             <h1 className="text-3xl font-bold text-gray-900">
               Automated Discovery
             </h1>

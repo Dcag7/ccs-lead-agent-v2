@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import DiscoveryClient from './components/DiscoveryClient';
 import PageContainer from '../components/PageContainer';
-import Link from 'next/link';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,17 +50,13 @@ export default async function DiscoveryPage() {
   return (
     <PageContainer>
       <div className="mb-6">
-        <nav className="text-sm text-gray-500 mb-2">
-          <Link href="/dashboard" className="hover:text-gray-700">
-            Dashboard
-          </Link>
-          <span className="mx-2" aria-hidden="true">›</span>
-          <Link href="/dashboard/discovery" className="hover:text-gray-700">
-            Discovery
-          </Link>
-          <span className="mx-2" aria-hidden="true">›</span>
-          <span>Manual</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Discovery', href: '/dashboard/discovery' },
+            { label: 'Manual' },
+          ]}
+        />
         <h1 className="text-3xl font-bold text-gray-900">
           Manual Discovery
         </h1>
