@@ -310,12 +310,22 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
 
       // Check content-type before parsing
       const contentType = res.headers.get('content-type');
+      
       if (!res.ok) {
         console.error(`[Materialize] Response failed: status=${res.status}, content-type=${contentType}`);
         if (!contentType?.includes('application/json')) {
           const text = await res.text();
           console.error(`[Materialize] Non-JSON response: ${text.substring(0, 200)}`);
           setRerunError('Server returned non-JSON (likely auth redirect). Please refresh and sign in.');
+          return;
+        }
+        // Read JSON error response
+        try {
+          const errorData = await res.json();
+          setRerunError(errorData.error || `Failed to materialize: ${res.status} ${res.statusText}`);
+          return;
+        } catch (parseError) {
+          setRerunError(`Failed to materialize: ${res.status} ${res.statusText}`);
           return;
         }
       }
