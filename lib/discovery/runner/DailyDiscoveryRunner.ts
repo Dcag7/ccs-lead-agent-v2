@@ -136,6 +136,11 @@ export class DailyDiscoveryRunner {
         enableScraping
       );
 
+      // Merge channel errors from aggregator result
+      if (discoveryResults.channelErrors) {
+        Object.assign(channelErrors, discoveryResults.channelErrors);
+      }
+
       // Check if we stopped due to time budget
       if (timeBudget.isExpired()) {
         stoppedEarly = true;
@@ -182,8 +187,14 @@ export class DailyDiscoveryRunner {
       };
 
       // Determine final status
+      // If Google channel failed (not configured), mark as completed_with_errors
+      const hasGoogleError = channelErrors.google !== undefined;
       const hasChannelErrors = Object.keys(channelErrors).length > 0;
-      const finalStatus = hasChannelErrors ? 'completed' : 'completed'; // Still completed, but with errors recorded
+      const finalStatus = hasGoogleError 
+        ? 'completed_with_errors' 
+        : hasChannelErrors 
+          ? 'completed' 
+          : 'completed';
 
       // Update run record with results
       await this.completeRun(run.id, stats, finalStatus);

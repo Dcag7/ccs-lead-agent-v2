@@ -19,6 +19,7 @@ import type {
   DiscoveryMetadata,
 } from '../../types';
 import { webScraper, contentAnalyzer, type AnalysisConfig } from '../../scraper';
+import { isConfigured, getConfigOrThrow } from '../../../discovery/google/googleConfig';
 
 /**
  * Google CSE API Response Structure
@@ -111,10 +112,7 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
   isEnabled(_config: DiscoveryChannelInput['config']): boolean {
     // Google is a Day 1 enabled channel - always active
     // Only check if Google CSE is configured
-    const apiKey = process.env.GOOGLE_CSE_API_KEY;
-    const searchEngineId = process.env.GOOGLE_CSE_ID;
-    
-    return !!(apiKey && searchEngineId);
+    return isConfigured();
   }
 
   /**
@@ -122,15 +120,20 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
    * 
    * Input: Search queries from input.searchCriteria
    * Output: DiscoveryResult objects with companies found via Google search
+   * 
+   * HARD FAILURE: If Google is not configured, returns error immediately.
+   * Discovery runs will be marked as completed_with_errors.
    */
   async discover(input: DiscoveryChannelInput): Promise<DiscoveryChannelOutput> {
     // Check if channel is enabled (Google CSE configured)
+    // HARD FAILURE: Do not silently return empty results
     if (!this.isEnabled(input.config)) {
+      const errorMessage = 'Google Custom Search is not configured';
       return {
         channelType: 'google',
         results: [],
         success: false,
-        error: 'Google Custom Search not configured. Please set GOOGLE_CSE_API_KEY and GOOGLE_CSE_ID environment variables.',
+        error: errorMessage,
       };
     }
 
@@ -206,8 +209,10 @@ export class GoogleDiscoveryChannel implements IGoogleDiscoveryChannel {
    * Returns DiscoveryResult objects (Company results)
    */
   private async executeSearch(query: string): Promise<DiscoveryCompanyResult[]> {
-    const apiKey = process.env.GOOGLE_CSE_API_KEY!;
-    const searchEngineId = process.env.GOOGLE_CSE_ID!;
+    // Use centralized config validation (will throw if not configured)
+    const config = getConfigOrThrow();
+    const apiKey = config.apiKey;
+    const searchEngineId = config.cseId;
 
     // Build search query - don't add "company" as it may limit results
     const searchQuery = query.trim();

@@ -56,6 +56,9 @@ export interface DiscoveryAggregatorResult {
   /** Number of results from each channel */
   channelResults: Record<string, number>;
   
+  /** Channel-specific errors (partial failures) */
+  channelErrors?: Record<string, string>;
+  
   /** Total results before deduplication */
   totalBeforeDedupe: number;
   
@@ -119,6 +122,7 @@ export class DiscoveryAggregator {
       // Execute channels sequentially
       const allResults: DiscoveryResult[] = [];
       const channelResults: Record<string, number> = {};
+      const channelErrors: Record<string, string> = {};
 
       for (const channelType of channelsToExecute) {
         // Create channel with scraping and analysis config
@@ -132,6 +136,10 @@ export class DiscoveryAggregator {
         // Check if channel is enabled
         if (!channel.isEnabled(config.input.config)) {
           channelResults[channelType] = 0;
+          // For Google channel, record configuration error
+          if (channelType === 'google') {
+            channelErrors[channelType] = 'Google Custom Search is not configured';
+          }
           continue;
         }
 
@@ -144,10 +152,16 @@ export class DiscoveryAggregator {
             channelResults[channelType] = output.results.length;
           } else {
             channelResults[channelType] = 0;
+            // Record error if channel failed (e.g., Google not configured)
+            if (output.error) {
+              channelErrors[channelType] = output.error;
+            }
           }
-        } catch {
+        } catch (error) {
           // Graceful degradation - continue with other channels
           channelResults[channelType] = 0;
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          channelErrors[channelType] = errorMessage;
           // Note: We don't throw - we continue with other channels
         }
       }
@@ -158,6 +172,7 @@ export class DiscoveryAggregator {
       return {
         results: uniqueResults,
         channelResults,
+        channelErrors: Object.keys(channelErrors).length > 0 ? channelErrors : undefined,
         totalBeforeDedupe: allResults.length,
         totalAfterDedupe: uniqueResults.length,
         success: true,
@@ -167,6 +182,7 @@ export class DiscoveryAggregator {
       return {
         results: [],
         channelResults: {},
+        channelErrors: undefined,
         totalBeforeDedupe: 0,
         totalAfterDedupe: 0,
         success: false,

@@ -580,6 +580,57 @@ Controlled automatic message replies with strict guardrails: opt-in only, templa
 
 ---
 
+## 🔧 **Google Dependency**
+
+The CCS Lead Agent requires **Google Custom Search Engine (CSE)** for discovery and enrichment features.
+
+### Required Configuration
+
+**Environment Variables:**
+- `GOOGLE_CSE_API_KEY` - Google Custom Search API key
+- `GOOGLE_CSE_ID` - Google Custom Search Engine ID
+
+### Impact on Features
+
+| Feature | Status Without Google CSE |
+|---------|--------------------------|
+| **Google Discovery** | ❌ Disabled (runs marked as `completed_with_errors`) |
+| **Company Enrichment** | ⚠️ Partial (website scraping only, no Google search) |
+| **Keyword Discovery** | ✅ Works (does not require Google) |
+
+### Diagnostics
+
+**Health Check Endpoint:**
+```
+GET /api/health/google
+```
+
+Returns:
+```json
+{
+  "configured": boolean,
+  "apiKeyPresent": boolean,
+  "cseIdPresent": boolean,
+  "quotaStatus": "ok" | "unknown"
+}
+```
+
+**Test Script:**
+```bash
+npx tsx scripts/test-google-cse.ts
+```
+
+### Setup for Vercel
+
+1. Go to Vercel project settings → Environment Variables
+2. Add `GOOGLE_CSE_API_KEY` with your API key
+3. Add `GOOGLE_CSE_ID` with your CSE ID
+4. Redeploy the application
+
+**Note:** Discovery runs will fail loudly (status: `completed_with_errors`) if Google CSE is not configured, ensuring visibility of the issue.
+
+---
+
 ## 📞 **Support & Access**
 
 **Application URL:** https://ccs-lead-agent-v2.vercel.app

@@ -128,10 +128,26 @@ model DiscoveryRun {
 |----------|----------|---------|-------------|
 | `DISCOVERY_RUNNER_ENABLED` | Yes | `false` | Enable switch |
 | `CRON_JOB_SECRET` | Yes | - | API authentication |
+| `GOOGLE_CSE_API_KEY` | **Yes** | - | **Google Custom Search API key (required for Google discovery)** |
+| `GOOGLE_CSE_ID` | **Yes** | - | **Google Custom Search Engine ID (required for Google discovery)** |
 | `DISCOVERY_MAX_COMPANIES_PER_RUN` | No | `50` | Company limit |
 | `DISCOVERY_MAX_QUERIES` | No | `10` | Query limit |
 | `DISCOVERY_MAX_RUNTIME_SECONDS` | No | `300` | Time limit |
 | `DISCOVERY_CHANNELS` | No | `google,keyword` | Active channels |
+
+**⚠️ Google CSE Required Checklist:**
+- [ ] `GOOGLE_CSE_API_KEY` is set in environment variables
+- [ ] `GOOGLE_CSE_ID` is set in environment variables
+- [ ] Test script passes: `npx tsx scripts/test-google-cse.ts`
+- [ ] Health check endpoint returns `configured: true`: `GET /api/health/google`
+- [ ] Manual discovery run does not show "Google Discovery is disabled" warning
+- [ ] Discovery runs complete with status `completed` (not `completed_with_errors`)
+
+**Note:** Without Google CSE configuration:
+- Google discovery channel will be disabled
+- Discovery runs will be marked as `completed_with_errors`
+- Company enrichment will work partially (website scraping only)
+- Keyword discovery will continue to work
 
 ### 4.3 API Endpoint
 
@@ -304,7 +320,16 @@ curl -X POST http://localhost:3000/api/jobs/discovery/run \
 
 1. Add `DISCOVERY_RUNNER_ENABLED=true`
 2. Add `CRON_JOB_SECRET=<generate-secure-secret>`
-3. Optionally configure limits
+3. **Add `GOOGLE_CSE_API_KEY=<your-api-key>`** (required for Google discovery)
+4. **Add `GOOGLE_CSE_ID=<your-cse-id>`** (required for Google discovery)
+5. Optionally configure limits
+
+**Google Setup:**
+- Obtain Google Custom Search API key from [Google Cloud Console](https://console.cloud.google.com/)
+- Create a Custom Search Engine at [Google Programmable Search](https://programmablesearchengine.google.com/)
+- Copy the Search Engine ID (CSE ID) from the control panel
+- Add both to Vercel environment variables
+- Verify with: `npx tsx scripts/test-google-cse.ts`
 
 ### 9.2 Database Migration
 

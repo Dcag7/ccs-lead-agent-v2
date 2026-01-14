@@ -10,6 +10,8 @@
  * - Advanced scoring using enrichment signals
  */
 
+import { isConfigured, getConfigOrThrow } from './discovery/google/googleConfig';
+
 interface GoogleSearchResult {
   success: boolean;
   configured: boolean;
@@ -61,11 +63,8 @@ export async function searchCompany(
   name: string,
   country?: string
 ): Promise<GoogleSearchResult> {
-  // Check if Google CSE is configured
-  const apiKey = process.env.GOOGLE_CSE_API_KEY;
-  const searchEngineId = process.env.GOOGLE_CSE_ID;
-
-  if (!apiKey || !searchEngineId) {
+  // Check if Google CSE is configured (using centralized validation)
+  if (!isConfigured()) {
     return {
       success: false,
       configured: false,
@@ -74,6 +73,9 @@ export async function searchCompany(
   }
 
   try {
+    // Get config (will not throw since we checked above)
+    const config = getConfigOrThrow();
+
     // Build search query
     let searchQuery = `${name} company`;
     if (country) {
@@ -82,8 +84,8 @@ export async function searchCompany(
 
     // Construct Google CSE API URL
     const url = new URL('https://www.googleapis.com/customsearch/v1');
-    url.searchParams.set('key', apiKey);
-    url.searchParams.set('cx', searchEngineId);
+    url.searchParams.set('key', config.apiKey);
+    url.searchParams.set('cx', config.cseId);
     url.searchParams.set('q', searchQuery);
     url.searchParams.set('num', '5'); // Limit to 5 results to save quota
 
