@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
+import PageContainer from "../components/PageContainer";
 
 export const dynamic = 'force-dynamic';
 
@@ -48,8 +49,7 @@ export default async function ContactsPage() {
     }
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
+    <PageContainer>
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
             <div>
@@ -159,8 +159,7 @@ export default async function ContactsPage() {
             </table>
           </div>
         )}
-      </div>
-    </div>
+    </PageContainer>
   );
   } catch (error) {
     console.error("Contacts page error:", error);
