@@ -563,14 +563,30 @@ Automatically finding missing company information (website, industry) from web s
 ### **Discovery**
 The process of finding new prospects automatically through web searches, keywords, and signal extraction. Phase 5A is complete with:
 - **Intent Templates:** Predefined discovery strategies targeting specific prospect types (agencies_all, schools_all, tenders_uniforms_merch, businesses_sme_ceo_and_corporate_marketing, events_exhibitions_sa)
-- **Manual Discovery:** Admin-triggered runs at `/dashboard/discovery`
-  - **Preview Only** mode: Discover and score without creating database records
+- **Manual Discovery** (`/dashboard/discovery`): Page to trigger discovery runs
+  - Select intent template and configure limits
+  - **Preview Only** mode: Discover and score without creating database records (dry-run)
   - **Run Now** mode: Create actual Company records from discovered results
-  - Select from preview results and create companies selectively
-- **Automated Discovery:** Run history at `/dashboard/discovery-runs`
-  - View all runs (manual + scheduled) with stats
-  - Stop running jobs with cancel request
-- **Navigation:** Single "Discovery" section in sidebar with "Manual Discovery" and "Automated Discovery" sub-items
+  - **Manual Run History:** Shows only runs triggered manually (separate from automated runs)
+  - Bulk actions: Archive, Print selected runs
+- **Automated Discovery** (`/dashboard/discovery-runs`): View scheduled/cron discovery runs
+  - Shows only automated runs (triggered by cron or daily mode)
+  - Clear "Triggered By" label (Manual, Automated, Test)
+  - Bulk actions: Archive, Print selected runs
+  - Archive functionality to hide zero-result runs
+- **Archived Runs** (`/dashboard/discovery/archived`): Manage archived discovery runs
+  - Lists all archived runs (manual, automated, or test)
+  - Bulk actions: Unarchive, Delete (hard delete), Print
+  - **Delete safety:** Delete only available for archived runs, requires confirmation
+- **Print Functionality:** Print-friendly view for discovery runs
+  - Route: `/dashboard/discovery/print?ids=...`
+  - Opens browser print dialog with clean layout
+  - Shows run summaries, stats, and key results
+- **Preview Mode:** Dry-run mode that discovers and scores companies without creating database records. Results can be reviewed and selectively created, or the run can be re-executed as a real run to create records automatically.
+- **Navigation:** Discovery section in sidebar with:
+  - Manual Discovery
+  - Automated Discovery
+  - Archived Runs
 - **Geography Bias:** Gauteng-first scoring (priority regions get score boost, others not excluded)
 - **Tender Sourcing:** Government tenders via National Treasury eTender Portal (etenders.gov.za)
 - **Safety Guardrails:** Kill switch, time budgets, max limits, cancel support
