@@ -12,6 +12,8 @@ import {
   buildLeadOrderBy,
 } from "@/lib/lead-management/filters";
 
+export const dynamic = 'force-dynamic';
+
 type LeadWithRelations = Prisma.LeadGetPayload<{
   include: {
     companyRel: true;

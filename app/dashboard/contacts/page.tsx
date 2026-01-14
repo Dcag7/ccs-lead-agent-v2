@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 
+export const dynamic = 'force-dynamic';
+
 type ContactWithCompany = Prisma.ContactGetPayload<{
   include: {
     company: true;

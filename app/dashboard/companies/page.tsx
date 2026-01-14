@@ -6,6 +6,8 @@ import CompaniesClient from "./components/CompaniesClient";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 type CompaniesSearchParams = {
   sortBy?: string;
   sortOrder?: string;
