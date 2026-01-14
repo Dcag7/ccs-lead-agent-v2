@@ -8,6 +8,7 @@
  *   npx tsx scripts/test-google-cse.ts
  */
 
+import 'dotenv/config';
 import { getConfigOrThrow, getConfigStatus } from '../lib/discovery/google/googleConfig';
 import { searchCompany } from '../lib/googleSearch';
 
