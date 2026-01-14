@@ -192,6 +192,10 @@ model DiscoveryRun {
   skippedCount          Int @default(0)
   errorCount            Int @default(0)
 
+  // Archive support: soft archive to hide runs from main list
+  archivedAt   DateTime?
+  archivedById String? // User ID who archived this run
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -199,6 +203,7 @@ model DiscoveryRun {
   @@index([startedAt])
   @@index([mode])
   @@index([intentId])
+  @@index([archivedAt])
   @@map("discovery_runs")
 }
 
