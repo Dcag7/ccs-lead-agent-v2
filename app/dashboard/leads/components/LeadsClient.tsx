@@ -299,7 +299,7 @@ export default function LeadsClient({
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[95rem] mx-auto">
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <div>
@@ -339,7 +339,7 @@ export default function LeadsClient({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Status (multi-select) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Status</label>
               <select
                 multiple
                 size={4}
@@ -361,7 +361,7 @@ export default function LeadsClient({
 
             {/* Owner */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Owner</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Owner</label>
               <select
                 value={localFilters.assignedToId || ''}
                 onChange={(e) => {
@@ -382,7 +382,7 @@ export default function LeadsClient({
 
             {/* Classification (multi-select) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Classification</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Classification</label>
               <select
                 multiple
                 size={3}
@@ -402,7 +402,7 @@ export default function LeadsClient({
 
             {/* Business Source (multi-select) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Business Source</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Business Source</label>
               <select
                 multiple
                 size={4}
@@ -429,7 +429,7 @@ export default function LeadsClient({
 
             {/* Score Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Min Score</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Min Score</label>
               <input
                 type="number"
                 min="0"
@@ -444,7 +444,7 @@ export default function LeadsClient({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Score</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Max Score</label>
               <input
                 type="number"
                 min="0"
@@ -460,7 +460,7 @@ export default function LeadsClient({
 
             {/* Date Ranges */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Created After</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Created After</label>
               <input
                 type="date"
                 value={localFilters.createdAfter ? localFilters.createdAfter.toISOString().split('T')[0] : ''}
@@ -473,7 +473,7 @@ export default function LeadsClient({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Created Before</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Created Before</label>
               <input
                 type="date"
                 value={localFilters.createdBefore ? localFilters.createdBefore.toISOString().split('T')[0] : ''}
@@ -487,7 +487,7 @@ export default function LeadsClient({
 
             {/* Sort */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Sort By</label>
               <select
                 value={localSort.sortBy}
                 onChange={(e) => handleSortChange({ sortBy: e.target.value as LeadSort['sortBy'] })}
@@ -500,7 +500,7 @@ export default function LeadsClient({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">Order</label>
               <select
                 value={localSort.sortOrder}
                 onChange={(e) => handleSortChange({ sortOrder: e.target.value as LeadSort['sortOrder'] })}
@@ -523,7 +523,7 @@ export default function LeadsClient({
             {showMoreFilters && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 pt-4 border-t border-gray-200">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Country</label>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">Company Country</label>
                   <select
                     multiple
                     size={4}
@@ -541,7 +541,7 @@ export default function LeadsClient({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Industry</label>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">Company Industry</label>
                   <select
                     multiple
                     size={4}
@@ -559,7 +559,7 @@ export default function LeadsClient({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Size</label>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">Company Size</label>
                   <select
                     multiple
                     size={4}

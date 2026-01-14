@@ -146,6 +146,8 @@ interface Props {
     startedAt: string;
     finishedAt: string | null;
     stats: RunStats;
+    createdCompaniesCount?: number;
+    createdLeadsCount?: number;
   };
   results: RawDiscoveryResult[];
 }
@@ -166,8 +168,8 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
   const [createError, setCreateError] = useState<string | null>(null);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
-  // Filters
-  const [minScore, setMinScore] = useState<string>('');
+  // Filters - defaults: minScore=0, channel=all, hasEmail=all, sort by score desc
+  const [minScore, setMinScore] = useState<string>('0');
   const [selectedChannel, setSelectedChannel] = useState<string>('');
   const [hasEmail, setHasEmail] = useState<boolean | null>(null);
   const [sortBy, setSortBy] = useState<'score' | 'name'>('score');
@@ -177,9 +179,12 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
   const filteredAndSortedResults = useMemo(() => {
     let filtered = [...results];
 
-    if (minScore) {
+    // Filter by minScore (default 0, so only filter if explicitly set higher)
+    if (minScore && minScore !== '0') {
       const threshold = parseFloat(minScore);
-      filtered = filtered.filter((r) => (r.relevanceScore ?? 0) >= threshold);
+      if (!isNaN(threshold)) {
+        filtered = filtered.filter((r) => (r.relevanceScore ?? 0) >= threshold);
+      }
     }
 
     if (selectedChannel) {
@@ -463,6 +468,7 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
               value={minScore}
               onChange={(e) => setMinScore(e.target.value)}
               placeholder="0"
+              min="0"
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             />
           </div>
@@ -534,9 +540,9 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
                   </th>
                 )}
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24">Score</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[200px]">Company</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[250px]">Company</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">Website</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase max-w-xs">Description</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-64">Description</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">Contact</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24">Source</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Actions</th>
@@ -593,9 +599,23 @@ export default function DiscoveryRunResultsClient({ run, results: rawResults }: 
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      <div className="line-clamp-2 max-w-xs" title={result.description}>
-                        {result.description || '-'}
-                      </div>
+                      {result.description ? (
+                        <div className="max-w-[16rem]">
+                          <div className="line-clamp-2" title={result.description}>
+                            {result.description}
+                          </div>
+                          {result.description.length > 100 && (
+                            <button
+                              onClick={() => setSelectedDetail(result)}
+                              className="text-teal-600 hover:text-teal-800 text-xs mt-1 font-medium"
+                            >
+                              View full
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {result.email && (

@@ -1,9 +1,9 @@
-
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import PageContainer from "./components/PageContainer";
 
 export const dynamic = 'force-dynamic';
 
@@ -56,8 +56,7 @@ export default async function DashboardPage() {
     }
 
     return (
-      <div className="p-6 lg:p-8 bg-gradient-to-br from-gray-50 to-emerald-50/30 min-h-screen">
-        <div className="max-w-7xl mx-auto">
+      <PageContainer className="bg-gradient-to-br from-gray-50 to-emerald-50/30 min-h-screen">
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
@@ -228,8 +227,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
-        </div>
-      </div>
+      </PageContainer>
     );
   } catch (error) {
     console.error("Dashboard error:", error);
