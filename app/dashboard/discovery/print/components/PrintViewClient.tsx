@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface DiscoveryRun {
   id: string;
@@ -43,16 +43,6 @@ function formatDuration(startedAt: string, finishedAt: string | null) {
   if (durationMs < 1000) return `${durationMs}ms`;
   if (durationMs < 60000) return `${(durationMs / 1000).toFixed(1)}s`;
   return `${Math.floor(durationMs / 60000)}m ${Math.round((durationMs % 60000) / 1000)}s`;
-}
-
-function getTriggeredByLabel(triggeredBy: string | null) {
-  if (!triggeredBy) return 'unknown';
-  if (triggeredBy === 'manual') return 'Manual';
-  if (triggeredBy === 'cron') return 'Automated';
-  if (triggeredBy === 'test-script') return 'Test';
-  if (triggeredBy.includes('manual-ui')) return 'Manual';
-  if (triggeredBy.includes('jobs/discovery')) return 'Automated';
-  return triggeredBy;
 }
 
 /**
@@ -142,20 +132,33 @@ function normalizeResultsForPrint(rawResults: unknown[]): Array<{
 }
 
 export default function PrintViewClient({ runs }: Props) {
+  // Use client-side only date to avoid hydration mismatch
+  const [generatedDate, setGeneratedDate] = useState<string>('');
+
   useEffect(() => {
+    // Set the date only on client to avoid hydration mismatch
+    setGeneratedDate(formatDate(new Date().toISOString()));
     // Trigger print dialog when component mounts
     window.print();
   }, []);
+
+  // Calculate total results across all runs
+  const totalResults = runs.reduce((sum, run) => {
+    const results = run.resultsJson && Array.isArray(run.resultsJson) ? run.resultsJson.length : 0;
+    return sum + results;
+  }, 0);
 
   return (
     <div className="print-container">
       <style jsx global>{`
         @media print {
           @page {
-            margin: 1cm;
+            margin: 0.75cm;
+            size: landscape;
           }
           body {
             background: white;
+            font-size: 10pt;
           }
           /* Hide all dashboard chrome */
           nav,
@@ -171,235 +174,207 @@ export default function PrintViewClient({ runs }: Props) {
             padding: 0;
             margin: 0;
           }
-          table {
-            page-break-inside: avoid;
+          .results-table {
+            width: 100%;
             border-collapse: collapse;
+            font-size: 9pt;
+          }
+          .results-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+            text-align: left;
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+          }
+          .results-table td {
+            padding: 5px 8px;
+            border: 1px solid #e5e7eb;
+            vertical-align: top;
+          }
+          .results-table tr:nth-child(even) {
+            background: #f9fafb;
+          }
+          .description-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .run-header {
+            page-break-before: auto;
+            margin-top: 16px;
+          }
+          .run-header:first-child {
+            margin-top: 0;
           }
           tr {
             page-break-inside: avoid;
           }
-          th, td {
-            border: 1px solid #e5e7eb;
-            padding: 0.5rem;
+          .report-header {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #111827;
+          }
+          .run-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 8px;
+            font-size: 9pt;
           }
         }
         @media screen {
           .print-container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1.5rem;
             background: white;
+          }
+          .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+          }
+          .results-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+          }
+          .results-table td {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            vertical-align: top;
+          }
+          .results-table tr:nth-child(even) {
+            background: #f9fafb;
+          }
+          .results-table tr:hover {
+            background: #f0fdf4;
+          }
+          .description-cell {
+            max-width: 350px;
           }
         }
       `}</style>
 
       <div className="print-container">
-        <div className="mb-6 no-print">
+        {/* Screen-only action buttons */}
+        <div className="mb-6 no-print flex gap-2">
           <button
             onClick={() => window.print()}
-            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium"
           >
-            Print
+            Print Report
           </button>
           <button
             onClick={() => window.close()}
-            className="ml-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
           >
             Close
           </button>
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Discovery Run Report
+        {/* Report Header */}
+        <div className="report-header">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Discovery Results Report
           </h1>
-          <p className="text-gray-600">
-            Generated: {new Date().toLocaleString()}
-          </p>
-          <p className="text-gray-600">
-            Total Runs: {runs.length}
-          </p>
+          <div className="text-sm text-gray-600 mt-1">
+            Generated: {generatedDate || '—'} • {runs.length} run{runs.length !== 1 ? 's' : ''} • {totalResults} total result{totalResults !== 1 ? 's' : ''}
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {runs.map((run) => {
-            const stats = run.stats as {
-              durationMs?: number;
-              totalDiscovered?: number;
-              totalAfterDedupe?: number;
-              companiesCreated?: number;
-              channelResults?: Record<string, number>;
-              intentConfig?: {
-                intentName?: string;
-                targetCountries?: string[];
-                includeKeywords?: string[];
-                excludeKeywords?: string[];
-              };
-            } | null;
+        {/* Runs with Results */}
+        {runs.map((run, runIndex) => {
+          const normalizedResults = run.resultsJson && Array.isArray(run.resultsJson) && run.resultsJson.length > 0
+            ? normalizeResultsForPrint(run.resultsJson)
+            : [];
 
-            return (
-              <div key={run.id} className="border border-gray-200 rounded-lg p-6 mb-6">
-                <div className="mb-4 pb-4 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    {run.intentName || run.mode} {run.dryRun && '(Preview)'}
-                  </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Status:</span>{' '}
-                      <span className="font-medium">{run.status}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Triggered By:</span>{' '}
-                      <span className="font-medium">{getTriggeredByLabel(run.triggeredBy)}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Started:</span>{' '}
-                      <span className="font-medium">{formatDate(run.startedAt)}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Duration:</span>{' '}
-                      <span className="font-medium">{formatDuration(run.startedAt, run.finishedAt)}</span>
-                    </div>
-                  </div>
+          return (
+            <div key={run.id} className={`run-section ${runIndex > 0 ? 'run-header' : ''}`}>
+              {/* Run Summary (compact) */}
+              <div className="mb-3 pb-2 border-b border-gray-300">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {run.intentName || run.mode}{run.dryRun ? ' (Preview)' : ''}
+                </h2>
+                <div className="run-summary text-sm text-gray-600">
+                  <span><strong>Date:</strong> {formatDate(run.startedAt)}</span>
+                  <span><strong>Duration:</strong> {formatDuration(run.startedAt, run.finishedAt)}</span>
+                  <span><strong>Status:</strong> {run.status}</span>
+                  {run.dryRun ? (
+                    <span><strong>Discovered:</strong> {normalizedResults.length}</span>
+                  ) : (
+                    <>
+                      <span><strong>Companies:</strong> {run.createdCompaniesCount}</span>
+                      <span><strong>Contacts:</strong> {run.createdContactsCount}</span>
+                      <span><strong>Leads:</strong> {run.createdLeadsCount}</span>
+                    </>
+                  )}
                 </div>
-
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Results</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {run.dryRun ? (
-                      <>
-                        <div>
-                          <span className="text-gray-500">Discovered:</span>{' '}
-                          <span className="font-medium">{stats?.totalAfterDedupe ?? 0}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Before Dedupe:</span>{' '}
-                          <span className="font-medium">{stats?.totalDiscovered ?? 0}</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          <span className="text-gray-500">Companies:</span>{' '}
-                          <span className="font-medium">{run.createdCompaniesCount}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Contacts:</span>{' '}
-                          <span className="font-medium">{run.createdContactsCount}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Leads:</span>{' '}
-                          <span className="font-medium">{run.createdLeadsCount}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Skipped:</span>{' '}
-                          <span className="font-medium">{run.skippedCount}</span>
-                        </div>
-                      </>
-                    )}
-                    {run.errorCount > 0 && (
-                      <div>
-                        <span className="text-gray-500">Errors:</span>{' '}
-                        <span className="font-medium text-red-600">{run.errorCount}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {stats?.channelResults && Object.keys(stats.channelResults).length > 0 && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Channel Breakdown</h3>
-                    <div className="flex flex-wrap gap-3">
-                      {Object.entries(stats.channelResults).map(([channel, count]) => (
-                        <div key={channel} className="text-sm">
-                          <span className="text-gray-500 capitalize">{channel}:</span>{' '}
-                          <span className="font-medium">{count as number}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {stats?.intentConfig && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Configuration</h3>
-                    <div className="text-sm space-y-1">
-                      {stats.intentConfig.targetCountries && (
-                        <div>
-                          <span className="text-gray-500">Countries:</span>{' '}
-                          <span className="font-medium">{stats.intentConfig.targetCountries.join(', ')}</span>
-                        </div>
-                      )}
-                      {stats.intentConfig.includeKeywords && stats.intentConfig.includeKeywords.length > 0 && (
-                        <div>
-                          <span className="text-gray-500">Include Keywords:</span>{' '}
-                          <span className="font-medium">{stats.intentConfig.includeKeywords.join(', ')}</span>
-                        </div>
-                      )}
-                      {stats.intentConfig.excludeKeywords && stats.intentConfig.excludeKeywords.length > 0 && (
-                        <div>
-                          <span className="text-gray-500">Exclude Keywords:</span>{' '}
-                          <span className="font-medium">{stats.intentConfig.excludeKeywords.join(', ')}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Results Table */}
-                {run.resultsJson && Array.isArray(run.resultsJson) && run.resultsJson.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Discovered Companies</h3>
-                    <table className="w-full border-collapse border border-gray-300 text-sm">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Score</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Company</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Website</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Description</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Contact</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left font-medium text-gray-900">Source</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {normalizeResultsForPrint(run.resultsJson).map((result, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50">
-                            <td className="border border-gray-300 px-2 py-1">
-                              {result.relevanceScore !== undefined ? Math.round(result.relevanceScore) : '-'}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-1">
-                              <div className="font-medium text-gray-900">{result.name || '-'}</div>
-                              {result.industry && (
-                                <div className="text-xs text-gray-500">{result.industry}</div>
-                              )}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-1 text-gray-700">
-                              {result.website ? result.website.replace(/^https?:\/\//, '') : '-'}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-1 text-gray-700">
-                              {result.description ? (
-                                <div className="max-w-xs truncate" title={result.description}>
-                                  {result.description}
-                                </div>
-                              ) : '-'}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-1 text-gray-700">
-                              {result.email && <div>{result.email}</div>}
-                              {result.phone && <div className="text-xs">{result.phone}</div>}
-                              {!result.email && !result.phone && '-'}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-1 text-gray-700 capitalize">
-                              {result.source || result.channel || '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
               </div>
-            );
-          })}
+
+              {/* Results Table (the main focus) */}
+              {normalizedResults.length > 0 ? (
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '50px' }}>Score</th>
+                      <th style={{ width: '180px' }}>Company</th>
+                      <th style={{ width: '200px' }}>Website</th>
+                      <th>Description</th>
+                      <th style={{ width: '120px' }}>Contact</th>
+                      <th style={{ width: '80px' }}>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {normalizedResults.map((result, idx) => (
+                      <tr key={idx}>
+                        <td className="text-center font-medium">
+                          {result.relevanceScore !== undefined ? Math.round(result.relevanceScore) : '-'}
+                        </td>
+                        <td>
+                          <div className="font-medium text-gray-900">{result.name || '-'}</div>
+                          {result.industry && (
+                            <div className="text-xs text-gray-500 mt-0.5">{result.industry}</div>
+                          )}
+                        </td>
+                        <td className="text-gray-700 text-sm">
+                          {result.website || '-'}
+                        </td>
+                        <td className="description-cell text-gray-700 text-sm">
+                          {result.description || '-'}
+                        </td>
+                        <td className="text-sm">
+                          {result.email && <div className="text-gray-700">{result.email}</div>}
+                          {result.phone && <div className="text-gray-500 text-xs">{result.phone}</div>}
+                          {!result.email && !result.phone && <span className="text-gray-400">-</span>}
+                        </td>
+                        <td className="text-gray-600 text-sm capitalize">
+                          {result.source || result.channel || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-gray-500 bg-gray-50 rounded border border-gray-200">
+                  <p className="font-medium">No discovery results available for this run.</p>
+                  <p className="text-sm mt-1">
+                    {run.createdCompaniesCount > 0 
+                      ? 'Results data may not have been stored for this run.'
+                      : 'This run did not discover any companies.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Footer */}
+        <div className="mt-8 pt-4 border-t border-gray-300 text-xs text-gray-500 text-center">
+          Discovery Results Report • CCS Lead Agent
         </div>
       </div>
     </div>
