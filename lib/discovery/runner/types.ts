@@ -124,11 +124,11 @@ export interface DiscoveryRunStats {
   /** Whether run was stopped early due to limits */
   stoppedEarly: boolean;
   /** Reason for stopping early */
-  stoppedReason?: 'time_budget' | 'company_limit' | 'lead_limit';
+  stoppedReason?: 'time_budget' | 'company_limit' | 'lead_limit' | 'cancelled';
   /** Limits used for this run */
   limitsUsed: RunLimitsUsed;
   /** Intent configuration (if applicable) */
-  intentConfig?: IntentConfigSnapshot;
+  intentConfig?: IntentConfigSnapshot | Record<string, unknown>;
 }
 
 /**
@@ -140,7 +140,7 @@ export interface RunResult {
   /** ID of the DiscoveryRun record */
   runId: string;
   /** Final status */
-  status: 'completed' | 'completed_with_errors' | 'failed';
+  status: 'completed' | 'completed_with_errors' | 'failed' | 'cancelled';
   /** Whether this was a dry run */
   dryRun: boolean;
   /** Run statistics */

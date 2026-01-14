@@ -21,6 +21,7 @@ import type {
   RunResult,
   DiscoveryRunStats,
   RunLimitsUsed,
+  IntentConfigSnapshot,
 } from './types';
 
 export class DailyDiscoveryRunner {
@@ -107,12 +108,17 @@ export class DailyDiscoveryRunner {
     });
 
     let stoppedEarly = false;
-    let stoppedReason: 'time_budget' | 'company_limit' | 'lead_limit' | undefined;
+    let stoppedReason: DiscoveryRunStats['stoppedReason'];
     const channelErrors: Record<string, string> = {};
 
     try {
       // Update status to running
       await this.updateRunStatus(run.id, 'running');
+
+      // Check for cancel before starting
+      if (await this.isCancelRequested(run.id)) {
+        return this.handleCancellation(run.id, startTime, limitsUsed, intentConfig, channelErrors);
+      }
 
       // Create time budget tracker
       const timeBudget = new TimeBudget(timeBudgetSeconds);
@@ -135,6 +141,25 @@ export class DailyDiscoveryRunner {
         analysisConfig,
         enableScraping
       );
+
+      // Check for cancel after discovery
+      if (await this.isCancelRequested(run.id)) {
+        // Save partial results before cancelling
+        const partialResults = this.capResultsForStorage(
+          discoveryResults.results,
+          maxCompanies,
+          maxLeads
+        );
+        return this.handleCancellation(
+          run.id, 
+          startTime, 
+          limitsUsed, 
+          intentConfig, 
+          channelErrors,
+          discoveryResults,
+          partialResults
+        );
+      }
 
       // Merge channel errors from aggregator result
       if (discoveryResults.channelErrors) {
@@ -164,6 +189,8 @@ export class DailyDiscoveryRunner {
           );
 
       // Cap results to limits for storage (safe JSON, no secrets)
+      // NOTE: resultsJson is saved for BOTH dry-run and real-run to enable UI display
+      // This allows users to view discovered results even when no records were created
       const resultsToStore = this.capResultsForStorage(
         discoveryResults.results,
         maxCompanies,
@@ -250,6 +277,76 @@ export class DailyDiscoveryRunner {
         error: errorMessage,
       };
     }
+  }
+
+  /**
+   * Check if cancel has been requested for a run
+   */
+  private async isCancelRequested(runId: string): Promise<boolean> {
+    const run = await prisma.discoveryRun.findUnique({
+      where: { id: runId },
+      select: { cancelRequestedAt: true },
+    });
+    return !!run?.cancelRequestedAt;
+  }
+
+  /**
+   * Handle graceful cancellation of a run
+   */
+  private async handleCancellation(
+    runId: string,
+    startTime: number,
+    limitsUsed: RunLimitsUsed,
+    intentConfig?: IntentConfigSnapshot,
+    channelErrors: Record<string, string> = {},
+    partialDiscoveryResults?: {
+      results: import('../types').DiscoveryResult[];
+      channelResults: Record<string, number>;
+      totalBeforeDedupe: number;
+      totalAfterDedupe: number;
+    },
+    partialResultsToStore?: import('../types').DiscoveryResult[]
+  ): Promise<RunResult> {
+    console.log(`[DiscoveryRunner] Run ${runId} cancelled by user request`);
+
+    const stats: DiscoveryRunStats = {
+      channelResults: partialDiscoveryResults?.channelResults || {},
+      channelErrors,
+      totalDiscovered: partialDiscoveryResults?.totalBeforeDedupe || 0,
+      totalAfterDedupe: partialDiscoveryResults?.totalAfterDedupe || 0,
+      companiesCreated: 0,
+      companiesSkipped: 0,
+      contactsCreated: 0,
+      contactsSkipped: 0,
+      leadsCreated: 0,
+      leadsSkipped: 0,
+      errors: [{ type: 'cancelled', message: 'Run cancelled by user request' }],
+      durationMs: Date.now() - startTime,
+      stoppedEarly: true,
+      stoppedReason: 'cancelled',
+      limitsUsed,
+      intentConfig,
+    };
+
+    await prisma.discoveryRun.update({
+      where: { id: runId },
+      data: {
+        status: 'cancelled',
+        finishedAt: new Date(),
+        stats: stats as object,
+        resultsJson: partialResultsToStore ? (partialResultsToStore as object) : undefined,
+        errorCount: 1,
+      },
+    });
+
+    return {
+      success: false,
+      runId,
+      status: 'cancelled',
+      dryRun: false,
+      stats,
+      error: 'Run cancelled by user request',
+    };
   }
 
   /**
@@ -441,6 +538,7 @@ export class DailyDiscoveryRunner {
 
   /**
    * Mark run as completed with stats
+   * NOTE: resultsJson is saved for both dry-run and real-run to enable UI display
    */
   private async completeRun(
     runId: string,
@@ -454,6 +552,8 @@ export class DailyDiscoveryRunner {
         status,
         finishedAt: new Date(),
         stats: stats as object,
+        // Always save resultsJson for UI display (both dry-run and real-run)
+        // resultsJson contains capped results for display, even if no records were created
         resultsJson: resultsJson ? (resultsJson as object) : undefined,
         createdCompaniesCount: stats.companiesCreated,
         createdContactsCount: stats.contactsCreated,

@@ -176,7 +176,7 @@ export interface ManualDiscoveryResponse {
   intentId: string;
   intentName: string;
   dryRun: boolean;
-  status: 'completed' | 'completed_with_errors' | 'failed';
+  status: 'completed' | 'completed_with_errors' | 'failed' | 'cancelled';
   stats?: {
     totalDiscovered: number;
     companiesCreated: number;
