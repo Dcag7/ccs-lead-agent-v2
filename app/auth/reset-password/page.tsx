@@ -1,7 +1,6 @@
-
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -17,10 +16,7 @@ function BrandIcon({ className = '', size = 24 }: { className?: string; size?: n
       fill="currentColor"
     >
       <g transform="translate(100, 100)">
-        {/* Center star */}
         <path d="M 0,-15 L 4,-4 L 15,-4 L 6,3 L 10,14 L 0,7 L -10,14 L -6,3 L -15,-4 L -4,-4 Z"/>
-        
-        {/* Six petals arranged in a circle */}
         {[0, 60, 120, 180, 240, 300].map((rotation) => (
           <g key={rotation} transform={`rotate(${rotation})`}>
             <circle cx="0" cy="-45" r="20"/>
@@ -29,10 +25,10 @@ function BrandIcon({ className = '', size = 24 }: { className?: string; size?: n
         ))}
       </g>
     </svg>
-  );
+  )
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -238,5 +234,30 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-2xl border-0 overflow-hidden">
+            <div className="text-center p-8 pb-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl shadow-lg">
+                  <BrandIcon size={48} className="text-white" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-center text-gray-900">
+                Loading...
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   )
 }
