@@ -7,9 +7,16 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function DiscoveryRunsPage() {
-  // Fetch recent discovery runs (excluding archived by default)
+  // Fetch only automated runs (cron/scheduled, excluding archived by default)
   const runs = await prisma.discoveryRun.findMany({
-    where: { archivedAt: null },
+    where: {
+      archivedAt: null,
+      OR: [
+        { triggeredBy: 'cron' },
+        { mode: 'daily' },
+        { triggeredBy: { contains: 'jobs/discovery' } },
+      ],
+    },
     orderBy: { startedAt: 'desc' },
     take: 50,
   });
@@ -54,7 +61,7 @@ export default async function DiscoveryRunsPage() {
               Automated Discovery
             </h1>
             <p className="text-gray-600 mt-1">
-              History of scheduled and manual discovery runs
+              History of scheduled and automated discovery runs
             </p>
           </div>
           <Link

@@ -41,7 +41,7 @@ export default function DiscoveryRunsClient({
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/discovery-runs?showArchived=${showArchived}`);
+        const res = await fetch(`/api/discovery-runs?scope=automated&includeArchived=${showArchived}`);
         if (res.ok) {
           const data = await res.json();
           setRuns(data.runs);
@@ -56,7 +56,7 @@ export default function DiscoveryRunsClient({
 
   const handleRefresh = async () => {
     try {
-      const res = await fetch(`/api/discovery-runs?showArchived=${showArchived}`);
+      const res = await fetch(`/api/discovery-runs?scope=automated&includeArchived=${showArchived}`);
       if (res.ok) {
         const data = await res.json();
         setRuns(data.runs);
@@ -70,7 +70,7 @@ export default function DiscoveryRunsClient({
     const newShowArchived = !showArchived;
     setShowArchived(newShowArchived);
     try {
-      const res = await fetch(`/api/discovery-runs?showArchived=${newShowArchived}`);
+      const res = await fetch(`/api/discovery-runs?scope=automated&includeArchived=${newShowArchived}`);
       if (res.ok) {
         const data = await res.json();
         setRuns(data.runs);
@@ -106,6 +106,26 @@ export default function DiscoveryRunsClient({
     }
   };
 
+  const handleBulkArchive = async (runIds: string[]) => {
+    try {
+      const res = await fetch('/api/discovery/runs/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'archive', runIds }),
+      });
+      if (res.ok) {
+        await handleRefresh();
+      }
+    } catch {
+      // Ignore errors
+    }
+  };
+
+  const handlePrint = (runIds: string[]) => {
+    const ids = runIds.join(',');
+    window.open(`/dashboard/discovery/print?ids=${ids}`, '_blank');
+  };
+
   // Map runs to the format expected by RunHistoryTable
   const mappedRuns = runs.map((run) => ({
     id: run.id,
@@ -135,6 +155,8 @@ export default function DiscoveryRunsClient({
         onToggleArchived={handleToggleArchived}
         onArchive={handleArchive}
         onUnarchive={handleUnarchive}
+        onBulkArchive={handleBulkArchive}
+        onPrint={handlePrint}
       />
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
