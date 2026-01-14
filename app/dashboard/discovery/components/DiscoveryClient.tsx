@@ -75,6 +75,8 @@ interface RunStats {
     intentName?: string;
     queriesCount?: number;
     targetCountries?: string[];
+    includeKeywords?: string[];
+    excludeKeywords?: string[];
     includeKeywordsCount?: number;
     excludeKeywordsCount?: number;
   };
@@ -88,6 +90,8 @@ function RunDetailsModal({
   onClose: () => void;
 }) {
   const stats = run.stats as RunStats | null;
+  const [showMoreInclude, setShowMoreInclude] = useState(false);
+  const [showMoreExclude, setShowMoreExclude] = useState(false);
 
   const formatDuration = (ms: number) => {
     if (ms < 1000) return `${ms}ms`;
@@ -113,52 +117,226 @@ function RunDetailsModal({
   const companiesCreated = stats?.companiesCreated ?? run.createdCompaniesCount ?? 0;
   const leadsCreated = stats?.leadsCreated ?? run.createdLeadsCount ?? 0;
 
+  const includeKeywords = (stats?.intentConfig?.includeKeywords as string[]) || [];
+  const excludeKeywords = (stats?.intentConfig?.excludeKeywords as string[]) || [];
+  const SHOW_MORE_THRESHOLD = 10;
+
   return (
     <div className="fixed inset-0 bg-gray-600/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-3xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Sticky Header */}
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
               Discovery Run Details
             </h3>
             <p className="text-xs text-gray-500 font-mono">{run.id}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* View Results Button */}
+            {stats?.totalAfterDedupe !== undefined && stats.totalAfterDedupe > 0 && (
+              <Link
+                href={`/dashboard/discovery/runs/${run.id}`}
+                onClick={onClose}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                View Results
+              </Link>
+            )}
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)] space-y-5">
-          {/* Overview Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
-              <span className={`inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(run.status)}`}>
-                {run.status}
-                {run.dryRun && ' (dry run)'}
-              </span>
+        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          {/* 2-Column Layout: Overview/Intent left, Limits/Channels right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column: Overview & Intent */}
+            <div className="space-y-6">
+              {/* Overview */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                  <h4 className="font-medium text-gray-900">Overview</h4>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
+                      <span className={`inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(run.status)}`}>
+                        {run.status}
+                        {run.dryRun && ' (dry run)'}
+                      </span>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs font-medium text-gray-500 uppercase">Duration</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {stats?.durationMs ? formatDuration(stats.durationMs) : '-'}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs font-medium text-gray-500 uppercase">Triggered By</p>
+                      <p className="text-sm font-medium text-gray-900">{run.triggeredBy || 'unknown'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs font-medium text-gray-500 uppercase">Started</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {new Date(run.startedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Intent Configuration */}
+              {stats?.intentConfig && (
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                    <h4 className="font-medium text-gray-900">Intent Configuration</h4>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                      <div>
+                        <dt className="text-gray-500">Intent</dt>
+                        <dd className="font-medium text-gray-900">{stats.intentConfig.intentName}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-gray-500">Intent ID</dt>
+                        <dd className="font-mono text-xs text-gray-900 break-all">{stats.intentConfig.intentId}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-gray-500">Countries</dt>
+                        <dd className="font-medium text-gray-900">
+                          {stats.intentConfig.targetCountries?.join(', ') || '-'}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-gray-500">Queries</dt>
+                        <dd className="font-medium text-gray-900">{stats.intentConfig.queriesCount || 0}</dd>
+                      </div>
+                    </dl>
+
+                    {/* Include Keywords */}
+                    {includeKeywords.length > 0 && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-700 mb-2">Include Keywords</dt>
+                        <dd className="flex flex-wrap gap-2">
+                          {(showMoreInclude ? includeKeywords : includeKeywords.slice(0, SHOW_MORE_THRESHOLD)).map((keyword: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                            >
+                              {keyword}
+                            </span>
+                          ))}
+                          {includeKeywords.length > SHOW_MORE_THRESHOLD && (
+                            <button
+                              onClick={() => setShowMoreInclude(!showMoreInclude)}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            >
+                              {showMoreInclude ? 'Show less' : `+${includeKeywords.length - SHOW_MORE_THRESHOLD} more`}
+                            </button>
+                          )}
+                        </dd>
+                      </div>
+                    )}
+
+                    {/* Exclude Keywords */}
+                    {excludeKeywords.length > 0 && (
+                      <div>
+                        <dt className="text-sm font-medium text-gray-700 mb-2">Exclude Keywords</dt>
+                        <dd className="flex flex-wrap gap-2">
+                          {(showMoreExclude ? excludeKeywords : excludeKeywords.slice(0, SHOW_MORE_THRESHOLD)).map((keyword: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                            >
+                              {keyword}
+                            </span>
+                          ))}
+                          {excludeKeywords.length > SHOW_MORE_THRESHOLD && (
+                            <button
+                              onClick={() => setShowMoreExclude(!showMoreExclude)}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            >
+                              {showMoreExclude ? 'Show less' : `+${excludeKeywords.length - SHOW_MORE_THRESHOLD} more`}
+                            </button>
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-gray-500 uppercase">Duration</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {stats?.durationMs ? formatDuration(stats.durationMs) : '-'}
-              </p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-gray-500 uppercase">Triggered By</p>
-              <p className="text-sm font-medium text-gray-900">{run.triggeredBy || 'unknown'}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-gray-500 uppercase">Started</p>
-              <p className="text-sm font-medium text-gray-900">
-                {new Date(run.startedAt).toLocaleString()}
-              </p>
+
+            {/* Right Column: Limits & Channels */}
+            <div className="space-y-6">
+              {/* Limits Used */}
+              {stats?.limitsUsed && (
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                    <h4 className="font-medium text-gray-900">Limits Applied</h4>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex flex-wrap gap-2">
+                      {stats.limitsUsed.maxCompanies && (
+                        <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          Max Companies: <strong>{stats.limitsUsed.maxCompanies}</strong>
+                        </span>
+                      )}
+                      {stats.limitsUsed.maxLeads && (
+                        <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          Max Leads: <strong>{stats.limitsUsed.maxLeads}</strong>
+                        </span>
+                      )}
+                      {stats.limitsUsed.maxQueries && (
+                        <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          Max Queries: <strong>{stats.limitsUsed.maxQueries}</strong>
+                        </span>
+                      )}
+                      {stats.limitsUsed.maxRuntimeSeconds && (
+                        <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          Max Runtime: <strong>{stats.limitsUsed.maxRuntimeSeconds}s</strong>
+                        </span>
+                      )}
+                      {stats.limitsUsed.channels && (
+                        <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          Channels: <strong>{stats.limitsUsed.channels.join(', ')}</strong>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Channel Results */}
+              {stats?.channelResults && Object.keys(stats.channelResults).length > 0 && (
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                    <h4 className="font-medium text-gray-900">Channel Results</h4>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {Object.entries(stats.channelResults).map(([channel, count]) => (
+                        <div key={channel} className="bg-gray-50 rounded-lg p-3 text-center">
+                          <p className="text-xl font-bold text-gray-700">{count}</p>
+                          <p className="text-xs text-gray-500 capitalize">{channel}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -258,101 +436,6 @@ function RunDetailsModal({
             </div>
           </div>
 
-          {/* Intent Configuration */}
-          {stats?.intentConfig && (
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                <h4 className="font-medium text-gray-900">Intent Configuration</h4>
-              </div>
-              <div className="p-4">
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  <div>
-                    <dt className="text-gray-500">Intent</dt>
-                    <dd className="font-medium text-gray-900">{stats.intentConfig.intentName}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Intent ID</dt>
-                    <dd className="font-mono text-gray-900">{stats.intentConfig.intentId}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Countries</dt>
-                    <dd className="font-medium text-gray-900">
-                      {stats.intentConfig.targetCountries?.join(', ') || '-'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Queries</dt>
-                    <dd className="font-medium text-gray-900">{stats.intentConfig.queriesCount || 0}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Include Keywords</dt>
-                    <dd className="font-medium text-gray-900">{stats.intentConfig.includeKeywordsCount || 0}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Exclude Keywords</dt>
-                    <dd className="font-medium text-gray-900">{stats.intentConfig.excludeKeywordsCount || 0}</dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-          )}
-
-          {/* Channel Results */}
-          {stats?.channelResults && Object.keys(stats.channelResults).length > 0 && (
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                <h4 className="font-medium text-gray-900">Channel Results</h4>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {Object.entries(stats.channelResults).map(([channel, count]) => (
-                    <div key={channel} className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-xl font-bold text-gray-700">{count}</p>
-                      <p className="text-xs text-gray-500 capitalize">{channel}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Limits Used */}
-          {stats?.limitsUsed && (
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                <h4 className="font-medium text-gray-900">Limits Applied</h4>
-              </div>
-              <div className="p-4">
-                <div className="flex flex-wrap gap-2">
-                  {stats.limitsUsed.maxCompanies && (
-                    <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                      Max Companies: <strong>{stats.limitsUsed.maxCompanies}</strong>
-                    </span>
-                  )}
-                  {stats.limitsUsed.maxLeads && (
-                    <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                      Max Leads: <strong>{stats.limitsUsed.maxLeads}</strong>
-                    </span>
-                  )}
-                  {stats.limitsUsed.maxQueries && (
-                    <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                      Max Queries: <strong>{stats.limitsUsed.maxQueries}</strong>
-                    </span>
-                  )}
-                  {stats.limitsUsed.maxRuntimeSeconds && (
-                    <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                      Max Runtime: <strong>{stats.limitsUsed.maxRuntimeSeconds}s</strong>
-                    </span>
-                  )}
-                  {stats.limitsUsed.channels && (
-                    <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                      Channels: <strong>{stats.limitsUsed.channels.join(', ')}</strong>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Errors */}
           {run.error && (
