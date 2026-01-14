@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface DiscoveryIntent {
@@ -42,9 +42,8 @@ interface DiscoveryRun {
   error: string | null;
 }
 
-interface Props {
-  initialRuns: DiscoveryRun[];
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface Props {}
 
 // Stats structure from the discovery run
 interface RunStats {
@@ -555,11 +554,9 @@ const SAFETY_CAPS = {
   maxQueries: 5,
 };
 
-export default function DiscoveryClient({ initialRuns }: Props) {
+export default function DiscoveryClient(_props: Props) {
   const [intents, setIntents] = useState<DiscoveryIntent[]>([]);
   const [selectedIntentId, setSelectedIntentId] = useState<string>('');
-  const [runs, setRuns] = useState<DiscoveryRun[]>(initialRuns);
-  const [selectedRun, setSelectedRun] = useState<DiscoveryRun | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingIntents, setIsLoadingIntents] = useState(true);
   const [runnerEnabled, setRunnerEnabled] = useState(false);
@@ -609,17 +606,6 @@ export default function DiscoveryClient({ initialRuns }: Props) {
     checkGoogleConfig();
   }, []);
 
-  const refreshRuns = useCallback(async () => {
-    try {
-      const res = await fetch('/api/discovery-runs');
-      const data = await res.json();
-      if (data.runs) {
-        setRuns(data.runs);
-      }
-    } catch (err) {
-      console.error('Failed to refresh runs:', err);
-    }
-  }, []);
 
   const runDiscovery = async (dryRun: boolean) => {
     if (!selectedIntentId) {
@@ -673,7 +659,6 @@ export default function DiscoveryClient({ initialRuns }: Props) {
             data.stats?.companiesCreated ?? 0
           } companies ${dryRun ? 'discovered' : 'created'} using "${selectedIntent?.name || selectedIntentId}"`
         );
-        await refreshRuns();
       } else {
         setError(data.error || 'Discovery run failed');
       }
@@ -998,117 +983,28 @@ export default function DiscoveryClient({ initialRuns }: Props) {
         </div>
       </div>
 
-      {/* Recent Runs Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Runs</h2>
-          <button
-            onClick={refreshRuns}
-            className="text-sm text-teal-600 hover:text-teal-800"
+      {/* View Run History CTA */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              View Run History
+            </h3>
+            <p className="text-sm text-gray-600">
+              See all discovery runs (manual and automated) with detailed stats and results.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/discovery-runs"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors"
           >
-            Refresh
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Intent
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Started
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Duration
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Created
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Errors
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {runs.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-4 py-8 text-center text-gray-500"
-                  >
-                    No discovery runs yet
-                  </td>
-                </tr>
-              ) : (
-                runs.map((run) => (
-                  <tr key={run.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      {getStatusBadge(run.status, run.dryRun)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-gray-900">
-                        {run.intentName || run.mode}
-                      </div>
-                      {run.triggeredBy && (
-                        <div className="text-xs text-gray-500">
-                          via {run.triggeredBy}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {formatDate(run.startedAt)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {formatDuration(run.startedAt, run.finishedAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-green-600">
-                        {run.createdCompaniesCount} companies
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {run.createdContactsCount} contacts,{' '}
-                        {run.createdLeadsCount} leads
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {run.errorCount > 0 ? (
-                        <span className="text-red-600">{run.errorCount}</span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => setSelectedRun(run)}
-                        className="text-sm text-teal-600 hover:text-teal-800"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            View Run History
+          </Link>
         </div>
       </div>
-
-      {/* Run Detail Modal */}
-      {selectedRun && (
-        <RunDetailsModal 
-          run={selectedRun} 
-          onClose={() => setSelectedRun(null)} 
-          onRefresh={refreshRuns}
-        />
-      )}
     </div>
   );
 }

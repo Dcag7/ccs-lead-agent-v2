@@ -7,27 +7,35 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function DiscoveryRunsPage() {
-  // Fetch recent discovery runs
+  // Fetch recent discovery runs (excluding archived by default)
   const runs = await prisma.discoveryRun.findMany({
+    where: { archivedAt: null },
     orderBy: { startedAt: 'desc' },
     take: 50,
   });
 
   // Serialize dates for client component
   const serializedRuns = runs.map((run) => ({
-    ...run,
+    id: run.id,
     startedAt: run.startedAt.toISOString(),
     finishedAt: run.finishedAt?.toISOString() ?? null,
+    status: run.status,
+    mode: run.mode,
+    dryRun: run.dryRun,
+    triggeredBy: run.triggeredBy,
+    intentId: run.intentId,
+    intentName: run.intentName,
     createdAt: run.createdAt.toISOString(),
     updatedAt: run.updatedAt.toISOString(),
     cancelRequestedAt: run.cancelRequestedAt?.toISOString() ?? null,
-    stats: run.stats as {
-      companiesCreated?: number;
-      contactsCreated?: number;
-      leadsCreated?: number;
-      durationMs?: number;
-      totalAfterDedupe?: number;
-    } | null,
+    archivedAt: run.archivedAt?.toISOString() ?? null,
+    stats: run.stats as Record<string, unknown> | null,
+    error: run.error,
+    createdCompaniesCount: run.createdCompaniesCount,
+    createdContactsCount: run.createdContactsCount,
+    createdLeadsCount: run.createdLeadsCount,
+    skippedCount: run.skippedCount,
+    errorCount: run.errorCount,
   }));
 
   return (

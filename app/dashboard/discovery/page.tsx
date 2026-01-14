@@ -1,7 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import DiscoveryClient from './components/DiscoveryClient';
 import PageContainer from '../components/PageContainer';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -21,32 +20,6 @@ export default async function DiscoveryPage() {
     redirect('/dashboard');
   }
 
-  // Fetch recent discovery runs
-  const runs = await prisma.discoveryRun.findMany({
-    orderBy: { startedAt: 'desc' },
-    take: 20,
-  });
-
-  // Serialize dates for client component
-  const serializedRuns = runs.map((run) => ({
-    id: run.id,
-    status: run.status,
-    mode: run.mode,
-    dryRun: run.dryRun,
-    intentId: run.intentId,
-    intentName: run.intentName,
-    triggeredBy: run.triggeredBy,
-    startedAt: run.startedAt.toISOString(),
-    finishedAt: run.finishedAt?.toISOString() ?? null,
-    createdCompaniesCount: run.createdCompaniesCount,
-    createdContactsCount: run.createdContactsCount,
-    createdLeadsCount: run.createdLeadsCount,
-    skippedCount: run.skippedCount,
-    errorCount: run.errorCount,
-    stats: run.stats as Record<string, unknown> | null,
-    error: run.error,
-  }));
-
   return (
     <PageContainer>
       <div className="mb-6">
@@ -65,7 +38,7 @@ export default async function DiscoveryPage() {
         </p>
       </div>
 
-      <DiscoveryClient initialRuns={serializedRuns} />
+      <DiscoveryClient />
     </PageContainer>
   );
 }
